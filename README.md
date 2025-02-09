@@ -1,6 +1,8 @@
 # not-echo-not-true
 
-![welcome](./nene.gif)
+<p align="center">
+  <img src="./nene_chibi.png" alt="welcome">
+</p>
 
 ## Summary
 
