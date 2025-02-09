@@ -18,8 +18,8 @@ Exclusion site https://alrc.luisadha.my.id This subdomain will be always for Alr
 ```sh
 basher install luisadha/not-echo-not-true
 ```
-## Using Tech
-- Curl
-- Shell
-- Html & Css
-- Python
+
+# License
+not-echo-not-true.py https://opensource.org/licenses/MIT
+
+nene_chibi.png https://www.sekaipedia.org/wiki/File:Nene_Casual_chibi.png?uselang=en#Licensing
