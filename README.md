@@ -10,6 +10,10 @@ See https://luisadha.github.io/ {myApps} Change {myApps} to route for each of my
 
 Exclusion site https://alrc.luisadha.my.id This subdomain will be always for Alrc Installer project
 
+## Install 
+```sh
+basher install luisadha/not-echo-not-true
+```
 ## Using Tech
 - Curl
 - Shell
