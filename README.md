@@ -1,5 +1,7 @@
 # not-echo-not-true
 
+![welcome](./nene.gif)
+
 ## Summary
 
 This application will request every request to the site to be run through curl and sourced with bash.
