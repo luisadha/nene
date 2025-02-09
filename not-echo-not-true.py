@@ -27,7 +27,7 @@ def banner():
     logo()
     print("\n" + center_text("Try online apps from luisadha using Curl") + "\n")
     print("=" * shutil.get_terminal_size((80, 20)).columns)
-    print("Script: nent v1.0-stable")
+    print("Script: nene v1.2-stable")
     print("Author: luisadha\n")
 
 apps = [
