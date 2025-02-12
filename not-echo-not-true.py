@@ -31,12 +31,12 @@ def banner():
     print("Author: luisadha\n")
 
 apps = [
-    (1, "Alrc-Termux", "Free")
+    (1, "Alrc-Termux", "Install for free")
 ] + sorted([
-    (2, "Anti-hangman", "Free"),
-    (3, "Ascii-Live-Termux", "Free"),
-    (4, "Brandomusic", "Free"),
-    (5, "Termcreed", "Free"),
+    (2, "Anti-hangman", "Free Trial"),
+    (3, "Ascii-Live-Termux", "Free Trial"),
+    (4, "Brandomusic", "Free Trial"),
+    (5, "Termcreed", "Free Trial"),
     (6, "Weapon-Url-Opener", "Trial"),
 ], key=lambda x: x[1])
 
