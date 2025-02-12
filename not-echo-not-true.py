@@ -37,7 +37,7 @@ apps = [
     (3, "Ascii-Live-Termux", "Free Trial"),
     (4, "Brandomusic", "Free Trial"),
     (5, "Termcreed", "Free Trial"),
-    (6, "Weapon-Url-Opener", "Trial"),
+    (6, "Weapon-Url-Opener", "Free Trial"),
 ], key=lambda x: x[1])
 
 while True:
