@@ -29,6 +29,7 @@ def banner():
     print("=" * shutil.get_terminal_size((80, 20)).columns)
     print("Script: nene v1.2-stable")
     print("Author: luisadha\n")
+    print(f"Visit: https://not-echo-not-true.carrd.co/")
 
 apps = [
     (1, "Alrc-Termux", "Install for free")
