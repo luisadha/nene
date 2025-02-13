@@ -30,7 +30,7 @@ def banner():
     print("Script: nene v1.2.1-stable")
     print("Author: luisadha")
     print(f"Visit: https://not-echo-not-true.carrd.co/")
-    print("\n"
+    print("\n")
 
 apps = [
     (1, "Alrc-Termux", "Install for free")
