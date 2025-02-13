@@ -27,9 +27,10 @@ def banner():
     logo()
     print("\n" + center_text("Try online apps from luisadha using Curl") + "\n")
     print("=" * shutil.get_terminal_size((80, 20)).columns)
-    print("Script: nene v1.2-stable")
-    print("Author: luisadha\n")
+    print("Script: nene v1.2.1-stable")
+    print("Author: luisadha")
     print(f"Visit: https://not-echo-not-true.carrd.co/")
+    print("\n"
 
 apps = [
     (1, "Alrc-Termux", "Install for free")
