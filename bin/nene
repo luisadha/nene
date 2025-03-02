@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE
 unset HISTSIZE
-__DIR__="${HOME}/.basher/cellar/packages/luisadha/not-echo-not-true"
+__BASE_REPO__="nene"
+__DIR__="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
 exec python3 ${__DIR__}/not-echo-not-true.py "$@"
