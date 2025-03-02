@@ -1,4 +1,4 @@
-# not-echo-not-true
+# not-echo-not-true | nene
 
 <p align="center">
   <img src="./nene_chibi.png" alt="welcome">
@@ -16,9 +16,12 @@ Exclusion site https://alrc.luisadha.my.id This subdomain will be always for Alr
 
 ## Install 
 ```sh
-basher install luisadha/not-echo-not-true
+basher install luisadha/nene
 ```
-
+## Uninstall
+```sh
+basher uninstall luisadha/nene
+```
 # License
 not-echo-not-true.py https://opensource.org/licenses/MIT
 
