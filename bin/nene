@@ -1,5 +1,5 @@
-#!/usr/bin/bash
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE
+[[ -z "$BASH_VERSION" ]] && exec bash "$0" "$@"
 unset HISTSIZE
 __BASE_REPO__="nene"
 __DIR__="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
