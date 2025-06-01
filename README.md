@@ -6,7 +6,7 @@
 
 ## Descriptions
 
-Not Echo, Not True" is a network-based Bash scripting path manager tool that utilizes process substitution (<(...)) and curl to run scripts from the internet directly inside the shell, with a pattern like source <(curl -L URL). Although the implementation uses source, the project's name is inspired by the Bash idiom echo <(true) - a simple yet profound formulation that introduces the concept of process substitution in the shell. The pun "neither echo, nor true" represents the transition from the Bash archetype to a more dynamic execution model, it's an exploration into scripting that is idiomatic, distributed, and still human - bridging the comfort of classic shell play with the innovation of web-based execution.
+Not Echo, Not True" is a network-based Bash scripting path manager tool that utilizes process substitution (<(...)) and curl to run scripts from the internet directly inside the shell, with a pattern like source <(curl -L URL). Although the implementation uses source, the project's name is inspired by the Bash idiom echo <(true) - a simple yet profound formulation that introduces the concept of process substitution in the shell. The pun "Not-echo not-true" represents the transition from the Bash archetype to a more dynamic execution model, it's an exploration into scripting that is idiomatic, distributed, and still human - bridging the comfort of classic shell play with the innovation of web-based execution.
 
 This application will execute each /endpoint from the luisadha.github.io site with curl sourced from bash.
 
