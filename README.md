@@ -24,6 +24,10 @@ nene
 ```sh
 basher install luisadha/not-echo-not-true
 ```
+## Update (beta)
+```sh
+basher upgrade luisadha/nene
+```
 ## Uninstall
 ```
 basher uninstall luisadha/not-echo-not-true
