@@ -29,7 +29,7 @@ def banner():
     print("=" * shutil.get_terminal_size((80, 20)).columns)
     print("Script: nene v1.2.1-stable")
     print("Author: luisadha")
-    print(f"Visit: https://not-echo-not-true.carrd.co")
+    print(f"Source: https://not-echo-not-true.carrd.co")
     print("\n")
 
 apps = [
