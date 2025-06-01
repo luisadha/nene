@@ -1,4 +1,4 @@
-# nene
+# nene (Nightly)
 
 <p align="center">
   <img src="./nene_chibi.png" alt="welcome">
