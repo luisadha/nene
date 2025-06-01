@@ -4,7 +4,7 @@ import os
 import time
 import shutil
 
-__version__ = "v1.34.2-nightly"
+__version__ = "v1.2.2-nightly-20250601"
 
 def center_text(text):
     width = shutil.get_terminal_size((80, 20)).columns  
