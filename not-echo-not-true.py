@@ -29,7 +29,7 @@ def banner():
     logo()
     print("\n" + center_text("Try online apps from luisadha using Curl") + "\n")
     print("=" * shutil.get_terminal_size((80, 20)).columns)
-    print(f"Script: nene ${__version__}")
+    print(f"Script: nene {__version__}")
     print("Author: luisadha")
     print(f"Source: https://not-echo-not-true.carrd.co")
     print("\n")
