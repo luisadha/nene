@@ -22,7 +22,7 @@ nene
 ```
 ## Install 
 ```sh
-basher install luisadha/not-echo-not-true
+basher install luisadha/nene
 ```
 ## Update (beta)
 ```sh
@@ -30,7 +30,7 @@ basher upgrade luisadha/nene
 ```
 ## Uninstall
 ```
-basher uninstall luisadha/not-echo-not-true
+basher uninstall luisadha/nene
 ```
 
 ## Licenses
