@@ -4,9 +4,11 @@
   <img src="./nene_chibi.png" alt="welcome">
 </p>
 
-## Summary
+## Descriptions
 
-This application will execute each /path from the luisadha.github.io site with curl sourced from bash.
+Not Echo, Not True" is a network-based Bash scripting approach that leverages Bash's process substitution (<(...)) and redirection mechanisms. Inspired by the expression echo <(true), the project explores remote script execution using curl, enabling dynamic shell logic to be invoked directly from external URLs. The goal is to allow shell pipelines to interface with HTTP-based endpoints seamlessly, eliminating the need for local script storage. The name "Not Echo, Not True" reflects the experimental and idiomatic nature of the approach — abstracting Bash complexity into a more expressive, network-aware scripting paradigm.
+
+This application will execute each /endpoint from the luisadha.github.io site with curl sourced from bash.
 
 ## List Contents
 
