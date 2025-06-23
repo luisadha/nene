@@ -4,7 +4,7 @@ import os
 import time
 import shutil
 
-__version__ = "v1.2.1-nightly-20250601"
+__version__ = "v1.2.2+1-nightly-20250601"
 
 def center_text(text):
     width = shutil.get_terminal_size((80, 20)).columns  
@@ -47,9 +47,10 @@ apps = [
 
 while True:
     banner()
-
+    # Hitung lebar kolom nama aplikasi terpanjang
+    max_len = max(len(name) for _, name, _ in apps)
     for num, name, status in apps:
-        print(f"{num}) {name.ljust(20)} | {status}")
+        print(f"{num}) {name.ljust(max_len)} | {status}")
 
     print("0) EXIT")
 
