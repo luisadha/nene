@@ -63,7 +63,7 @@ while True:
         print("\nYou selected (0)")
         sys.exit(1)
     except KeyboardInterrupt:
-        print("\naInterrupt by user (Ctrl+C).")
+        print("\n Caught ^C")
         sys.exit(1)
         
     if choice == 0:
