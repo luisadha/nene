@@ -60,7 +60,8 @@ while True:
     except ValueError:
         continue
     except EOFError:
-        print("\nAutomatically selected (0) because end-of-file was reached.")
+        print("\nAutomatically selected (0) because end-of-file was reached.\n")
+        print("Exiting..")
         sys.exit(1)
     except KeyboardInterrupt:
         print("\nCaught ^C")
