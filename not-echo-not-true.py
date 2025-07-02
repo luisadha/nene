@@ -60,14 +60,15 @@ while True:
     except ValueError:
         continue
     except EOFError:
-        print("\nYou selected (0)")
+        print("\nAutomatically selected (0) because end-of-file was reached.")
         sys.exit(1)
     except KeyboardInterrupt:
         print("\nCaught ^C")
         sys.exit(1)
         
     if choice == 0:
-        print("Exiting...")
+        print("You selected (0)\n")
+        print("Exiting..")
         break  
     if choice == 1:
         url = "https://alrc.luisadha.my.id"
