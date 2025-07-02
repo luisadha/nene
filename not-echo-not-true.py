@@ -1,6 +1,7 @@
 #/usr/bin/env python3
 
 import os
+import sys
 import time
 import shutil
 
@@ -58,6 +59,10 @@ while True:
         choice = int(input("\nSelect an option: ").strip())
     except ValueError:
         continue
+    except EOFError:
+        print("No input, exiting.")
+        sys.exit(1)
+        
     if choice == 0:
         print("Exiting...")
         break  
