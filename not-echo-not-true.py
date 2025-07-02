@@ -60,7 +60,7 @@ while True:
     except ValueError:
         continue
     except EOFError:
-        print("No input, exiting.")
+        print("You selected (0)")
         sys.exit(1)
         
     if choice == 0:
