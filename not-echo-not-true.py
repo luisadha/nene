@@ -1,28 +1,24 @@
-#/usr/bin/env python3
+#!/usr/bin/env python3
 
 import os
 import sys
 import time
 import shutil
 
-__version__ = "v1.2.2+1-nightly-20250601"
+__version__ = "v1.2.3+2-nightly-20250703"
 
 def center_text(text):
-    width = shutil.get_terminal_size((80, 20)).columns  
-    return text.center(width) 
+    width = shutil.get_terminal_size((80, 20)).columns
+    return text.center(width)
 
 def logo():
     text = "[ !echo <(!True) ]"
     width = shutil.get_terminal_size((80, 20)).columns
-    
-    padding = (width - len(text) - 2) // 2  
-    padding = max(padding, 0)  
-
+    padding = (width - len(text) - 2) // 2
+    padding = max(padding, 0)
     banner = "=" * padding + " " + text + " " + "=" * padding
-
     if len(banner) < width:
         banner += "="
-
     print(banner)
 
 def banner():
@@ -32,61 +28,54 @@ def banner():
     print("=" * shutil.get_terminal_size((80, 20)).columns)
     print(f"Script: nene {__version__}")
     print("Author: luisadha")
-    print(f"Source: https://not-echo-not-true.carrd.co")
-    print("\n")
+    print("Source: https://not-echo-not-true.carrd.co\n")
 
-apps = [
-    (1, "Alrc-Termux", "Install for free")
-] + sorted([
-    (2, "Anti-hangman", "Free Trial"),
-    (3, "Ascii-Live-Termux", "Free Trial"),
-    (4, "Brandomusic", "Free Trial"),
-    (5, "Termcreed", "Free Trial"),
-    (6, "Weapon-Url-Opener", "Free Trial"),
-    (7, "Weapon-Url-Opener (Nightly)", "Free Trial"),
-    (8, "Pangram-Cli", "Free Trial"),
-], key=lambda x: x[1])
+# Daftar aplikasi dan URL-nya (tanpa nomor)
+raw_apps = [
+    ("Alrc-Termux", "https://alrc.luisadha.my.id", "Install for free"),
+    ("Anti-hangman", "https://luisadha.github.io/anti-hangman", "Free Trial"),
+    ("Ascii-Live-Termux", "https://luisadha.github.io/ascii-live-termux", "Free Trial"),
+    ("Brandomusic", "https://luisadha.github.io/brandomusic", "Free Trial"),
+    ("Pangram-Cli", "https://luisadha.github.io/pangram-cli", "Free Trial"),
+    ("Termcreed", "https://luisadha.github.io/termcreed", "Free Trial"),
+    ("Weapon-Url-Opener", "https://luisadha.github.io/weapon-url-opener", "Free Trial"),
+    ("Weapon-Url-Opener (Nightly)", "https://luisadha.github.io/weapon-url-opener-nightly", "Free Trial"),
+]
+
+# Sortir berdasarkan nama
+apps = sorted(raw_apps, key=lambda x: x[0])
 
 while True:
     banner()
-    # Hitung lebar kolom nama aplikasi terpanjang
-    max_len = max(len(name) for _, name, _ in apps)
-    for num, name, status in apps:
-        print(f"{num}) {name.ljust(max_len)} | {status}")
 
+    # Hitung lebar kolom nama aplikasi terpanjang
+    max_name_len = max(len(name) for name, _, _ in apps)
+
+    # Tampilkan menu
+    for i, (name, _, status) in enumerate(apps, start=1):
+        print(f"{i}) {name.ljust(max_name_len)} | {status}")
     print("0) EXIT")
 
+    # Input user
     try:
-        choice = int(input("\nSelect an option: ").strip())
-    except ValueError:
-        continue
+        choice = input("\nSelect an option: ").strip()
+        if not choice.isdigit():
+            continue
+        choice = int(choice)
     except EOFError:
-        print("\nAutomatically selected (0) because end-of-file was reached.\n")
-        print("Exiting..")
+        print("\nAutomatically selected (0) because end-of-file was reached.\nExiting..")
         sys.exit(1)
     except KeyboardInterrupt:
-        print("\nCaught ^C")
+        print("\nCaught ^C\nExiting..")
         sys.exit(1)
-        
-    if choice == 0:
-        print("You selected (0)\n")
-        print("Exiting..")
-        break  
-    if choice == 1:
-        url = "https://alrc.luisadha.my.id"
-    else:
-        urls = {
-            2: "anti-hangman",
-            3: "ascii-live-termux",
-            4: "brandomusic",
-            5: "termcreed",
-            6: "weapon-url-opener",
-            7: "weapon-url-opener-nightly",
-            8: "pangram-cli",
-        }
-        url = f"https://luisadha.github.io/{urls.get(choice, '')}"
 
-    if url:
-        print(f"You selected ({choice})")
+    if choice == 0:
+        print("You selected (0)\nExiting..")
+        break
+    elif 1 <= choice <= len(apps):
+        name, url, _ = apps[choice - 1]
+        print(f"You selected ({choice}): {name}")
         time.sleep(1)
         os.system(f'bash -c "source <(curl -L {url})"')
+    else:
+        print("Invalid option.\n")
