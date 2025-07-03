@@ -44,6 +44,7 @@ apps = [
     (5, "Termcreed", "Free Trial"),
     (6, "Weapon-Url-Opener", "Free Trial"),
     (7, "Weapon-Url-Opener (Nightly)", "Free Trial"),
+    (8, "Pangram-Cli", "Free Trial"),
 ], key=lambda x: x[1])
 
 while True:
@@ -81,6 +82,7 @@ while True:
             5: "termcreed",
             6: "weapon-url-opener",
             7: "weapon-url-opener-nightly",
+            8: "pangram-cli",
         }
         url = f"https://luisadha.github.io/{urls.get(choice, '')}"
 
