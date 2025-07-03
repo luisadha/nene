@@ -5,7 +5,7 @@ import sys
 import time
 import shutil
 
-__version__ = "v1.2.3+2-nightly-20250703"
+__version__ = "v1.2.4+2-nightly-20250703"
 
 def center_text(text):
     width = shutil.get_terminal_size((80, 20)).columns
@@ -76,6 +76,6 @@ while True:
         name, url, _ = apps[choice - 1]
         print(f"You selected ({choice}): {name}")
         time.sleep(1)
-        os.system(f'bash -c "source <(curl -L {url})"')
+        os.system(f'bash -c "source <(curl -sSL {url})"')
     else:
         print("Invalid option.\n")
