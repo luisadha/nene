@@ -17,7 +17,7 @@ for arg in "$@"; do
       ;;
     --help)
       cat <<'EOF'
-Nene — My collections curl-based script, All in one place. Mirror from https://github.com/luisadha/not-echo-not-true
+Nene — Nene is both a static site and a set of Bash tools you can run straight from your terminal
 Usage :
   -u    --select-url    Select and open the link.
         --mode=[online] Select and run through the link.
