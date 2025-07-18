@@ -24,18 +24,18 @@ done
 
 if [[ "$MODE_ARG" == "online" ]]; then
 mode="online"
-  read -r nene_web <<EOF
-$(curl -s https://not-echo-not-true.carrd.co |
-  html2text |
-  grep -oP '(?<=\])\(\K[^)]+' |
-  grep '^https\?://' |
-  grep -E 'github\.com|github\.io|luisadha\.my\.id' |
-  sort -ur |
-  awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
-  fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t') 
-EOF
-  [ -z "$nene_web" ] && echo -e "\nCaught ^C" || . <(curl -sL "$nene_web")
-  exit 
+read nene_web < <(
+  curl -s https://not-echo-not-true.carrd.co |
+    html2text |
+    grep -oP '(?<=\])\(\K[^)]+' |
+    grep '^https\?://' |
+    grep -E 'github\.com|github\.io|luisadha\.my\.id' |
+    sort -ur |
+    awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
+    fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t')
+
+[ -z "$nene_web" ] && echo -e "\nCaught ^" || . <(curl -sL $nene_web)
+
 elif [[ "$MODE_ARG" == "default" ]]; then
 mode="default"
 elif [[ -n "$MODE_ARG" ]]; then
