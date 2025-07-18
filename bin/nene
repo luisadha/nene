@@ -19,9 +19,9 @@ for arg in "$@"; do
       cat <<'EOF'
 Nene — My collections curl-based script, All in one place. Mirror from https://github.com/luisadha/not-echo-not-true
 Usage :
-  -u    --select-url    Pilih dan buka link
-        --mode=[online] Pilih dan jalankan melalui link
-        --help          Tamlilkan pesan ini.
+  -u    --select-url    Select and open the link.
+        --mode=[online] Select and run through the link.
+        --help          Print this message.
 EOF
       ;;
     --mode=*)
@@ -55,11 +55,11 @@ fi
 if [[ "$mode" == "default" || "$mode" == "offline" ]]; then
   exec python3 "${__DIR__}/not-echo-not-true.py"
 elif [[ "$mode" == "url" ]]; then
-  read link < <(curl -s https://not-echo-not-true.carrd.co |
+  read url < <(curl -s https://not-echo-not-true.carrd.co |
   html2text |
   grep -oP '(?<=\])\(\K[^)]+' |
   grep '^https\?://' |
   grep -E 'github\.com|github\.io|luisadha\.my\.id' |
-  sort -ur | fzf --prompt="Pilih URL: " |
+  sort -ur | fzf --prompt="Choose URL: " |
   xargs -r termux-open-url);
 fi
