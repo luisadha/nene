@@ -12,8 +12,17 @@ fi
 
 for arg in "$@"; do
   case "$arg" in
+    -u|--select-url)
+      mode="url"
+      ;;
     --help)
-      echo -e "You will install 1 plugin (ztme-toolbox) this will be added to ~/bin after installation is complete";
+      cat <<'EOF'
+      Nene — My collections curl-based script, All in one place. Mirror from https://github.com/luisadha/not-echo-not-true
+      Usage :
+      -u    --select-url    Pilih dan buka link
+            --mode=[online] Pilih dan jalankan melalui link
+            --help          Tamlilkan pesan ini.
+EOF
       ;;
     --mode=*)
       MODE_ARG="${arg#--mode=}"
@@ -45,4 +54,12 @@ fi
 
 if [[ "$mode" == "default" || "$mode" == "offline" ]]; then
   exec python3 "${__DIR__}/not-echo-not-true.py"
+elif [[ "$mode" == "url" ]]; then
+  read link < <(curl -s https://not-echo-not-true.carrd.co |
+  html2text |
+  grep -oP '(?<=\])\(\K[^)]+' |
+  grep '^https\?://' |
+  grep -E 'github\.com|github\.io|luisadha\.my\.id' |
+  sort -ur | fzf --prompt="Pilih URL: " --reverse |
+  xargs -r); termux-open-url $link;   
 fi
