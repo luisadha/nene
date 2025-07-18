@@ -6,30 +6,25 @@ unset HISTSIZE
 __BASE_REPO__="nene"
 __DIR__="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
 
-args=""
+if [[ $# -eq 0 ]]; then
+  mode="offline" 
+fi
 
-# Tangani opsi lokal
-while getopts ":ho:" opt; do
-  case "$opt" in
-    h)
-      echo "Penggunaan: $0 [-h] [-o FILE]"
-      echo "  -h        Tampilkan bantuan"
-      echo "  -o FILE   Online mode"
-      exit 0
+for arg in "$@"; do
+  case "$arg" in
       ;;
-    o)
-      online=true
+    --help)
+      echo -e "You will install 1 plugin (ztme-toolbox) this will be added to ~/bin after installation is complete";
       ;;
-    \?)
-      echo "Opsi tidak dikenal: -$OPTARG" >&2
-      exit 1
+    --mode=*)
+      MODE_ARG="${arg#--mode=}"
+      mode="online"
       ;;
   esac
 done
 
-shift $((OPTIND - 1))
-
-if [ "$online" = true ]; then
+if [[ "$MODE_ARG" == "online" ]]; then
+mode="online"
   read -r nene_web <<EOF
 $(curl -s https://not-echo-not-true.carrd.co |
   html2text |
@@ -38,11 +33,17 @@ $(curl -s https://not-echo-not-true.carrd.co |
   grep -E 'github\.com|github\.io|luisadha\.my\.id' |
   sort -ur |
   awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
-  fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t')
+  fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t') 
 EOF
   [ -z "$nene_web" ] && echo -e "\nCaught ^C" || . <(curl -sL "$nene_web")
-  exit
+  exit 
+elif [[ "$MODE_ARG" == "default" ]]; then
+mode="default"
+elif [[ -n "$MODE_ARG" ]]; then
+  echo "Butuh argumen"
+  exit 3
 fi
 
-# Jalankan Python tanpa tambahan argumen user mentah
-exec python3 "${__DIR__}/not-echo-not-true.py"
+if [[ "$mode" == "default" && "$mode" == "offline" ]]; then
+  exec python3 "${__DIR__}/not-echo-not-true.py"
+fi
