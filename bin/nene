@@ -1,25 +1,24 @@
 #!/bin/sh
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE
 [ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
-
 unset HISTSIZE
 
 __BASE_REPO__="nene"
 __DIR__="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
 
-online_mode=0
+args=""
 
 # Tangani opsi lokal
 while getopts ":ho:" opt; do
   case "$opt" in
     h)
-      echo "Penggunaan: $0 [-h] [-o]"
+      echo "Penggunaan: $0 [-h] [-o FILE]"
       echo "  -h        Tampilkan bantuan"
-      echo "  -o        Aktifkan mode online"
+      echo "  -o FILE   Online mode"
       exit 0
       ;;
     o)
-      online_mode=1
+      online=true
       ;;
     \?)
       echo "Opsi tidak dikenal: -$OPTARG" >&2
@@ -30,25 +29,20 @@ done
 
 shift $((OPTIND - 1))
 
-# Trap Ctrl+C
-trap 'echo; echo "Caught ^C"; exit 1' INT
-
-if [ "$online_mode" -eq 1 ]; then
-  nene_web=$(
-    curl -s https://not-echo-not-true.carrd.co |
-      html2text |
-      grep -oP '(?<=\])\(\K[^)]+' |
-      grep '^https\?://' |
-      grep -E 'github\.com|github\.io|luisadha\.my\.id' |
-      sort -ur |
-      awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
-      fzf --with-nth=2 --prompt="Choose (script): " --delimiter=$'\t'
-  )
-  if [ -z "$nene_web" ]; then
-    echo -e "\nCaught ^C or no selection"
-    exit 1
-  fi
-  . <(curl -sL "$nene_web")
+if [ "$online" = true ]; then
+  read -r nene_web <<EOF
+$(curl -s https://not-echo-not-true.carrd.co |
+  html2text |
+  grep -oP '(?<=\])\(\K[^)]+' |
+  grep '^https\?://' |
+  grep -E 'github\.com|github\.io|luisadha\.my\.id' |
+  sort -ur |
+  awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
+  fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t')
+EOF
+  [ -z "$nene_web" ] && echo -e "\nCaught ^C" || . <(curl -sL "$nene_web")
+  exit
 fi
 
-exec python3 "${__DIR__}/not-echo-not-true.py" "$@"
+# Jalankan Python tanpa tambahan argumen user mentah
+exec python3 "${__DIR__}/not-echo-not-true.py"
