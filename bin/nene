@@ -48,7 +48,7 @@ read nene_web < <(
 elif [[ "$MODE_ARG" == "default" ]]; then
 mode="default"
 elif [[ -n "$MODE_ARG" ]]; then
-  echo "Butuh argumen"
+  echo -e "Invalid value, you mean \`--mode=online' ?"
   exit 3
 fi
 
@@ -62,4 +62,6 @@ elif [[ "$mode" == "url" ]]; then
   grep -E 'github\.com|github\.io|luisadha\.my\.id' |
   sort -ur | fzf --prompt="Choose URL: " |
   xargs -r termux-open-url);
+else
+  echo -e "Invalid option."
 fi
