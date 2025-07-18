@@ -12,7 +12,6 @@ fi
 
 for arg in "$@"; do
   case "$arg" in
-      ;;
     --help)
       echo -e "You will install 1 plugin (ztme-toolbox) this will be added to ~/bin after installation is complete";
       ;;
