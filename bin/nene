@@ -60,6 +60,6 @@ elif [[ "$mode" == "url" ]]; then
   grep -oP '(?<=\])\(\K[^)]+' |
   grep '^https\?://' |
   grep -E 'github\.com|github\.io|luisadha\.my\.id' |
-  sort -ur | fzf --prompt="Pilih URL: " --reverse |
+  sort -ur | fzf --prompt="Pilih URL: " |
   xargs -r termux-open-url);
 fi
