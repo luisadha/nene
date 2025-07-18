@@ -1,7 +1,51 @@
 #!/bin/sh
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE
 [ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
+
 unset HISTSIZE
+
 __BASE_REPO__="nene"
 __DIR__="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
-exec python3 ${__DIR__}/not-echo-not-true.py "$@"
+
+
+online=""
+
+# Tangani opsi lokal
+while getopts ":ho:f" opt; do
+  case "$opt" in
+    h)
+      echo "Penggunaan: $0 [-h] [-o FILE] [-f]"
+      echo "  -h\t\tTampilkan bantuan"
+      echo "  -o\t\tOnline mode"
+      exit 0
+      ;;
+    o)
+      online="$OPTARG"
+      ;;
+    \?)
+      echo "Opsi tidak dikenal: -$OPTARG" >&2
+      exit 1
+      ;;
+    :)
+      echo "Opsi -$OPTARG membutuhkan argumen" >&2
+      exit 1
+      ;;
+  esac
+done
+
+shift $((OPTIND - 1)) 
+
+if [ -n "$online" ]; then
+  read nene_web < <(
+  curl -s https://not-echo-not-true.carrd.co |
+    html2text |
+    grep -oP '(?<=\])\(\K[^)]+' |
+    grep '^https\?://' |
+    grep -E 'github\.com|github\.io|luisadha\.my\.id' |
+    sort -ur |
+    awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
+    fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t')
+  [ -z "$nene_web" ] && echo -e "\nCaught ^" || . <(curl -sL $nene_web)
+fi
+
+exec python3 "${__DIR__}/not-echo-not-true.py" "$@"
