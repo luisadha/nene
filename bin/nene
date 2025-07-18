@@ -11,7 +11,7 @@ __DIR__="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
 online=""
 
 # Tangani opsi lokal
-while getopts ":ho:f" opt; do
+while getopts ":ho:" opt; do
   case "$opt" in
     h)
       echo "Penggunaan: $0 [-h] [-o FILE] [-f]"
@@ -24,10 +24,6 @@ while getopts ":ho:f" opt; do
       ;;
     \?)
       echo "Opsi tidak dikenal: -$OPTARG" >&2
-      exit 1
-      ;;
-    :)
-      echo "Opsi -$OPTARG membutuhkan argumen" >&2
       exit 1
       ;;
   esac
