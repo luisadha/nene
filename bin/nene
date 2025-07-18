@@ -17,11 +17,11 @@ for arg in "$@"; do
       ;;
     --help)
       cat <<'EOF'
-      Nene — My collections curl-based script, All in one place. Mirror from https://github.com/luisadha/not-echo-not-true
-      Usage :
-      -u    --select-url    Pilih dan buka link
-            --mode=[online] Pilih dan jalankan melalui link
-            --help          Tamlilkan pesan ini.
+Nene — My collections curl-based script, All in one place. Mirror from https://github.com/luisadha/not-echo-not-true
+Usage :
+  -u    --select-url    Pilih dan buka link
+        --mode=[online] Pilih dan jalankan melalui link
+        --help          Tamlilkan pesan ini.
 EOF
       ;;
     --mode=*)
