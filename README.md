@@ -17,7 +17,14 @@ Path == myApps
 See https://luisadha.github.io/ {myApps} Change {myApps} to route each of my curl-based applications and follow each page's instructions on how to run those curl-based scripts (see: Usage in bold) or simply use this nene script to collect them
 
 Exclusion site https://alrc.luisadha.my.id This subdomain will be always for Alrc Installer project
-
+## Options
+```sh
+Nene — My collections curl-based script, All in one place. Mirror from https://github.com/luisadha/not-echo-not-true
+Usage :
+  -u    --select-url    Pilih dan buka link
+        --mode=[online] Pilih dan jalankan melalui link
+        --help          Tamlilkan pesan ini.
+```
 ## Run
 ```sh
 nene
