@@ -1,4 +1,7 @@
 # nene (Nightly)
+## Summary
+
+Not Echo, Not True is a static web-based Bash script collection tool to run directly in the Terminal.
 
 <p align="center">
   <img src="./nene_chibi.png" alt="welcome">
