@@ -63,6 +63,9 @@ elif [[ "$mode" == "url" ]]; then
   grep -E 'github\.com|github\.io|luisadha\.my\.id' |
   sort -ur | fzf --prompt="Choose URL: " |
   xargs -r termux-open-url);
+elif [[ "$mode" == "help" ]]; then
+  : || exit 0
 else
   echo -e "Invalid option."
+  exit 1
 fi
