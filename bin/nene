@@ -1,10 +1,12 @@
 #!/bin/sh
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE
+
 [ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 unset HISTSIZE
 
 __BASE_REPO__="nene"
 __DIR__="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
+
 
 if [[ $# -eq 0 ]]; then
   mode="offline" 
@@ -15,19 +17,24 @@ for arg in "$@"; do
     -u|--select-url)
       mode="url"
       ;;
-    --help)
+    -h|--help)
       mode="help"
       cat <<'EOF'
 Nene is both a static site and a set of Bash tools you can run straight from your terminal
 Usage :
   -u    --select-url    Select and open the link.
-        --mode=[online] Select and run through the link.
-        --help          Print this message.
+  -s    --select=[apps] Execute the explicitly specified application.
+  -m    --mode=[online] Select and run through the link.
+  -h    --help          Print this message.
 EOF
       ;;
-    --mode=*)
+    m|--mode=*)
       MODE_ARG="${arg#--mode=}"
       mode="online"
+      ;;
+    s|--select=*)
+      SELECT_ARG="${arg#--select=}"
+      mode="select"
       ;;
   esac
 done
@@ -45,7 +52,6 @@ read nene_web < <(
     fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t')
 
 [ -z "$nene_web" ] && echo -e "\nCaught ^" || . <(curl -sL $nene_web)
-
 elif [[ "$MODE_ARG" == "default" ]]; then
 mode="default"
 elif [[ -n "$MODE_ARG" ]]; then
@@ -63,6 +69,18 @@ elif [[ "$mode" == "url" ]]; then
   grep -E 'github\.com|github\.io|luisadha\.my\.id' |
   sort -ur | fzf --prompt="Choose URL: " |
   xargs -r termux-open-url);
+elif [[ "$mode" == "select" ]]; then
+  read __url__ __endpoint__ < <(
+  curl -s https://not-echo-not-true.carrd.co 2>/dev/null |
+    html2text |
+    grep -oP '(?<=\])\(\K[^)]+' |
+    grep '^https\?://' |
+    grep -E 'github\.com|github\.io|luisadha\.my\.id' |
+    sort -ur |
+    awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
+    fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "$SELECT_ARG" -1 -0) || { echo "gagal"; } 
+  echo -e "Executing.. $__endpoint__"
+  . <(curl -sL $__url__ 2>/dev/null)
 elif [[ "$mode" == "help" ]]; then
   : || exit 0
 else
