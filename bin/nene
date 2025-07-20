@@ -1,6 +1,6 @@
 #!/bin/sh
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE
-VERSION="v1.4.7-nightly"
+VERSION="v1.4.32-nightly"
 [ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 unset HISTSIZE
 
@@ -25,8 +25,13 @@ Usage :
   -u    --select-url    Select and open the link.
   -s    --select=[apps] Execute the explicitly specified application.
   -m    --mode=[online] Select and run through the link.
+  -v    --version       Print version script.
   -h    --help          Print this message.
 EOF
+      ;;
+    -v|--version)
+      echo "nene v${VERSION}"
+      exit 0
       ;;
     --mode=*)
       MODE_ARG="${arg#--mode=}"
