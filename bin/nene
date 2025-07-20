@@ -43,7 +43,7 @@ done
 
 if [[ "$MODE_ARG" == "online" ]]; then
 mode="online"
-read __url__ < <(
+read url < <(
   curl -s https://not-echo-not-true.carrd.co |
     html2text |
     grep -oP '(?<=\])\(\K[^)]+' |
@@ -53,7 +53,7 @@ read __url__ < <(
     awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
     fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t')
 
-[ -z "$__url__" ] && echo -e "\nCaught ^" || . <(curl -sL $__url__)
+[ -z "$url" ] && echo -e "\nCaught ^" || . <(curl -sL $url)
 elif [[ "$MODE_ARG" == "default" ]]; then
 mode="default"
 elif [[ -n "$MODE_ARG" ]]; then
