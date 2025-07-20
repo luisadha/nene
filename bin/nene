@@ -15,11 +15,15 @@ fi
 for arg in "$@"; do
   case "$arg" in
     -a|--api-termux)
+    echo -e "Creating file.. ~/bin"
     cat <<'EOF' > $HOME/bin/nene-ak47.sh
     url=$1
     curl -L "$url" | bash
     read wait
 EOF
+      sleep 0.4;
+      echo "..done"
+      exit 0
       ;;
     -u|--select-url)
       mode="url"
