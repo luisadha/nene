@@ -15,7 +15,7 @@ fi
 for arg in "$@"; do
   case "$arg" in
     -a|--api-termux)
-    echo -e "Creating file.. ~/bin"
+    echo -e "Creating file.. ~/bin/nene-ak47.sh"
     cat <<'EOF' > $HOME/bin/nene-ak47.sh
     url=$1
     curl -L "$url" | bash
