@@ -60,7 +60,7 @@ done
     echo -e "error"
     exit 1
     fi 
-      read __url__ __endpoint__ < <( curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |  fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}");  [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__"; . <(curl -sL $__url__ 2>/dev/null)
+      read __url__ __endpoint__ < <( curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |  fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}");  [ -z "$SPARAM" ] && echo -e "\nCaught ^C"; exit 130 || echo -e "Executing.. $__endpoint__"; . <(curl -sL $__url__ 2>/dev/null)
   fi 
 #2
   if [[ "$MODE_ARG" == "online" ]] || [[ "$M_ARG" == "online" ]]; then
