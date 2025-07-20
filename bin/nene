@@ -14,6 +14,13 @@ fi
 
 for arg in "$@"; do
   case "$arg" in
+    -a|--api-termux)
+    cat <<'EOF' > $HOME/bin/nene-ak47.sh
+    url=$1
+    curl -L "$url" | bash
+    read wait
+EOF
+      ;;
     -u|--select-url)
       mode="url"
       ;;
@@ -22,6 +29,7 @@ for arg in "$@"; do
       cat <<'EOF'
 Nene is both a static site and a set of Bash tools you can run straight from your terminal
 Usage :
+  -a    --api-termux    Install nene-ak47.sh into ~/bin for Run nene's app via Android Share
   -u    --select-url    Select and open the link.
   -s    --select=[apps] Execute the explicitly specified application.
   -m    --mode=[online] Select and run through the link.
