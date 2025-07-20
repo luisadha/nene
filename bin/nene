@@ -1,6 +1,6 @@
 #!/bin/sh
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE
-
+VERSION="v1.4.7-nightly"
 [ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 unset HISTSIZE
 
