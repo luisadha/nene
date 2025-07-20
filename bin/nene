@@ -35,7 +35,7 @@ EOF
       ;;
     s|--select=*)
       SELECT_ARG="${arg#--select=}"
-           S_ARG="${arg#--s=}
+           S_ARG="${arg#--s=}"
       mode="select"
       ;;
   esac
@@ -43,7 +43,7 @@ done
 
 if [[ "$MODE_ARG" == "online" ]]; then
 mode="online"
-read url < <(
+read __url__ < <(
   curl -s https://not-echo-not-true.carrd.co |
     html2text |
     grep -oP '(?<=\])\(\K[^)]+' |
@@ -53,7 +53,7 @@ read url < <(
     awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
     fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t')
 
-[ -z "$url" ] && echo -e "\nCaught ^" || . <(curl -sL $url)
+[ -z "$__url__" ] && echo -e "\nCaught ^" || . <(curl -sL $__url__)
 elif [[ "$MODE_ARG" == "default" ]]; then
 mode="default"
 elif [[ -n "$MODE_ARG" ]]; then
@@ -64,7 +64,7 @@ fi
 if [[ "$mode" == "default" || "$mode" == "offline" ]]; then
   exec python3 "${__DIR__}/not-echo-not-true.py"
 elif [[ "$mode" == "url" ]]; then
-  read _url_ < <(curl -s https://not-echo-not-true.carrd.co |
+  read __url__ < <(curl -s https://not-echo-not-true.carrd.co |
   html2text |
   grep -oP '(?<=\])\(\K[^)]+' |
   grep '^https\?://' |
