@@ -73,7 +73,7 @@ mode="online";
     grep -E 'github\.com|github\.io|luisadha\.my\.id' |
     sort -ur |
     awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
-    fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t');  [ -z "$__url__" ] && echo -e "\nCaught ^"; exit 130 || . <(curl -sL $__url__)
+    fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t');  [ -z "$__url__" ] && echo -e "\nCaught ^"; || . <(curl -sL $__url__)
   elif [[ "$MODE_ARG" == "default" ]] || [[ "$M_ARG" == "default" ]]; then
 mode="default"
   elif [[ -n "$MODE_ARG" ]] && [[ -n "$M_ARG" ]]; then 
