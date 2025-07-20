@@ -28,12 +28,12 @@ Usage :
   -h    --help          Print this message.
 EOF
       ;;
-    m|--mode=*)
+    -m=*|--mode=*)
       MODE_ARG="${arg#--mode=}"
          M_ARG="${arg#--m=}"
       mode="online"
       ;;
-    s|--select=*)
+    -s=*|--select=*)
       SELECT_ARG="${arg#--select=}"
            S_ARG="${arg#--s=}"
       mode="select"
