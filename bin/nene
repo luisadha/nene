@@ -41,7 +41,7 @@ EOF
   esac
 done
 
-if [[ "$MODE_ARG" == "online" ]]; then
+if [[ "$MODE_ARG" == "online" ]] || [[ "$M_ARG" == "online" ]]; then
 mode="online"
 read __url__ < <(
   curl -s https://not-echo-not-true.carrd.co |
@@ -80,7 +80,7 @@ elif [[ "$mode" == "select" ]]; then
     grep -E 'github\.com|github\.io|luisadha\.my\.id' |
     sort -ur |
     awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
-    fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "$SELECT_ARG" -1 -0) || { echo "gagal"; } 
+    fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${SELECT_ARG:-$S_ARG}" -1 -0) || { echo "gagal"; } 
   echo -e "Executing.. $__endpoint__"
   . <(curl -sL $__url__ 2>/dev/null)
 elif [[ "$mode" == "help" ]]; then
