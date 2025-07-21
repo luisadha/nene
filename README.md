@@ -22,11 +22,15 @@ See https://luisadha.github.io/ {myApps} Change {myApps} to route each of my cur
 Exclusion site https://alrc.luisadha.my.id This subdomain will be always for Alrc Installer project
 ## Options
 ```sh
-Nene — My collections curl-based script, All in one place. Mirror from https://github.com/luisadha/not-echo-not-true
+Nene is both a static site and a set of Bash tools you can run straight from your terminal
 Usage :
-  -u    --select-url    Pilih dan buka link
-        --mode=[online] Pilih dan jalankan melalui link
-        --help          Tamlilkan pesan ini.
+  -a    --api-termux    Install nene-ak47.sh into ~/bin for Run nene's app via Android Share
+  -u    --select-url    Select and open the link.
+  -s    --select=[apps] Execute the explicitly specified application.
+  -m    --mode=[online] Select and run through the link.
+  -v    --version       Print version script.
+  -h    --help          Print this message.
+EOF          Tamlilkan pesan ini.
 ```
 ## Run
 ```sh
