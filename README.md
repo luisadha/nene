@@ -40,7 +40,7 @@ nene
 ```sh
 basher install luisadha/nene
 ```
-## Update (beta)
+## Update
 ```sh
 basher upgrade luisadha/nene
 ```
