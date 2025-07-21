@@ -24,7 +24,7 @@ Exclusion site https://alrc.luisadha.my.id This subdomain will be always for Alr
 ```sh
 Nene is both a static site and a set of Bash tools you can run straight from your terminal
 Usage:
--a    --api-termux    Install nene-ak47.sh into ~/bin for Run nene\'s app via Android Share
+  -a    --api-termux    Install nene-ak47.sh into ~/bin for Run nene\'s app via Android Share
   -u    --select-url    Select and open the link.
   -s    --select=[apps] Execute the explicitly specified application.
   -m    --mode=[online] Select and run through the link.
