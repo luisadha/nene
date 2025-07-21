@@ -37,8 +37,8 @@ EOF
       cat <<'EOF'
 Nene is both a static site and a set of Bash tools you can run straight from your terminal
 Usage :
-  -a    --api-termux    Install nene-ak47.sh into ~/bin for Run nene's app via Android Share
-  -u    --select-url    Select and open the link.
+  -a    --api-termux    Installs nene-ak47 to run Nene via WebApp using Android Share
+  -u    --select-url    Select a webapp to open the link. This option is only effective when used after the -a option
         --homepage      Open homepage related this project
   -s    --select=[apps] Execute the explicitly specified application
   -m    --mode=[online] Select and run through the link
