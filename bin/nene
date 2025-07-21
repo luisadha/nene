@@ -14,6 +14,9 @@ fi
 
 for arg in "$@"; do
   case "$arg" in
+    --homepage)
+    termux-open-url https://not-echo-not-true.carrd.co
+      ;;
     -a|--api-termux)
     echo -e "Creating file.. ~/bin/nene-ak47.sh"
     cat <<'EOF' > $HOME/bin/nene-ak47.sh
@@ -35,10 +38,11 @@ Nene is both a static site and a set of Bash tools you can run straight from you
 Usage :
   -a    --api-termux    Install nene-ak47.sh into ~/bin for Run nene's app via Android Share
   -u    --select-url    Select and open the link.
-  -s    --select=[apps] Execute the explicitly specified application.
-  -m    --mode=[online] Select and run through the link.
-  -v    --version       Print version script.
-  -h    --help          Print this message.
+        --homepage      Open homepage related this project
+  -s    --select=[apps] Execute the explicitly specified application
+  -m    --mode=[online] Select and run through the link
+  -v    --version       Print version script and exit
+  -h    --help          Print this message and exit
 EOF
       ;;
     -v|--version)
