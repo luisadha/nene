@@ -28,7 +28,7 @@ def banner():
     print("=" * shutil.get_terminal_size((80, 20)).columns)
     print(f"Script: nene {__version__}")
     print("Author: luisadha")
-    print("Source: https://not-echo-not-true.carrd.co\n")
+    print("Source: https://github.com/luisadha/nene/tree/main\n")
 
 # Daftar aplikasi dan URL-nya (tanpa nomor)
 raw_apps = [
