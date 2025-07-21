@@ -16,6 +16,7 @@ for arg in "$@"; do
   case "$arg" in
     --homepage)
     termux-open-url https://not-echo-not-true.carrd.co
+      exit 0;
       ;;
     -a|--api-termux)
     echo -e "Creating file.. ~/bin/nene-ak47.sh"
