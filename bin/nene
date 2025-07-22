@@ -35,7 +35,7 @@ melalui android berbagi-
 sampai anda mengantinya lagi."
     url=$1
     curl -L "$url" | bash
-    echo -e "\nProcess completed."
+    echo "Process completed."
     read wait
 EOF
       sleep 0.4;
