@@ -31,6 +31,26 @@ Usage:
   -v    --version       Print version script.
   -h    --help          Print this message.
 ```
+## API Intructions
+API Instructions
+
+To start using the API, you must fully install the Nene script via Basher.
+Run the following command in your terminal:
+```sh
+basher install luisadha/nene
+```
+Once installed, run:
+```sh
+nene -a
+```
+This command will install additional features, the nene-ak47.sh script.
+
+Then, to replace your current termux-url-opener, use the following command:
+```sh
+nene -s=wuoy
+```
+This will display an interactive fuzzy search dialog.
+Select nene-ak47 to enable the "Share to Termux" button feature on supported web apps.
 
 ## Run
 ```sh
