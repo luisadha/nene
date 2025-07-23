@@ -31,7 +31,7 @@ Usage:
   -v    --version       Print version script.
   -h    --help          Print this message.
 ```
-## API Intructions
+## API
 API Instructions
 
 To start using the API, you must fully install the Nene script via Basher.
