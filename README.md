@@ -35,10 +35,8 @@ Usage:
 API Instructions
 
 To start using the API, you must fully install the Nene script via Basher.
-Run the following command in your terminal:
-```sh
-basher install luisadha/nene
-```
+[See how to instalations](#install)
+
 Once installed, run:
 ```sh
 nene -a
