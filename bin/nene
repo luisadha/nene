@@ -85,9 +85,9 @@ EOF
       shift 2;
       ;;
       -Ss)
-      _S_ARG="$2"
+      query="$2"
       mode="select"
-      curl -s "https://api.github.com/repos/luisadha/${2}/contents/bin"
+      curl -s "https://api.github.com/repos/luisadha/${query}/contents/bin" | jq -r '.[].name' | fzf
       ;;
   esac
 done
