@@ -70,22 +70,18 @@ EOF
     --mode=*)
       MODE_ARG="${arg#--mode=}"
       mode="online"
-      if [[ "$arg" == *=* ]]; then
-      parse="$arg"
-      else
-      parse="${arg}="
-      fi
-      echo -e "Invalid option, you mean \`${parse}online' ?"
-    
+      if [[ -z "$MODE_ARG" ]]; then 
+        if [[ "$arg" == *=* ]]; then parse="$arg";
+        else parse="${arg}="; fi;   
+      echo -e "Invalid option, you mean \`${parse}online' ?" 
       ;;
     -m=*)
       M_ARG="${arg#-m=}"
       mode="online"
-      if [[ "$arg" == *=* ]]; then
-      parse="$arg"
-      else
-      parse="${arg}="
-      fi
+
+      if [[ -z "$M_ARG" ]]; then  
+          if [[ "$arg" == *=* ]]; then parse="$arg";
+          else parse="${arg}="; fi
         echo -e "Invalid option, you mean \`${parse}online' ?"
       ;;
     --search=*)
