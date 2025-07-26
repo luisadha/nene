@@ -7,17 +7,33 @@ unset HISTSIZE
 
 __BASE_REPO__="nene"
 __DIR__="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
+apps() {
+    read __url__ < <(curl -s https://not-echo-not-true.carrd.co |
+    html2text |
+    grep -oP '(?<=\])\(\K[^)]+' |
+    grep '^https\?://' |
+    grep -E 'github\.com|github\.io|luisadha\.my\.id' |
+    sort -ur |
+    awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
+    fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t');  [ -z "$__url__" ] && echo -e "\nCaught ^" || . <(curl -sL $__url__)
+   return 0
+}
+default() {
+    exec python3 "${__DIR__}/not-echo-not-true.py"
+    return 0
+}
+url() {
+    read __url__ < <(curl -s https://not-echo-not-true.carrd.co | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | fzf --prompt="Indexing URL: " | xargs -r termux-open-url);
+    return
+}
+search() {
+    read __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__"; . <(curl -sL $__url__ 2>/dev/null);
+    return 0
+}
 
-mode=""
-if [[ $# -eq 0 ]]; then
-  mode="offline" 
-fi
-if [[ "$1" == "-s" ]]; then
-  echo -e "Invalid option, you means \`-Ss' ?";
-  exit 1
-fi
-for arg in "$@"; do
-  case "$arg" in
+
+while [[ $# -eq 0 ]] do
+  case "$arg" in "$1"
     --homepage)
     termux-open-url https://not-echo-not-true.carrd.co
       exit 0;
@@ -134,30 +150,3 @@ _S_ARG="$2";
     ;;
   esac
 done
-
-# MODES
-if [[ "$mode" == "online" ]]; then
-  read __url__ < <(curl -s https://not-echo-not-true.carrd.co |
-    html2text |
-    grep -oP '(?<=\])\(\K[^)]+' |
-    grep '^https\?://' |
-    grep -E 'github\.com|github\.io|luisadha\.my\.id' |
-    sort -ur |
-    awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
-    fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t');  [ -z "$__url__" ] && echo -e "\nCaught ^" || . <(curl -sL $__url__)
-   exit 0
-elif [[ "$mode" == "default" || "$mode" == "offline" ]]; then
-    exec python3 "${__DIR__}/not-echo-not-true.py"
-    exit 0
-elif [[ "$mode" == "url" ]]; then
-    read __url__ < <(curl -s https://not-echo-not-true.carrd.co | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | fzf --prompt="Indexing URL: " | xargs -r termux-open-url);
-    exit 0
-elif [[ "$mode" == "select" ]]; then
-    read __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__"; . <(curl -sL $__url__ 2>/dev/null);
-    exit 0
-elif [[ "$mode" == "help" ]]; then
-    exit 0
-else
-    echo -e "Invalid option or request vaule, Please see --help"
-    exit 1
-fi
