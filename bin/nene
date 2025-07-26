@@ -16,7 +16,7 @@ if [[ "$1" == "-s" ]]; then
   echo -e "Invalid option, you means \`-Ss' ?";
   exit 1
 fi
-for arg in "$1"; do
+for arg in "$@"; do
   case "$arg" in
     --homepage)
     termux-open-url https://not-echo-not-true.carrd.co
@@ -76,6 +76,7 @@ EOF
       echo -e "Invalid option, you mean \`${parse}online' ?";
       fi
 mode="$MODE_ARG"
+      shift;
       ;;
     -m=*)
       M_ARG="${arg#-m=}";
@@ -85,6 +86,7 @@ mode="$MODE_ARG"
         echo -e "Invalid option, you mean \`${parse}online' ?";
       fi
 mode="$M_ARG"
+      shift;
       ;;
     --search=*)
 mode="select"
@@ -95,6 +97,7 @@ SELECT_ARG="${arg#--search=}"
                 if [[ "$SELECT_ARG" ]]; then SPARAM="$SELECT_ARG";
                 elif [ "$S_ARG" ]; then SPARAM="$S_ARG";
                 else SPARAM="$_S_ARG"; fi;
+      shift;
       ;;
     -S=*)
 mode="select";
@@ -105,6 +108,7 @@ S_ARG="${arg#-S=}";
                 if [[ "$SELECT_ARG" ]]; then SPARAM="$SELECT_ARG";
                 elif [ "$S_ARG" ]; then SPARAM="$S_ARG";
                 else SPARAM="$_S_ARG"; fi;
+      shift;
       ;;
     -S)
 mode="select";
@@ -115,6 +119,7 @@ _S_ARG="$2";
                 if [[ "$SELECT_ARG" ]]; then SPARAM="$SELECT_ARG";
                 elif [ "$S_ARG" ]; then SPARAM="$S_ARG";
                 else SPARAM="$_S_ARG"; fi;
+      shift;
       ;;
     -sS|-Ss)
       keyword="$2"
