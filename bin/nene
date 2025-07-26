@@ -110,7 +110,7 @@ done
     else
       parse="${arg}="
     fi
-  echo -e "Invalid option, you mean \`$parse\'SCRIPT ?"
+  echo -e "Invalid option, you mean \`${parse}PACKAGE' ?"
   exit 3
   elif [[ "$SELECT_ARG" ]] || [[ "$S_ARG" ]] || [[ "$_S_ARG" ]]; then
   mode="select"
