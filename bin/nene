@@ -217,8 +217,10 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
           echo "Error: option -$arg request an argument"; exit 2;
         fi
       read -r url repo < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0)
+        echo "$url $repo"
       if [ -n "$keyword" ]; then
         curl -s "https://api.github.com/repos/luisadha/${repo}/contents/bin"
+       # [[ $? -eq 0 ]] && pushd "$PREFIX" && wget -O ${repo} ${url} && chmod +x ${repo} && popd
       else
         echo "❌ Tidak ditemukan repo dari $url"
         exit 1;
