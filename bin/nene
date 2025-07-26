@@ -77,8 +77,11 @@ echo "nene v${VERSION}"
 return 0
 }
 
-while [[ $# -eq 0 ]]; do
- arg="$1"
+if [[ $# -eq 0 ]]; then
+default;
+fi
+
+for arg in "$@" do
   case "$arg" in
     --homepage)
         homepage;;
@@ -91,6 +94,7 @@ while [[ $# -eq 0 ]]; do
     -v|--version)
         version;;
     --mode=*)
+set -xv
       MODE_ARG="${arg#--mode=}";
       if [[ -z "$MODE_ARG" ]]; then 
         if [[ "$arg" == *=* ]]; then parse="$arg"; echo "$parse";
@@ -101,6 +105,7 @@ mode="$MODE_ARG"
       shift;
       ;;
     -m=*)
+set -xv
       M_ARG="${arg#-m=}";
       if [[ -z "$M_ARG" ]]; then  
           if [[ "$arg" == *=* ]]; then parse="$arg"; echo "$parse"
@@ -111,6 +116,7 @@ mode="$M_ARG"
       shift;
       ;;
     --search=*)
+set -xv
 mode="select"
                 if [[ "$arg" == *=* ]]; then parse="$arg";
                 else parse="${arg}="; fi;
@@ -122,6 +128,7 @@ SELECT_ARG="${arg#--search=}"
       shift;
       ;;
     -S=*)
+set -xv
 mode="select";
                 if [[ "$arg" == *=* ]]; then parse="$arg";
                 else parse="${arg}="; fi;
@@ -133,6 +140,7 @@ S_ARG="${arg#-S=}";
       shift;
       ;;
     -S)
+set -xv
 mode="select";
                 if [[ "$arg" == *=* ]]; then parse="$arg";
                 else parse="${arg}="; fi;
@@ -155,5 +163,4 @@ _S_ARG="$2";
       fi
     ;;
   esac
-done
 done
