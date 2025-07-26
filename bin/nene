@@ -105,7 +105,7 @@ done
 #+ Advanced argument
 #1
   if [[ -z "$SELECT_ARG" ]] && [[ -z "$S_ARG" ]]; then
-      echo -e "Invalid value, you mean \`$arg=' ?";
+      echo -e "Invalid option, you mean \`$arg=' ?";
      exit 3
   elif [[ "$SELECT_ARG" ]] || [[ "$S_ARG" ]] || [[ "$_S_ARG" ]]; then
   mode="select"
