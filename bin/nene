@@ -53,7 +53,7 @@ Usage :
   -a    --api-termux    Installs nene-ak47 to run Nene via WebApp using Android Share
   -u    --select-url    Select a webapp to open the link. This option is only effective when used after the -a option
         --homepage      Open homepage related this project
-  -s    --select=[apps] Execute the explicitly specified application
+  -S    --Search=[apps] Execute the explicitly specified application
   -m    --mode=[online] Select and run through the link
   -v    --version       Print version script and exit
   -h    --help          Print this message and exit
@@ -71,7 +71,7 @@ EOF
       M_ARG="${arg#-m=}"
       mode="online"
       ;;
-    --select=*)
+    --Search=*)
       SELECT_ARG="${arg#--select=}"
       mode="select"
       ;;
@@ -82,11 +82,24 @@ EOF
       -S)
       _S_ARG="$2"
       mode="select"
-      shift 2;
+        if [[ $1 == -S* ]]; then
+        behind="${1:2}"  
+        shift     
+            case "$behind" in
+                s)
+                  curl -s "https://api.github.com/repos/luisadha/${2}/contents/bin"
+                ;;
+                "")
+                  echo "❌ Tidak dapat mengambil informasi."; 
+                  exit 1; 
+                ;;
+                *)
+                  echo "❌ Mode tidak dikenali: -S$behind"
+                  exit 1;
+                ;;
+               esac
+          shift 2;
       ;;
-      -s)
-      curl -s "https://api.github.com/repos/luisadha/${2}/contents/bin"
-      mode="select"
   esac
 done
 
