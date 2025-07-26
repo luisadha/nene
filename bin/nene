@@ -75,15 +75,18 @@ EOF
       SELECT_ARG="${arg#--select=}"
       mode="select"
       ;;
-    -s=*)
-      S_ARG="${arg#-s=}"
+    -S=*)
+      S_ARG="${arg#-S=}"
       mode="select"
+      ;;
+      -S)
+      _S_ARG="$2"
+      mode="select"
+      shift 2;
       ;;
       -s)
-      _S_ARG="$2"
-      shift 2;
+      curl -s "https://api.github.com/repos/luisadha/${2}/contents/bin"
       mode="select"
-      ;;
   esac
 done
 
@@ -96,9 +99,7 @@ done
     elif [ "$S_ARG" ]; then
     SPARAM="$S_ARG"
     else
-    SPARAM=" "
-    echo -e "error"
-    exit 1
+    SPARAM="$_S_ARG"
     fi 
       read __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | 
 html2text |
