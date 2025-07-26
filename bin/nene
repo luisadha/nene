@@ -190,7 +190,8 @@ exit 1;
                     SPARAM="$S_ARG";
                 fi;
 read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__";
-# shellcheck disable=SC1090                                            . <(curl -sL "$__url__" 2>/dev/null);
+# shellcheck disable=SC1090
+. <(curl -sL "$__url__" 2>/dev/null);
       shift;
       ;;
     -S|--search)
@@ -198,15 +199,20 @@ _S_ARG="$2";
                 if [[ -z "$_S_ARG" ]]; then
 echo -e "Error: option $arg request an argument $_S_ARG";
 exit 1
-                else                                                                     SPARAM="$_S_ARG";                                                    fi;                                                    # shellcheck disable=SC1090
+                else                                                                   
+SPARAM="$_S_ARG";
+fi;
+# shellcheck disable=SC1090
 read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__";
 # shellcheck disable=SC1090
 . <(curl -sL "$__url__" 2>/dev/null);
       shift;
       ;;
     -sS|-Ss)
-      keyword="$2"                                                             if [ -z "$keyword" ]; then
-          echo "Error: option -$arg request an argument"; exit 2; fi
+      keyword="$2";
+        if [ -z "$keyword" ]; then
+          echo "Error: option -$arg request an argument"; exit 2;
+        fi
       read -r url repo < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0)
       if [ -n "$keyword" ]; then
         curl -s "https://api.github.com/repos/luisadha/${repo}/contents/bin"
