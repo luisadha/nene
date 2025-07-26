@@ -94,7 +94,7 @@ grep -E 'github\.com|github\.io|luisadha\.my\.id' |
 sort -ur |
 awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
 fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${keyword}")
-    if [ -n "$url" ]; then
+    if [ -n "$keyword" ]; then
       curl -s "https://api.github.com/repos/luisadha/${repo}/contents/bin"
     else
       echo "❌ Tidak ditemukan repo dari '$keyword'"
