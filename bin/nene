@@ -70,23 +70,57 @@ EOF
     --mode=*)
       MODE_ARG="${arg#--mode=}"
       mode="online"
+      if [[ "$arg" == *=* ]]; then
+      parse="$arg"
+      else
+      parse="${arg}="
+      fi
+      echo -e "Invalid option, you mean \`${parse}online' ?"
+    
       ;;
     -m=*)
       M_ARG="${arg#-m=}"
       mode="online"
+      if [[ "$arg" == *=* ]]; then
+      parse="$arg"
+      else
+      parse="${arg}="
+      fi
+        echo -e "Invalid option, you mean \`${parse}online' ?"
       ;;
     --search=*)
       SELECT_ARG="${arg#--search=}"
       mode="select"
+      if [[ "$arg" == *=* ]]; then
+      parse="$arg"
+      else
+      parse="${arg}="
+      fi
+        echo -e "Invalid option, you mean \`${parse}PACKAGE' ?"
+        exit 3
       ;;
     -S=*)
       S_ARG="${arg#-S=}"
       mode="select"
+      if [[ "$arg" == *=* ]]; then
+      parse="$arg"
+      else
+      parse="${arg}="
+      fi
+        echo -e "Invalid option, you mean \`${parse}PACKAGE' ?"
+        exit 3
       ;;
     -S)
       _S_ARG="$2"
-      mode="select"   
-      shift 2;
+      mode="select"
+      if [[ "$arg" == *=* ]]; then
+      parse="$arg"
+      else
+      parse="${arg}="
+      fi
+        echo -e "Invalid option, you mean \`${parse}PACKAGE' ?"
+        exit 3;   
+        shift 2;
       ;;
     -sS|-Ss)
       keyword="$2"
@@ -102,18 +136,9 @@ EOF
   esac
 done
 
-#+ Advanced argument
-#1
-  if [[ -z "$SELECT_ARG" && -z "$S_ARG" ]]; then
-  mode="select"  
-      if [[ "$arg" == *=* ]]; then
-      parse="$arg"
-      else
-      parse="${arg}="
-      fi
-      echo -e "Invalid option, you mean \`${parse}PACKAGE' ?"
-      exit 3
-  elif [[ "$SELECT_ARG" ]] || [[ "$S_ARG" ]] || [[ "$_S_ARG" ]]; then
+#+ Advanced argument      
+
+if [[ "$SELECT_ARG" ]] || [[ "$S_ARG" ]] || [[ "$_S_ARG" ]]; then
   mode="select"
       if [ "$SELECT_ARG" ]; then
       SPARAM="$SELECT_ARG"
@@ -125,20 +150,6 @@ done
       read __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}");
     [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__"; . <(curl -sL $__url__ 2>/dev/null)
   fi 
-
-#2
-
-  if [[ -z "$MODE_ARG" && -z "$M_ARG" ]]; then 
-  mode="online"  
-      if [[ "$arg" == *=* ]]; then
-      parse="$arg"
-      else
-      parse="${arg}="
-      fi
-        echo -e "Invalid option, you mean \`${parse}online' ?"
-        exit 3    
-    fi
-  
 
 # general argument
 if [[ "$mode" == "online" ]]; then
