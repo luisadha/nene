@@ -1,4 +1,4 @@
-#!/bin/sh 
+#!/usr/bin/bash
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE
 VERSION="1.4.32-nightly"
 [ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
@@ -110,7 +110,7 @@ done
     else
       parse="${arg}="
     fi
-  echo -e "Invalid option, you mean \`$parse\value' ?"
+  echo -e "Invalid option, you mean \`$parse\'SCRIPT ?"
   exit 3
   elif [[ "$SELECT_ARG" ]] || [[ "$S_ARG" ]] || [[ "$_S_ARG" ]]; then
   mode="select"
