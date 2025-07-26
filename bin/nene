@@ -71,7 +71,7 @@ EOF
       M_ARG="${arg#-m=}"
       mode="online"
       ;;
-    --Search=*)
+    --select=*)
       SELECT_ARG="${arg#--select=}"
       mode="select"
       ;;
