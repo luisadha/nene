@@ -12,7 +12,7 @@ if [[ $# -eq 0 ]]; then
   mode="offline" 
 fi
 
-for arg in "$@"; do
+for arg in "$1"; do
   case "$arg" in
     --homepage)
     termux-open-url https://not-echo-not-true.carrd.co
@@ -79,12 +79,17 @@ EOF
       S_ARG="${arg#-s=}"
       mode="select"
       ;;
+      -s)
+      _S_ARG="$2"
+      shift 2;
+      mode="select"
+      ;;
   esac
 done
 
 #+ Advanced argument
 #1
-  if [[ "$SELECT_ARG" ]] || [[ "$S_ARG" ]]; then
+  if [[ "$SELECT_ARG" ]] || [[ "$S_ARG" ]] || [[ "$_S_ARG" ]]; then
   mode="select"
     if [ "$SELECT_ARG" ]; then
     SPARAM="$SELECT_ARG"
