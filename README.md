@@ -45,7 +45,7 @@ This command will install additional features, the nene-ak47.sh script.
 
 Then, to replace your current termux-url-opener, use the following command:
 ```sh
-nene -s=wuoy
+nene -S wuoy
 ```
 This will display an interactive fuzzy search dialog.
 Select nene-ak47 to enable the "Share to Termux" button feature on supported web apps.
