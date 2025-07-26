@@ -79,16 +79,28 @@ EOF
       S_ARG="${arg#-S=}"
       mode="select"
       ;;
-      -S)
+    -S)
       _S_ARG="$2"
       mode="select"   
       shift 2;
       ;;
-      -Ss)
-      query="$2"
-      mode="select"
-      curl -s "https://api.github.com/repos/luisadha/${query}/contents/bin" | jq -r '.[].name' | fzf
-      ;;
+    -sS|-Ss)
+      keyword="$2"
+      read url repo < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null |
+html2text |
+grep -oP '(?<=\])\(\K[^)]+' |
+grep '^https\?://' |
+grep -E 'github\.com|github\.io|luisadha\.my\.id' |
+sort -ur |
+awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
+fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${keyword}")
+    if [ -n "$url" ]; then
+      curl -s "https://api.github.com/repos/luisadha/${repo}/contents/bin"
+    else
+      echo "❌ Tidak ditemukan repo dari '$keyword'"
+    fi
+       exit
+    ;;
   esac
 done
 
