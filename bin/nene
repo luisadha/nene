@@ -30,17 +30,13 @@ search() {
     read __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__"; . <(curl -sL $__url__ 2>/dev/null);
     return 0
 }
-
-
-while [[ $# -eq 0 ]] do
-  case "$arg" in "$1"
-    --homepage)
+homepage() {
     termux-open-url https://not-echo-not-true.carrd.co
-      exit 0;
-      ;;
-    -a|--api-termux)
-    echo -e "Creating file.. ~/bin/nene-ak47.sh"
-    cat <<'EOF' > $HOME/bin/nene-ak47.sh
+    return 0
+}
+addon() {
+echo -e "Creating file.. ~/bin/nene-ak47.sh"
+cat <<'EOF' > $HOME/bin/nene-ak47.sh
 # Nene-ak47 is receiver script for termux-url-opener to run many nene webapp script
 # Copyright (C) 2025 Luis Adha under MIT License.
 : "If you change this, you-
@@ -58,16 +54,12 @@ sampai anda mengantinya lagi."
     echo "Process completed."
     read wait
 EOF
-      sleep 0.4;
-      echo "..done"
-      exit 0
-      ;;
-    -u|--select-url)
-      mode="url"
-      ;;
-    -h|--help)
-      mode="help"
-      cat <<'EOF'
+sleep 0.4;
+echo "..done"
+return 0
+}
+help() {
+cat <<'EOF'
 Nene is both a static site and a set of Bash tools you can run straight from your terminal
 Usage :
   -a    --api-termux    Installs nene-ak47 to run Nene via WebApp using Android Share
@@ -79,16 +71,30 @@ Usage :
   -v    --version       Print version script and exit
   -h    --help          Print this message and exit
 EOF
-      ;;
+}
+version() {
+echo "nene v${VERSION}"
+return 0
+}
+
+while [[ $# -eq 0 ]]; do
+ arg="$1"
+  case "$arg" in
+    --homepage)
+        homepage;;
+    -a|--api-termux)
+        addon;;
+    -u|--select-url)
+        url;;
+    -h|--help)
+        help;;
     -v|--version)
-      echo "nene v${VERSION}"
-      exit 0
-      ;;
+        version;;
     --mode=*)
       MODE_ARG="${arg#--mode=}";
       if [[ -z "$MODE_ARG" ]]; then 
-        if [[ "$arg" == *=* ]]; then parse="$arg";
-        else parse="${arg}="; fi;   
+        if [[ "$arg" == *=* ]]; then parse="$arg"; echo "$parse";
+        else parse="${arg}="; echo "$parse"; fi;   
       echo -e "Invalid option, you mean \`${parse}online' ?";
       fi
 mode="$MODE_ARG"
@@ -97,8 +103,8 @@ mode="$MODE_ARG"
     -m=*)
       M_ARG="${arg#-m=}";
       if [[ -z "$M_ARG" ]]; then  
-          if [[ "$arg" == *=* ]]; then parse="$arg";
-          else parse="${arg}="; fi;
+          if [[ "$arg" == *=* ]]; then parse="$arg"; echo "$parse"
+          else parse="${arg}="; echo "$parse"; fi;
         echo -e "Invalid option, you mean \`${parse}online' ?";
       fi
 mode="$M_ARG"
