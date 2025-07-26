@@ -88,38 +88,41 @@ mode="$M_ARG"
       ;;
     --search=*)
       SELECT_ARG="${arg#--search=}"
-      
+  if [[ "$SELECT_ARG" ]]; then
+  
       if [[ "$arg" == *=* ]]; then
       parse="$arg"
       else
       parse="${arg}="
       fi
-        echo -e "Invalid option, you mean \`${parse}PACKAGE' ?"
-        exit 3
+        echo -e "Invalid option, you mean \`${parse}PACKAGE' ?";
+  fi;
 mode="select"
       ;;
     -S=*)
       S_ARG="${arg#-S=}"
-      
+  if [[ "$S_ARG" ]]; then
+
       if [[ "$arg" == *=* ]]; then
       parse="$arg"
       else
       parse="${arg}="
       fi
         echo -e "Invalid option, you mean \`${parse}PACKAGE' ?"
-        exit 3
+  fi;
 mode="select"
       ;;
     -S)
       _S_ARG="$2"
-      
+  if [[ "$_S_ARG" ]]; then
+  
       if [[ "$arg" == *=* ]]; then
       parse="$arg"
       else
       parse="${arg}="
       fi
-        echo -e "Invalid option, you mean \`${parse}PACKAGE' ?"
-        exit 3;   
+        echo -e "Invalid option, you mean \`${parse}PACKAGE' ?";
+  fi;
 mode="select"
       ;;
     -sS|-Ss)
@@ -130,16 +133,11 @@ mode="select"
         curl -s "https://api.github.com/repos/luisadha/${repo}/contents/bin"
       else
         echo "❌ Tidak ditemukan repo dari $url"
+        exit 1;
       fi
-       exit
     ;;
   esac
 done
-
-#+ Advanced argument      
-
-#if [[ "$SELECT_ARG" ]] || [[ "$S_ARG" ]] || [[ "$_S_ARG" ]]; then
-  
 
 # general argument
 if [[ "$mode" == "online" ]]; then
