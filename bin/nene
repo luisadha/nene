@@ -221,9 +221,9 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
       if [ -n "$keyword" ]; then
         status=$(curl -s -o /dev/null -w "%{http_code}" "https://api.github.com/repos/luisadha/${repo}/contents/bin")
         if [ "$status" = "200" ]; then
-          echo '{"fallback": true}'
+          echo '{"fallback": true}' | jq
         else
-          echo '{"fallback": false}'
+          echo '{"fallback": false}' | jq
         fi
         exit 0;
       else
@@ -241,10 +241,10 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
       if [ -n "$keyword" ]; then
         status=$(curl -s -o /dev/null -w "%{http_code}" "https://api.github.com/repos/luisadha/${repo}/contents/bin")
         if [ "$status" = "200" ]; then
-            echo '{"fallback": true}'
+            echo '{"fallback": true}' | jq
             [[ $? -eq 0 ]] && echo "Installing.." && pushd "$PREFIX/bin" && wget -O ${repo} ${url} && chmod +x ${repo} && popd
         else
-            echo '{"fallback": false}'
+            echo '{"fallback": false}' | jq
             echo "❌ Can't find package from $url, install failed!"
             exit 1;
         fi
