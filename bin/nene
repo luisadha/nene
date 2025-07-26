@@ -8,7 +8,7 @@ unset HISTSIZE
 __BASE_REPO__="nene"
 __DIR__="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
 
-
+mode=""
 if [[ $# -eq 0 ]]; then
   mode="offline" 
 fi
@@ -69,24 +69,26 @@ EOF
       exit 0
       ;;
     --mode=*)
-      MODE_ARG="${arg#--mode=}"; mode="online"
+      MODE_ARG="${arg#--mode=}";
       if [[ -z "$MODE_ARG" ]]; then 
         if [[ "$arg" == *=* ]]; then parse="$arg";
         else parse="${arg}="; fi;   
       echo -e "Invalid option, you mean \`${parse}online' ?";
       fi
+mode="$MODE_ARG"
       ;;
     -m=*)
-      M_ARG="${arg#-m=}"; mode="online";
+      M_ARG="${arg#-m=}";
       if [[ -z "$M_ARG" ]]; then  
           if [[ "$arg" == *=* ]]; then parse="$arg";
           else parse="${arg}="; fi;
         echo -e "Invalid option, you mean \`${parse}online' ?";
       fi
+mode="$M_ARG"
       ;;
     --search=*)
       SELECT_ARG="${arg#--search=}"
-      mode="select"
+      
       if [[ "$arg" == *=* ]]; then
       parse="$arg"
       else
@@ -94,10 +96,11 @@ EOF
       fi
         echo -e "Invalid option, you mean \`${parse}PACKAGE' ?"
         exit 3
+mode="select"
       ;;
     -S=*)
       S_ARG="${arg#-S=}"
-      mode="select"
+      
       if [[ "$arg" == *=* ]]; then
       parse="$arg"
       else
@@ -105,10 +108,11 @@ EOF
       fi
         echo -e "Invalid option, you mean \`${parse}PACKAGE' ?"
         exit 3
+mode="select"
       ;;
     -S)
       _S_ARG="$2"
-      mode="select"
+      
       if [[ "$arg" == *=* ]]; then
       parse="$arg"
       else
@@ -116,7 +120,7 @@ EOF
       fi
         echo -e "Invalid option, you mean \`${parse}PACKAGE' ?"
         exit 3;   
-        shift 2;
+mode="select"
       ;;
     -sS|-Ss)
       keyword="$2"
@@ -134,18 +138,8 @@ done
 
 #+ Advanced argument      
 
-if [[ "$SELECT_ARG" ]] || [[ "$S_ARG" ]] || [[ "$_S_ARG" ]]; then
-  mode="select"
-      if [ "$SELECT_ARG" ]; then
-      SPARAM="$SELECT_ARG"
-      elif [ "$S_ARG" ]; then
-      SPARAM="$S_ARG"
-      else
-      SPARAM="$_S_ARG"
-      fi 
-      read __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}");
-    [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__"; . <(curl -sL $__url__ 2>/dev/null)
-  fi 
+#if [[ "$SELECT_ARG" ]] || [[ "$S_ARG" ]] || [[ "$_S_ARG" ]]; then
+  
 
 # general argument
 if [[ "$mode" == "online" ]]; then
@@ -161,15 +155,21 @@ if [[ "$mode" == "online" ]]; then
 elif [[ "$mode" == "default" || "$mode" == "offline" ]]; then
   exec python3 "${__DIR__}/not-echo-not-true.py"
 elif [[ "$mode" == "url" ]]; then
-  read __url__ < <(curl -s https://not-echo-not-true.carrd.co |
-  html2text |
-  grep -oP '(?<=\])\(\K[^)]+' |
-  grep '^https\?://' |
-  grep -E 'github\.com|github\.io|luisadha\.my\.id' |
-  sort -ur | fzf --prompt="Indexing URL: " |
+      read __url__ < <(curl -s https://not-echo-not-true.carrd.co |
+  html2text | grep -oP '(?<=\])\(\K[^)]+' |
+  grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' |   sort -ur | fzf --prompt="Indexing URL: " |
   xargs -r termux-open-url);
 elif [[ "$mode" == "select" ]]; then
-  : || exit 0
+      if [ "$SELECT_ARG" ]; then
+      SPARAM="$SELECT_ARG"
+      elif [ "$S_ARG" ]; then
+      SPARAM="$S_ARG"
+      else
+      SPARAM="$_S_ARG"
+      fi 
+      read __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}");
+    [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__"; . <(curl -sL $__url__ 2>/dev/null)
+ 
 elif [[ "$mode" == "help" ]]; then
   : || exit 0
 else
