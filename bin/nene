@@ -89,7 +89,7 @@ EOF
       mode="select"
       curl -s "https://api.github.com/repos/luisadha/${2}/contents/bin"
       ;;
-  esa
+  esac
 done
 
 #+ Advanced argument
