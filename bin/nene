@@ -11,7 +11,10 @@ __DIR__="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
 if [[ $# -eq 0 ]]; then
   mode="offline" 
 fi
-
+if [[ "$1" == "-s" ]]; then
+  echo -e "Invalid option, you means \`-Ss' ?";
+  exit 1
+fi
 for arg in "$1"; do
   case "$arg" in
     --homepage)
@@ -53,7 +56,8 @@ Usage :
   -a    --api-termux    Installs nene-ak47 to run Nene via WebApp using Android Share
   -u    --select-url    Select a webapp to open the link. This option is only effective when used after the -a option
         --homepage      Open homepage related this project
-  -S    --Search=[apps] Execute the explicitly specified application
+    -Ss                 Query package metadata in JSON format
+  -S    --search=[apps] Execute the explicitly specified application
   -m    --mode=[online] Select and run through the link
   -v    --version       Print version script and exit
   -h    --help          Print this message and exit
@@ -71,8 +75,8 @@ EOF
       M_ARG="${arg#-m=}"
       mode="online"
       ;;
-    --select=*)
-      SELECT_ARG="${arg#--select=}"
+    --search=*)
+      SELECT_ARG="${arg#--search=}"
       mode="select"
       ;;
     -S=*)
