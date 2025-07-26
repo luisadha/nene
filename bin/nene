@@ -68,21 +68,20 @@ EOF
       exit 0
       ;;
     --mode=*)
-      MODE_ARG="${arg#--mode=}"
-      mode="online"
+      MODE_ARG="${arg#--mode=}"; mode="online"
       if [[ -z "$MODE_ARG" ]]; then 
         if [[ "$arg" == *=* ]]; then parse="$arg";
         else parse="${arg}="; fi;   
-      echo -e "Invalid option, you mean \`${parse}online' ?" 
+      echo -e "Invalid option, you mean \`${parse}online' ?";
+      fi
       ;;
     -m=*)
-      M_ARG="${arg#-m=}"
-      mode="online"
-
+      M_ARG="${arg#-m=}"; mode="online";
       if [[ -z "$M_ARG" ]]; then  
           if [[ "$arg" == *=* ]]; then parse="$arg";
-          else parse="${arg}="; fi
-        echo -e "Invalid option, you mean \`${parse}online' ?"
+          else parse="${arg}="; fi;
+        echo -e "Invalid option, you mean \`${parse}online' ?";
+      fi
       ;;
     --search=*)
       SELECT_ARG="${arg#--search=}"
