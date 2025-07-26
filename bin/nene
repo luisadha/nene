@@ -146,7 +146,7 @@ elif [[ "$mode" == "url" ]]; then
   grep -oP '(?<=\])\(\K[^)]+' |
   grep '^https\?://' |
   grep -E 'github\.com|github\.io|luisadha\.my\.id' |
-  sort -ur | fzf --prompt="Choose URL: " |
+  sort -ur | fzf --prompt="Indexing URL: " |
   xargs -r termux-open-url);
 elif [[ "$mode" == "select" ]]; then
   : || exit 0
