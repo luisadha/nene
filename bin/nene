@@ -83,6 +83,7 @@ EOF
       _S_ARG="$2"
       mode="select"   
       shift 2;
+      ;;
       -Ss)
       _S_ARG="$2"
       mode="select"
