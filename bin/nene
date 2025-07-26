@@ -1,35 +1,50 @@
 #!/usr/bin/bash
+#set -xv
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE
 VERSION="1.5.40-nightly"
 [ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 unset HISTSIZE
-
+# shellcheck disable=SC1090
 __BASE_REPO__="nene"
 __DIR__="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
-
-
-if [[ $# -eq 0 ]]; then
-  mode="offline" 
-fi
-if [[ "$1" == "-s" ]]; then
-  echo -e "Invalid option, you means \`-Ss' ?";
-  exit 1
-fi
-for arg in "$1"; do
-  case "$arg" in
-    --homepage)
+online_apps() {
+    read -r __url__ < <(curl -s https://not-echo-not-true.carrd.co |
+    html2text |
+    grep -oP '(?<=\])\(\K[^)]+' |
+    grep '^https\?://' |
+    grep -E 'github\.com|github\.io|luisadha\.my\.id' |
+    sort -ur |
+    awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
+    fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t');
+    [ -z "$__url__" ] && echo -e "\nCaught ^"
+# shellcheck disable=SC1090
+    . <(curl -sL "$__url__")
+   return 0
+}
+default_apps() {
+    exec python3 "${__DIR__}/not-echo-not-true.py"
+    return 0
+}
+url() {
+    read -r __url__ < <(curl -s https://not-echo-not-true.carrd.co | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | fzf --prompt="Indexing URL: " | xargs -r termux-open-url);
+    return
+}
+search() {
+ :
+}
+homepage() {
     termux-open-url https://not-echo-not-true.carrd.co
-      exit 0;
-      ;;
-    -a|--api-termux)
-    echo -e "Creating file.. ~/bin/nene-ak47.sh"
-    cat <<'EOF' > $HOME/bin/nene-ak47.sh
+    return 0
+}
+addon() {
+echo -e "Creating file.. ~/bin/nene-ak47.sh"
+cat <<'EOF' > "$HOME"/bin/nene-ak47.sh
 # Nene-ak47 is receiver script for termux-url-opener to run many nene webapp script
 # Copyright (C) 2025 Luis Adha under MIT License.
 : "If you change this, you-
 will not be able to run-
 webapp-based Bash scripts-
-through Android sharing until- 
+through Android sharing until-
 you change it back."
 : "Jika anda mengganti ini-
 anda tidak bisa menjalankan-
@@ -41,16 +56,12 @@ sampai anda mengantinya lagi."
     echo "Process completed."
     read wait
 EOF
-      sleep 0.4;
-      echo "..done"
-      exit 0
-      ;;
-    -u|--select-url)
-      mode="url"
-      ;;
-    -h|--help)
-      mode="help"
-      cat <<'EOF'
+sleep 0.4;
+echo "..done"
+return 0
+}
+help() {
+cat <<'EOF'
 Nene is both a static site and a set of Bash tools you can run straight from your terminal
 Usage :
   -a    --api-termux    Installs nene-ak47 to run Nene via WebApp using Android Share
@@ -62,110 +73,151 @@ Usage :
   -v    --version       Print version script and exit
   -h    --help          Print this message and exit
 EOF
-      ;;
+}
+version() {
+echo "nene v${VERSION}"
+return 0
+}
+
+if [[ $# -eq 0 ]]; then
+default_apps;
+fi
+
+if [[ "$1" == "-s" || "$1" == "--s" ]]; then
+  echo -e "Invalid option, you means \`-Ss' ?";
+    exit 1
+fi
+
+for arg in "$@"; do
+  case "$arg" in
+    --homepage)
+        homepage;;
+    -a|--api-termux)
+        addon;;
+    -u|--select-url)
+        url;;
+    -h|--help)
+        help;;
     -v|--version)
-      echo "nene v${VERSION}"
-      exit 0
+        version;;
+   --mode|--mode=*)
+          if [[ "$arg" == *=* ]]; then
+            parse="$arg";
+            #echo "$parse"
+          else
+            parse="${arg}=";
+            #echo "$parse"
+          fi;
+MODE_ARG="${arg#--mode=}";
+          if [[ -z "$MODE_ARG" ]]; then
+echo -e "Invalid option, you mean \`${parse}online' ?";
+exit 1;
+          else
+              SPARAM="$MODE_ARG";
+             # echo "$SPARAM"
+          fi;
+modes="$SPARAM";
+          if [[ "$modes" == "online" ]]; then
+          online_apps;
+          elif [[ "$modes" == "default" ]]; then
+          default_apps;
+          elif [[ "$modes" == "offline" ]]; then
+          default_apps;
+          else
+          echo "Unknown value in $arg";
+          exit 2;
+          fi
+        shift;
       ;;
-    --mode=*)
-      MODE_ARG="${arg#--mode=}"
-      mode="online"
-      ;;
-    -m=*)
-      M_ARG="${arg#-m=}"
-      mode="online"
+    -m|-m=*)
+          if [[ "$arg" == *=* ]]; then
+            parse="$arg";
+            #echo "$parse"
+          else
+            parse="${arg}=";
+            #echo "$parse"
+          fi;
+M_ARG="${arg#-m=}";
+          if [[ -z "$M_ARG" ]]; then
+echo -e "Invalid option, you mean \`${parse}online' ?";
+exit 1;
+          else
+              SPARAM="$M_ARG";
+             # echo "$SPARAM"
+          fi;
+modes="$SPARAM";
+          if [[ "$modes" == "online" ]]; then
+          online_apps;
+          elif [[ "$modes" == "default" ]]; then
+          default_apps;
+          elif [[ "$modes" == "offline" ]]; then
+          default_apps;
+          else
+          echo "Unknown value in $arg";
+          exit 2;
+          fi
+        shift;
       ;;
     --search=*)
-      SELECT_ARG="${arg#--search=}"
-      mode="select"
+                if [[ "$arg" == *=* ]]; then
+                  parse="$arg";
+                else
+                  parse="${arg}=";
+                fi;
+SELECT_ARG="${arg#--search=}";
+                if [[ -z "$SELECT_ARG" ]]; then
+echo -e "Invalid option, you mean \`${parse}PACKAGE' ?";
+exit 1;
+                else
+                    SPARAM="$SELECT_ARG";
+                fi;
+read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__";
+# shellcheck disable=SC1090
+. <(curl -sL "$__url__" 2>/dev/null);
+      shift;
       ;;
     -S=*)
-      S_ARG="${arg#-S=}"
-      mode="select"
+                if [[ "$arg" == *=* ]]; then
+                  parse="$arg";
+                else
+                  parse="${arg}=";
+                fi;
+S_ARG="${arg#-S=}";
+                if [[ -z "$S_ARG" ]]; then
+echo -e "Invalid option, you mean \`${parse}PACKAGE' ?";
+exit 1;
+                else
+                    SPARAM="$S_ARG";
+                fi;
+read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__";
+# shellcheck disable=SC1090                                            . <(curl -sL "$__url__" 2>/dev/null);
+      shift;
       ;;
-    -S)
-      _S_ARG="$2"
-      mode="select"   
-      shift 2;
+    -S|--search)
+_S_ARG="$2";
+                if [[ -z "$_S_ARG" ]]; then
+echo -e "Error: option $arg request an argument $_S_ARG";
+exit 1
+                else                                                                     SPARAM="$_S_ARG";                                                    fi;                                                    # shellcheck disable=SC1090
+read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__";
+# shellcheck disable=SC1090
+. <(curl -sL "$__url__" 2>/dev/null);
+      shift;
       ;;
     -sS|-Ss)
-      keyword="$2"
-        if [ -z "$keyword" ]; then echo "❌ Kosong, tidak dijalankan."; exit 2; fi
-      read url repo < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0)
+      keyword="$2"                                                             if [ -z "$keyword" ]; then
+          echo "Error: option -$arg request an argument"; exit 2; fi
+      read -r url repo < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0)
       if [ -n "$keyword" ]; then
         curl -s "https://api.github.com/repos/luisadha/${repo}/contents/bin"
       else
         echo "❌ Tidak ditemukan repo dari $url"
+        exit 1;
       fi
-       exit
+    ;;
+    *)
+      echo "Error: Unknown options"
+      exit 1;
     ;;
   esac
 done
-
-#+ Advanced argument
-#1
-  if [[ -z "$SELECT_ARG" && -z "$S_ARG" ]]; then
-    if [[ "$arg" == *=* ]]; then
-      parse="$arg"
-    else
-      parse="${arg}="
-    fi
-  echo -e "Invalid option, you mean \`${parse}PACKAGE' ?"
-  exit 3
-  elif [[ "$SELECT_ARG" ]] || [[ "$S_ARG" ]] || [[ "$_S_ARG" ]]; then
-  mode="select"
-    if [ "$SELECT_ARG" ]; then
-    SPARAM="$SELECT_ARG"
-    elif [ "$S_ARG" ]; then
-    SPARAM="$S_ARG"
-    else
-    SPARAM="$_S_ARG"
-    fi 
-      read __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | 
-html2text |
-grep -oP '(?<=\])\(\K[^)]+' |
-grep '^https\?://' |
-grep -E 'github\.com|github\.io|luisadha\.my\.id' |
-sort -ur |
-awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
-fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}");
-[ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__"; . <(curl -sL $__url__ 2>/dev/null)
-  fi 
-#2
-  if [[ -z "$MODE_ARG" && -z "$M_ARG" ]]; then 
-    echo -e "❌ Invalid value, you mean \`$MODE_ARG=online' ?";
-    exit 3
-  
-  elif [[ "$MODE_ARG" == "online" ]] || [[ "$M_ARG" == "online" ]]; then
-mode="online";
-  read __url__ < <(curl -s https://not-echo-not-true.carrd.co |
-    html2text |
-    grep -oP '(?<=\])\(\K[^)]+' |
-    grep '^https\?://' |
-    grep -E 'github\.com|github\.io|luisadha\.my\.id' |
-    sort -ur |
-    awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
-    fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t');  [ -z "$__url__" ] && echo -e "\nCaught ^" || . <(curl -sL $__url__)
-  elif [[ "$MODE_ARG" == "default" ]] || [[ "$M_ARG" == "default" ]]; then
-mode="default"
-  fi
-
-# general argument
-if [[ "$mode" == "default" || "$mode" == "offline" ]]; then
-  exec python3 "${__DIR__}/not-echo-not-true.py"
-elif [[ "$mode" == "url" ]]; then
-  read __url__ < <(curl -s https://not-echo-not-true.carrd.co |
-  html2text |
-  grep -oP '(?<=\])\(\K[^)]+' |
-  grep '^https\?://' |
-  grep -E 'github\.com|github\.io|luisadha\.my\.id' |
-  sort -ur | fzf --prompt="Indexing URL: " |
-  xargs -r termux-open-url);
-elif [[ "$mode" == "select" ]]; then
-  : || exit 0
-elif [[ "$mode" == "help" ]]; then
-  : || exit 0
-else
-  echo -e "Invalid option or request vaule, Please see --help"
-  exit 1
-fi
