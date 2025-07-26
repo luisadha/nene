@@ -132,10 +132,10 @@ fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARA
 [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__"; . <(curl -sL $__url__ 2>/dev/null)
   fi 
 #2
-  if [[ -n "$MODE_ARG" ]] && [[ -n "$M_ARG" ]]; then 
+  if [[ -z "$MODE_ARG" && -z "$M_ARG" ]]; then 
     echo -e "❌ Invalid value, you mean \`$MODE_ARG=online' ?";
     exit 3
-  fi
+  
   elif [[ "$MODE_ARG" == "online" ]] || [[ "$M_ARG" == "online" ]]; then
 mode="online";
   read __url__ < <(curl -s https://not-echo-not-true.carrd.co |
