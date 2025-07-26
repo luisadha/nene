@@ -1,7 +1,7 @@
-PREFIX ?= /data/data/com.termux/files/usr
-MANDIR ?= $(PREFIX)/share/man
+PREFIX := /data/data/com.termux/files/usr
+MANDIR := $(PREFIX)/share/man
 
-BIN    ?= nene
+BIN    := nene
 
 
 install:
