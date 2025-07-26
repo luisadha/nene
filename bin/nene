@@ -105,39 +105,41 @@ done
 #+ Advanced argument
 #1
   if [[ -z "$SELECT_ARG" && -z "$S_ARG" ]]; then
-    if [[ "$arg" == *=* ]]; then
+      if [[ "$arg" == *=* ]]; then
       parse="$arg"
-    else
+      else
       parse="${arg}="
-    fi
-  echo -e "Invalid option, you mean \`${parse}PACKAGE' ?"
-  exit 3
+      fi
+      echo -e "Invalid option, you mean \`${parse}PACKAGE' ?"
+      exit 3
   elif [[ "$SELECT_ARG" ]] || [[ "$S_ARG" ]] || [[ "$_S_ARG" ]]; then
-  mode="select"
-    if [ "$SELECT_ARG" ]; then
-    SPARAM="$SELECT_ARG"
-    elif [ "$S_ARG" ]; then
-    SPARAM="$S_ARG"
-    else
-    SPARAM="$_S_ARG"
-    fi 
-      read __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | 
-html2text |
-grep -oP '(?<=\])\(\K[^)]+' |
-grep '^https\?://' |
-grep -E 'github\.com|github\.io|luisadha\.my\.id' |
-sort -ur |
-awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
-fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}");
+      mode="select"
+      if [ "$SELECT_ARG" ]; then
+      SPARAM="$SELECT_ARG"
+      elif [ "$S_ARG" ]; then
+      SPARAM="$S_ARG"
+      else
+      SPARAM="$_S_ARG"
+      fi 
+      read __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}");
+
 [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__"; . <(curl -sL $__url__ 2>/dev/null)
   fi 
+
 #2
   if [[ -z "$MODE_ARG" && -z "$M_ARG" ]]; then 
-    echo -e "❌ Invalid value, you mean \`$MODE_ARG=online' ?";
-    exit 3
+      if [[ "$arg" == *=* ]]; then
+      parse="$arg"
+      else
+      parse="${arg}="
+      fi
+        echo -e "Invalid option, you mean \`${parse}online' ?"
+        exit 3    
+    fi
   
-  elif [[ "$MODE_ARG" == "online" ]] || [[ "$M_ARG" == "online" ]]; then
-mode="online";
+
+# general argument
+if [[ "$mode" == "online" ]]; then
   read __url__ < <(curl -s https://not-echo-not-true.carrd.co |
     html2text |
     grep -oP '(?<=\])\(\K[^)]+' |
@@ -146,12 +148,8 @@ mode="online";
     sort -ur |
     awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
     fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t');  [ -z "$__url__" ] && echo -e "\nCaught ^" || . <(curl -sL $__url__)
-  elif [[ "$MODE_ARG" == "default" ]] || [[ "$M_ARG" == "default" ]]; then
-mode="default"
-  fi
-
-# general argument
-if [[ "$mode" == "default" || "$mode" == "offline" ]]; then
+ 
+elif [[ "$mode" == "default" || "$mode" == "offline" ]]; then
   exec python3 "${__DIR__}/not-echo-not-true.py"
 elif [[ "$mode" == "url" ]]; then
   read __url__ < <(curl -s https://not-echo-not-true.carrd.co |
