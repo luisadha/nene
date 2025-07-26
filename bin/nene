@@ -81,8 +81,8 @@ if [[ $# -eq 0 ]]; then
 default;
 fi
 
-for arg in "$@" do
-  case "$arg" in
+for arg in "$@"; do
+  case "$arg"; do
     --homepage)
         homepage;;
     -a|--api-termux)
