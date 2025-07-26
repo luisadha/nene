@@ -81,26 +81,14 @@ EOF
       ;;
       -S)
       _S_ARG="$2"
+      mode="select"   
+      shift 2;
+      -Ss)
+      _S_ARG="$2"
       mode="select"
-        if [[ "$arg" == -S* ]]; then
-        behind="${arg:2}"  
-        shift     
-            case "$behind" in
-                s)
-                  curl -s "https://api.github.com/repos/luisadha/${2}/contents/bin"
-                ;;
-                "")
-                  echo "❌ Tidak dapat mengambil informasi."; 
-                  exit 1; 
-                ;;
-                *)
-                  echo "❌ Mode tidak dikenali: -S$behind"
-                  exit 1;
-                ;;
-               esac
-         # shift 2;
+      curl -s "https://api.github.com/repos/luisadha/${2}/contents/bin"
       ;;
-  esac
+  esa
 done
 
 #+ Advanced argument
