@@ -82,7 +82,7 @@ default;
 fi
 
 for arg in "$@"; do
-  case "$arg"; do
+  case "$arg" in
     --homepage)
         homepage;;
     -a|--api-termux)
