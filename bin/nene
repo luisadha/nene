@@ -105,6 +105,7 @@ done
 #+ Advanced argument
 #1
   if [[ -z "$SELECT_ARG" && -z "$S_ARG" ]]; then
+  mode="select"  
       if [[ "$arg" == *=* ]]; then
       parse="$arg"
       else
@@ -113,7 +114,7 @@ done
       echo -e "Invalid option, you mean \`${parse}PACKAGE' ?"
       exit 3
   elif [[ "$SELECT_ARG" ]] || [[ "$S_ARG" ]] || [[ "$_S_ARG" ]]; then
-      mode="select"
+  mode="select"
       if [ "$SELECT_ARG" ]; then
       SPARAM="$SELECT_ARG"
       elif [ "$S_ARG" ]; then
@@ -122,12 +123,13 @@ done
       SPARAM="$_S_ARG"
       fi 
       read __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}");
-
-[ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__"; . <(curl -sL $__url__ 2>/dev/null)
+    [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__"; . <(curl -sL $__url__ 2>/dev/null)
   fi 
 
 #2
+
   if [[ -z "$MODE_ARG" && -z "$M_ARG" ]]; then 
+  mode="online"  
       if [[ "$arg" == *=* ]]; then
       parse="$arg"
       else
