@@ -104,7 +104,10 @@ done
 
 #+ Advanced argument
 #1
-  if [[ "$SELECT_ARG" ]] || [[ "$S_ARG" ]] || [[ "$_S_ARG" ]]; then
+  if [[ -z "$SELECT_ARG" ]] && [[ -z "$S_ARG" ]]; then
+      echo -e "Invalid value, you mean \`$arg=' ?";
+     exit 3
+  elif [[ "$SELECT_ARG" ]] || [[ "$S_ARG" ]] || [[ "$_S_ARG" ]]; then
   mode="select"
     if [ "$SELECT_ARG" ]; then
     SPARAM="$SELECT_ARG"
@@ -137,7 +140,7 @@ mode="online";
   elif [[ "$MODE_ARG" == "default" ]] || [[ "$M_ARG" == "default" ]]; then
 mode="default"
   elif [[ -n "$MODE_ARG" ]] && [[ -n "$M_ARG" ]]; then 
-    echo -e "Invalid value, you mean \`$MODE_ARG=online' ?";
+    echo -e "❌ Invalid value, you mean \`$MODE_ARG=online' ?";
     exit 3
   fi
 
