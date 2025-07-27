@@ -80,9 +80,10 @@ Usage :
   -a    --api-termux    Installs nene-ak47 to run Nene via WebApp using Android Share
   -u    --select-url    Select a webapp to open the link. This option is only effective when used after the -a option
         --homepage      Open homepage related this project
-    -Ss                 Query package metadata in JSON format
-  -S    --search=[apps] Execute the explicitly specified application
-  -m    --mode=[online] Select and run through the link
+    -Ss QUERY           Search package metadata in JSON format
+    -Si QUERY           Search and install the globally specified package
+  -S    --search=QUERY  Execute the explicitly specified application
+  -m    --mode=online   Select and run through the link if not set default offline
   -v    --version       Print version script and exit
   -h    --help          Print this message and exit
 EOF
@@ -234,9 +235,9 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
       if [ -n "$keyword" ]; then
         status=$(curl -s -o /dev/null -w "%{http_code}" "https://api.github.com/repos/luisadha/${repo}/contents/bin")
         if [ "$status" = "200" ]; then
-          echo '{"fallback": true}' | jq
+          echo '{"available": true}' | jq
         else
-          echo '{"fallback": false}' | jq
+          echo '{"available": false}' | jq
         fi
         exit 0;
       else
