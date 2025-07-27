@@ -7,11 +7,11 @@ unset HISTSIZE
 # shellcheck disable=SC1090
 BASHER_ROOT="${HOME}/.basher/cellar"
 BASHER_PKG="${BASHER_ROOT}/packages/luisadha"
-__BASE_REPO__="nene"
-if [[ ! "$BASHER_ROOT" ]]; then
-__DIR__="${PREFIX}/bin/${__BASE_REPO__}"
+__FILE__="nene"
+if [[ -n "$BASHER_ROOT" && -d "$BASHER_PKG/$__BASE_REPO__" ]]; then
+__DIR__="${BASHER_PKG}/${__FILE__}"
 else
-__DIR__="${BASHER_PKG}/${__BASE_REPO__}"
+__DIR__="${PREFIX}/bin/${__FILE__}"
 fi
 
 
