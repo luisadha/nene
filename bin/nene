@@ -241,36 +241,50 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
       fi
     ;;
     -Si|-iS)
-        keyword="$2";
+      keyword="$2"
         if [ -z "$keyword" ]; then
-          echo "Error: option -$arg request an argument"; exit 2;
+          echo "Error: option -$arg requires an argument"; exit 2
         fi
-      read -r url repo < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0)
-        #echo "$url $repo"
-      if [ -n "$keyword" ]; then
-        status=$(curl -s -o /dev/null -w "%{http_code}" "https://api.github.com/repos/luisadha/${repo}/contents/bin")
-        if [ "$status" = "200" ]; then
-            #echo '{"fallback": true}' | jq
-            if [[ $? -eq 0 ]]; then
-                target="$PREFIX/bin";
-                mkdir -p "$target"
-                pushd "$target" > /dev/null
-                gum spin --spinner minidot --title "Installing ${repo} to \$PREFIX/bin" -- wget -qO "${repo}" "${url}" && chmod +x "${repo}"
-                popd > /dev/null
-                    if [ $? -eq 0 ]; then gum style --foreground 42 --bold "✅ ${repo} was successfully installed!"
-                    else gum style --foreground 196 --bold "❌ Failed to install ${repo}."
-                    fi
-            fi
-        else
-            #echo '{"fallback": false}' | jq
-            echo "❌ Can't find package named ${keyword}, install failed!"
-            exit 1;
-        fi
-            exit 0;
-        else
-         echo "Some error";
+  read -r url repo < <(
+    curl -s https://not-echo-not-true.carrd.co 2>/dev/null | 
+    html2text |
+    grep -oP '(?<=\])\(\K[^)]+' |
+    grep '^https\?://' |
+    grep -E 'github\.com|github\.io|luisadha\.my\.id' |
+    sort -ur |
+    awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
+    fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0
+  )
+
+  if [ -n "$url" ] && [ -n "$repo" ]; then
+    status=$(curl -s -o /dev/null -w "%{http_code}" "https://api.github.com/repos/luisadha/${repo}/contents/bin")
+    if [ "$status" = "200" ]; then
+      target="$PREFIX/bin"
+      mkdir -p "$target"
+      pushd "$target" > /dev/null
+      if [ ! -x "$repo" ]; then
+        gum spin --spinner minidot --title "Installing ${repo}..." -- \
+          wget --https-only -qO "${repo}" "${url}" && chmod +x "${repo}"
+      else
+        gum spin --spinner minidot --title "Updating ${repo}..." -- \
+          wget --https-only -qO "${repo}" "${url}" && chmod +x "${repo}"
       fi
-    ;;
+      popd > /dev/null
+
+      if [ $? -eq 0 ]; then
+        gum style --foreground 42 --bold "✅ ${repo} was successfully installed!"
+      else
+        gum style --foreground 196 --bold "❌ Failed to install ${repo}."
+      fi
+    else
+      echo "❌ Can't find package named ${keyword}, install failed!"
+      exit 1
+    fi
+  else
+    echo "❌ Failed to select a URL"
+  fi
+  exit 0
+  ;;
     *)
       echo "Error: Unknown options"
       exit 1;
