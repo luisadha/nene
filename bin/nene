@@ -5,16 +5,17 @@ VERSION="1.5.40-nightly"
 [ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 unset HISTSIZE
 # shellcheck disable=SC1090
-BASHER_ROOT="${HOME}/.basher/cellar"
-BASHER_PKG="${BASHER_ROOT}/packages/luisadha"
-__FILE__="nene"
-if [[ -n "$BASHER_ROOT" && -d "$BASHER_PKG/$__BASE_REPO__" ]]; then
-__DIR__="${BASHER_PKG}/${__FILE__}"
-else
-__DIR__="${PREFIX}/bin/${__FILE__}"
-fi
 
-
+__BASE_REPO__="nene"
+BASHER_PKG="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
+default_apps() {
+ if [[ -n "$BASHER_ROOT" && -d "$BASHER_PKG/$__BASE_REPO__" ]]; then
+    exec python3 "${BASHER_PKG}/not-echo-not-true.py"
+    return 0
+  else
+    exec python3 "${PREFIX}/libexec/not-echo-not-true.py"
+ fi
+}
 check_dependencies() {
   local missing=()
   local dependencies=("python3" "jq" "termux-open-url" "sort" "xargs" "html2text" "fzf" "awk" "grep" "gum" "wget" "curl") 
@@ -44,10 +45,6 @@ online_apps() {
 # shellcheck disable=SC1090
     . <(curl -sL "$__url__")
    return 0
-}
-default_apps() {
-    exec python3 "${__DIR__}/not-echo-not-true.py"
-    return 0
 }
 url() {
     read -r __url__ < <(curl -s https://not-echo-not-true.carrd.co | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | fzf --prompt="Indexing URL: " | xargs -r termux-open-url);
