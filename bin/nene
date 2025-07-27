@@ -7,6 +7,22 @@ unset HISTSIZE
 # shellcheck disable=SC1090
 __BASE_REPO__="nene"
 __DIR__="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
+check_dependencies() {
+  local missing=()
+  local dependencies=("html2text" "fzf" "awk" "grep" "gum" "wget" "curl") 
+
+  for cmd in "${dependencies[@]}"; do
+    if ! command -v "$cmd" &>/dev/null; then
+      missing+=("$cmd")
+    fi
+  done
+
+  if (( ${#missing[@]} > 0 )); then
+    echo "❌ Missing dependencies: ${missing[*]}"
+    echo "👉 Please install them and try again."
+    exit 1
+  fi
+}
 online_apps() {
     read -r __url__ < <(curl -s https://not-echo-not-true.carrd.co |
     html2text |
