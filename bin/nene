@@ -273,11 +273,11 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
       fi
       popd > /dev/null
     else
-      echo "❌ Can't find package named ${keyword}, code error: ${status}"
+      gum log -tsl warn "${keyword}, the package is registered but cannot be installed yet (error code: ${status})"
       exit 1
     fi
   else
-    echo "❌ Failed to parse a URL"
+    gum log -tsl fatal "Can't find package named ${keyword}"
   fi
   exit 0
   ;;
