@@ -263,12 +263,13 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
       mkdir -p "$target"
       pushd "$target" > /dev/null
       if [ ! -x "$repo" ]; then
+      pkgname="$repo";
         gum spin --spinner minidot --title "Installing ${repo}..." -- \
           wget --https-only -qO "${repo}" "${url}" && chmod +x "${repo}"
             if [ $? -eq 0 ]; then gum style --foreground 42 --bold "✅ ${repo} was successfully installed!"
             else gum style --foreground 196 --bold "❌ Failed to install ${repo}."; fi;
       else
-        gum style --foreground 42 --bold "✅ ${repo} Requirement already satisfied: ${repo}"
+        gum style --foreground 42 --bold "Requirement already satisfied: ${pkgname} in ${target}/bin/${pkgname}"
       fi
       popd > /dev/null
     else
