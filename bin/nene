@@ -250,13 +250,13 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
                     fi
             fi
         else
-            echo '{"fallback": false}' | jq
-            echo "❌ Can't find package from $url, install failed!"
+            #echo '{"fallback": false}' | jq
+            echo "❌ Can't find package named ${keyword}, install failed!"
             exit 1;
         fi
             exit 0;
         else
-         echo "Error";
+         echo "Some error";
       fi
     ;;
     *)
