@@ -7,18 +7,19 @@ BIN     := nene
 LIBPY   := not-echo-not-true.py
 
 install:
-	@unset BASHER_ROOT
-	@mkdir -p $(BINDIR)
-	@mkdir -p $(MANDIR)/man1
-	@mkdir -p $(LIBEXEC)
+        @mkdir -p $(BINDIR)
+        @mkdir -p $(MANDIR)/man1
+        @mkdir -p $(LIBEXEC)
 
-	@install -m755 bin/$(BIN)      $(BINDIR)/
-	@install -m644 man/$(BIN).1    $(MANDIR)/man1/
-	@install -m755 libexec/$(LIBPY) $(LIBEXEC)/
+        @install -m755 bin/$(BIN)      $(BINDIR)/
+        @install -m644 man/$(BIN).1    $(MANDIR)/man1/
+        @install -m755 libexec/$(LIBPY) $(LIBEXEC)/
 
-	@echo "✅ Successfully installed system-wide to $(PREFIX)"
+        @echo "✅ Successfully installed to $(PREFIX)"
 
 uninstall:
-	@rm -f $(BINDIR)/$(BIN)
-	@rm -f $(MANDIR)/man1/$(BIN).1
-	@rm -f $(LIBEXEC)/$(LIBPY)
+        @rm -f $(BINDIR)/$(BIN)
+        @rm -f $(MANDIR)/man1/$(BIN).1
+        @rm -f $(LIBEXEC)/$(LIBPY)
+
+	@echo "✅ Successfully uninstall"
