@@ -242,7 +242,7 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
         status=$(curl -s -o /dev/null -w "%{http_code}" "https://api.github.com/repos/luisadha/${repo}/contents/bin")
         if [ "$status" = "200" ]; then
             echo '{"fallback": true}' | jq
-            [[ $? -eq 0 ]] && echo "Installing.." && pushd "$PREFIX/bin" &>/dev/null && wget --show-progress -qO ${repo} ${url} && chmod +x ${repo} && popd 
+            [[ $? -eq 0 ]] && echo "Installing.. to " && pushd -n "$PREFIX/bin" > /dev/null && dirs -c && pushd "$PREFIX/bin" && wget --show-progress -qO ${repo} ${url} && chmod +x ${repo} && echo "Leaving directory.. " && popd 
         else
             echo '{"fallback": false}' | jq
             echo "❌ Can't find package from $url, install failed!"
