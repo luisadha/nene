@@ -3,7 +3,7 @@ name: Sync not-echo-not-true.py
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   sync:
