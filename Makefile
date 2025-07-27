@@ -1,21 +1,21 @@
-PREFIX := /data/data/com.termux/files/usr
-MANDIR := $(PREFIX)/share/man
+PREFIX  := /data/data/com.termux/files/usr
+MANDIR  := $(PREFIX)/share/man
+BINDIR  := $(PREFIX)/bin
+LIBEXEC := $(PREFIX)/libexec
 
-BIN    := nene
-
+BIN     := nene
+LIBPY   := not-echo-not-true.py
 
 install:
-	@mkdir -p $(PREFIX)/bin
+	@mkdir -p $(BINDIR)
 	@mkdir -p $(MANDIR)/man1
+	@mkdir -p $(LIBEXEC)
 
-	@cp -p bin/$(BIN)   $(PREFIX)/bin/
-	@cp -p man/$(BIN).1 $(MANDIR)/man1/ 
-	@install -Dm755 libexec/nene "$PREFIX/bin/nene"
-
- 	@chmod 755 $(PREFIX)/bin/$(BIN)
-
+	@install -m755 bin/$(BIN)      $(BINDIR)/
+	@install -m644 man/$(BIN).1    $(MANDIR)/man1/
+	@install -m755 libexec/$(LIBPY) $(LIBEXEC)/
 
 uninstall:
-	@rm -rf $(PREFIX)/bin/$(BIN)
-	@rm -rf $(MANDIR)/man1/$(BIN).1*
-	@rm -rf 
+	@rm -f $(BINDIR)/$(BIN)
+	@rm -f $(MANDIR)/man1/$(BIN).1
+	@rm -f $(LIBEXEC)/$(LIBPY)
