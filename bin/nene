@@ -5,8 +5,16 @@ VERSION="1.5.40-nightly"
 [ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 unset HISTSIZE
 # shellcheck disable=SC1090
+BASHER_ROOT="${HOME}/.basher/cellar"
+BASHER_PKG="${BASHER_ROOT}/packages/luisadha"
 __BASE_REPO__="nene"
-__DIR__="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
+if [[ ! "$BASHER_ROOT" ]]; then
+__DIR__="${PREFIX}/bin/${__BASE_REPO__}"
+else
+__DIR__="${BASHER_PKG}/${__BASE_REPO__}"
+fi
+
+
 check_dependencies() {
   local missing=()
   local dependencies=("python3" "jq" "termux-open-url" "sort" "xargs" "html2text" "fzf" "awk" "grep" "gum" "wget" "curl") 
