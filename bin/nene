@@ -265,24 +265,18 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
       if [ ! -x "$repo" ]; then
         gum spin --spinner minidot --title "Installing ${repo}..." -- \
           wget --https-only -qO "${repo}" "${url}" && chmod +x "${repo}"
+            if [ $? -eq 0 ]; then gum style --foreground 42 --bold "✅ ${repo} was successfully installed!"
+            else gum style --foreground 196 --bold "❌ Failed to install ${repo}."; fi;
       else
-        gum spin --spinner minidot --title "Updating ${repo}..." -- \
-          wget --https-only -qO "${repo}" "${url}" && chmod +x "${repo}"
-        gum style --foreground 42 --bold "✅ ${repo} was successfully updated!"
+        gum style --foreground 42 --bold "✅ ${repo} Requirement already satisfied: ${repo}"
       fi
       popd > /dev/null
-
-      if [ $? -eq 0 ]; then
-        gum style --foreground 42 --bold "✅ ${repo} was successfully installed!"
-      else
-        gum style --foreground 196 --bold "❌ Failed to install ${repo}."
-      fi
     else
-      echo "❌ Can't find package named ${keyword}, install failed!"
+      echo "❌ Can't find package named ${keyword}, code error: ${status}"
       exit 1
     fi
   else
-    echo "❌ Failed to select a URL"
+    echo "❌ Failed to parse a URL"
   fi
   exit 0
   ;;
