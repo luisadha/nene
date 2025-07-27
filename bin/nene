@@ -273,11 +273,11 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
       fi
       popd > /dev/null
     else
-      gum log -tsl warn "${keyword}, the package is registered but cannot be installed yet (error code: ${status})"
+      gum log --level warn "${keyword}, the package is registered but cannot be installed yet (error code: ${status})"
       exit 1
     fi
   else
-    gum log -tsl fatal "Can't find package named ${keyword}"
+    gum log --level error "Can't find package named ${keyword}"
   fi
   exit 0
   ;;
