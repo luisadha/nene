@@ -245,7 +245,7 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
                 pushd "$target" > /dev/null
                 gum spin --spinner minidot --title "Installing ${repo} to \$PREFIX/bin" -- wget -qO "${repo}" "${url}" && chmod +x "${repo}"
                 popd > /dev/null
-                    if [ $? -eq 0 ]; then gum style --foreground 42 --bold "✅ ${repo} was successfully installed to \$PREFIX/bin!"
+                    if [ $? -eq 0 ]; then gum style --foreground 42 --bold "✅ ${repo} was successfully installed!"
                     else gum style --foreground 196 --bold "❌ Failed to install ${repo}."
                     fi
             fi
