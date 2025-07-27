@@ -29,27 +29,6 @@ url() {
     read -r __url__ < <(curl -s https://not-echo-not-true.carrd.co | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | fzf --prompt="Indexing URL: " | xargs -r termux-open-url);
     return 0
 }
-progressfilt() {
-    local flag=false c count cr=$'\r' nl=$'\n'
-    while IFS='' read -d '' -rn 1 c
-    do
-        if $flag
-        then
-            printf '%s' "$c"
-        else
-            if [[ $c != $cr && $c != $nl ]]
-            then
-                count=0
-            else
-                ((count++))
-                if ((count > 1))
-                then
-                    flag=true
-                fi
-            fi
-        fi
-    done
-}
 homepage() {
     termux-open-url https://not-echo-not-true.carrd.co
     return 0
@@ -260,7 +239,13 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
         status=$(curl -s -o /dev/null -w "%{http_code}" "https://api.github.com/repos/luisadha/${repo}/contents/bin")
         if [ "$status" = "200" ]; then
             echo '{"fallback": true}' | jq
-            [[ $? -eq 0 ]] && printf "Installing.. to " && cd "$PREFIX/bin" && wget --progress=bar:force -qO ${repo} ${url} 2>&1 | progressfilt && chmod +x ${repo} && echo "Leaving directory.. " && cd -
+            if [[ $? -eq 0 ]]; then
+                target="$PREFIX/bin";
+                mkdir -p "$target"
+                pushd "$target" > /dev/null
+                gum spin --spinner minidot --title "Installing ${repo} to \$PREFIX/bin" -- wget -qO "${repo}" "${url}" && chmod +x "${repo}"
+                popd > /dev/null;
+            fi
         else
             echo '{"fallback": false}' | jq
             echo "❌ Can't find package from $url, install failed!"
