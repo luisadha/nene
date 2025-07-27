@@ -9,7 +9,7 @@ unset HISTSIZE
 __BASE_REPO__="nene"
 BASHER_PKG="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
 default_apps() {
- if [[ -n "$BASHER_ROOT" && -d "$BASHER_PKG/$__BASE_REPO__" ]]; then
+ if [[ -n "$BASHER_ROOT" && -d "$BASHER_PKG" ]]; then
     exec python3 "${BASHER_PKG}/not-echo-not-true.py"
     return 0
   else
