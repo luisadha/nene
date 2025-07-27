@@ -9,7 +9,7 @@ __BASE_REPO__="nene"
 __DIR__="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
 check_dependencies() {
   local missing=()
-  local dependencies=("termux-open-url" "sort" "xargs" "html2text" "fzf" "awk" "grep" "gum" "wget" "curl") 
+  local dependencies=("python3" "jq" "termux-open-url" "sort" "xargs" "html2text" "fzf" "awk" "grep" "gum" "wget" "curl") 
 
   for cmd in "${dependencies[@]}"; do
     if ! command -v "$cmd" &>/dev/null; then
