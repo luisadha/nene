@@ -6,6 +6,9 @@ VERSION="1.5.40-nightly"
 unset HISTSIZE
 # shellcheck disable=SC1090
 
+E_MATCH='--exact'
+PACKAGE="$(echo "PACKAGE")"
+
 __BASE_REPO__="nene"
 BASHER_PKG="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
 default_apps() {
@@ -82,15 +85,15 @@ help() {
 cat <<'EOF'
 Nene is both a static site and a set of Bash tools you can run straight from your terminal
 Usage :
-  -a    --api-termux    Installs nene-ak47 to run Nene via WebApp using Android Share
-  -u    --select-url    Select a webapp to open the link. This option is only effective when used after the -a option
-        --homepage      Open homepage related this project
-    -Ss QUERY           Search package metadata in JSON format
-    -Si QUERY           Search and install the globally specified package
-  -S    --search=QUERY  Execute the explicitly specified application
-  -m    --mode=online   Select and run through the link if not set default offline
-  -v    --version       Print version script and exit
-  -h    --help          Print this message and exit
+  -a    --api-termux     Installs nene-ak47 to run Nene via WebApp using Android Share
+  -u    --select-url     Select a webapp to open the link. This option is only effective when used after the -a option
+        --homepage       Open homepage related this project
+    -Ss PACKAGE          Search package metadata in JSON format
+    -Si PACKAGE          Search and install the globally specified package
+  -S    --search=PACKAGE Execute the explicitly specified application
+  -m    --mode=online    Select and run through the link if not set default offline
+  -v    --version        Print version script and exit
+  -h    --help           Print this message and exit
 EOF
 }
 version() {
@@ -190,7 +193,7 @@ exit 1;
                 else
                     SPARAM="$SELECT_ARG";
                 fi;
-read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__";
+read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf ${E_MATCH} --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__";
 # shellcheck disable=SC1090
 . <(curl -sL "$__url__" 2>/dev/null);
       shift;
@@ -224,7 +227,7 @@ exit 1
 SPARAM="$_S_ARG";
 fi;
 # shellcheck disable=SC1090
-read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__";
+read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf ${E_MATCH} --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__";
 # shellcheck disable=SC1090
 . <(curl -sL "$__url__" 2>/dev/null);
       shift;
@@ -235,7 +238,7 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
         if [ -z "$keyword" ]; then
           echo "Error: option -$arg request an argument"; exit 2;
         fi
-      read -r url repo < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0)
+      read -r url repo < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf ${E_MATCH} --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0)
         #echo "$url $repo"
       if [ -n "$keyword" ]; then
         curl -s "https://api.github.com/repos/luisadha/${repo}/contents/bin"
@@ -258,7 +261,7 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
     grep -E 'github\.com|github\.io|luisadha\.my\.id' |
     sort -ur |
     awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
-    fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0
+    fzf ${E_MATCH} --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0
   )
 
   if [ -n "$url" ] && [ -n "$repo" ]; then
