@@ -285,9 +285,11 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
     if [ "$status" = "200" ]; then
       target="$PREFIX/bin"
       pkgname="$repo";
+      IV="${pkgname} --version 2>/dev/null | cut -d' ' -f2"
+      LV="$(fetch_latest_version)"
       mkdir -p "$target"
       pushd "$target" > /dev/null
-      if [ ! -x "$repo" ]; then
+      if ! command -v "$repo" >/dev/null || [ "$IV" != "$LV" ]; then
         gum spin --spinner minidot --title "Installing ${repo}..." -- \
           wget --https-only -qO "${repo}" "${url}" && chmod +x "${repo}"
             if [ $? -eq 0 ]; then gum style --foreground 42 --bold "✅ ${repo} was successfully installed!"
