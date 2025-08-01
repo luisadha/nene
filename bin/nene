@@ -286,7 +286,7 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
       target="$PREFIX/bin"
       pkgname="$repo";
       IV="${pkgname} --version 2>/dev/null | cut -d' ' -f2"
-      LV="$(fetch_latest_version)"
+      LV="$(fetch_latest_version ${pkgname})"
       mkdir -p "$target"
       pushd "$target" > /dev/null
       if ! command -v "$repo" >/dev/null || [ "$IV" != "$LV" ]; then
