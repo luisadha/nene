@@ -45,6 +45,12 @@ local pkg="$1"
 jq -r 'sort_by(.published_at) | last | .tag_name'
     return 0
 };
+fetch_latest_date() {
+local pkg="$1"
+    curl -s https://api.github.com/repos/luisadha/termcreed/releases \
+  | jq -r 'max_by(.published_at).published_at[:10]'
+   return 0
+}
 online_apps() {
     read -r __url__ < <(curl -s https://not-echo-not-true.carrd.co |
     html2text |
@@ -287,7 +293,7 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
             if [ $? -eq 0 ]; then gum style --foreground 42 --bold "✅ ${repo} was successfully installed!"
             else gum style --foreground 196 --bold "❌ Failed to install ${repo}."; fi;
       else
-        gum style --foreground 42 --bold "Requirement already satisfied: ${pkgname} in ${target}/${pkgname} \($(fetch_latest_version ${pkgname})\)"
+        gum style --foreground 42 --bold "Requirement already satisfied: ${pkgname} in ${target}/${pkgname} ($(fetch_latest_version ${pkgname})/$(fetch_latest_date ${pkgname}))"
       fi
       popd > /dev/null
     else
