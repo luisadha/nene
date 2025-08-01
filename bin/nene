@@ -47,7 +47,7 @@ jq -r 'sort_by(.published_at) | last | .tag_name'
 };
 fetch_latest_date() {
 local pkg="$1"
-    curl -s https://api.github.com/repos/luisadha/termcreed/releases \
+    curl -s https://api.github.com/repos/luisadha/${pkg}/releases \
   | jq -r 'max_by(.published_at).published_at[:10]'
    return 0
 }
