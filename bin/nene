@@ -6,8 +6,12 @@ VERSION="1.5.41b"
 unset HISTSIZE
 # shellcheck disable=SC1090
 
+
 E_MATCH='--exact'
 PACKAGE="$(echo "PACKAGE")"
+PKG_SHARE_NENE="${HOME}/.local/share/nene/"
+mkdir -p ${PKG_SHARE_NENE}
+touch ${PKG_SHARE_NENE}/packages.json
 
 __BASE_REPO__="nene"
 BASHER_PKG="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
@@ -35,6 +39,12 @@ check_dependencies() {
     exit 1
   fi
 }
+fetch_latest_version() {
+local pkg="$1"
+    curl -s https://api.github.com/repos/luisadha/${pkg}/releases |
+jq -r 'sort_by(.published_at) | last | .tag_name'
+    return 0
+};
 online_apps() {
     read -r __url__ < <(curl -s https://not-echo-not-true.carrd.co |
     html2text |
@@ -277,7 +287,7 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
             if [ $? -eq 0 ]; then gum style --foreground 42 --bold "✅ ${repo} was successfully installed!"
             else gum style --foreground 196 --bold "❌ Failed to install ${repo}."; fi;
       else
-        gum style --foreground 42 --bold "Requirement already satisfied: ${pkgname} in ${target}/${pkgname}"
+        gum style --foreground 42 --bold "Requirement already satisfied: ${pkgname} in ${target}/${pkgname} \($(fetch_latest_version)\)"
       fi
       popd > /dev/null
     else
