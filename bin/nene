@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 #set -xv
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE
-VERSION="1.5.40-nightly"
+VERSION="1.5.41b"
 [ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 unset HISTSIZE
 # shellcheck disable=SC1090
