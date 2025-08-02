@@ -259,7 +259,7 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
         #echo "$url $repo"
       if [ -n "$keyword" ]; then
         curl -s "https://api.github.com/repos/luisadha/${repo}/contents/bin" > "${PKG_SHARE_NENE}"/"${repo}".json
-        curl -s "https://api.github.com/repos/luisadha/${pkg}/releases"  > "${PKG_SHARE_NENE}"/"${repo}"-release.json
+        curl -s "https://api.github.com/repos/luisadha/${repo}/releases"  > "${PKG_SHARE_NENE}"/"${repo}"-release.json
         fetch_latest_version "${repo}"
         fetch_latest_date "${repo}"
         exit 0;
