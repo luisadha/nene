@@ -265,6 +265,40 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
         exit 1;
       fi
     ;;
+    -U|--uninstall)
+keyword="$2"
+        if [ -z "$keyword" ]; then
+          echo "Error: option -$arg requires an argument"; exit 2
+        fi
+  read -r url repo < <(
+    curl -s https://not-echo-not-true.carrd.co 2>/dev/null | 
+    html2text |
+    grep -oP '(?<=\])\(\K[^)]+' |
+    grep '^https\?://' |
+    grep -E 'github\.com|github\.io|luisadha\.my\.id' |
+    sort -ur |
+    awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
+    fzf ${E_MATCH} --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0
+  )
+
+  if [ -n "$url" ] && [ -n "$repo" ]; then
+      target="$PREFIX/bin"
+      pkgname="$repo";
+      mkdir -p "$target"
+          pushd "$target" > /dev/null
+    if [ -x "$repo" ]; then
+        gum spin --spinner minidot --title "Unstalling ${repo}..." -- \
+          rm -f "${repo}"
+            if [ $? -eq 0 ]; then gum style --foreground 42 --bold "✅ ${repo} was successfull uninstall!"
+            else gum style --foreground 196 --bold "❌ Failed to uninstall ${repo}."; fi;
+    fi
+          popd > /dev/null
+  else
+    gum log --level error "Can't find package named ${keyword}"
+    exit 1
+  fi
+  exit 0
+    ;;
     -Si|-iS)
       keyword="$2"
         if [ -z "$keyword" ]; then
@@ -301,10 +335,11 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
       popd > /dev/null
     else
       gum log --level warn "${keyword}, the package is registered but cannot be installed yet (error code: ${status})"
-      exit 1
+      exit 1;
     fi
   else
     gum log --level error "Can't find package named ${keyword}"
+    exit 1;
   fi
   exit 0
   ;;
