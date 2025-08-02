@@ -6,7 +6,7 @@ VERSION="1.5.41b"
 unset HISTSIZE
 # shellcheck disable=SC1090
 
-
+V_FLAGS='--version'
 E_MATCH='--exact'
 PACKAGE="$(echo "PACKAGE")"
 PKG_SHARE_NENE="${HOME}/.local/share/nene/"
@@ -296,7 +296,7 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
             if [ $? -eq 0 ]; then gum style --foreground 42 --bold "✅ ${repo} was successfully installed!"
             else gum style --foreground 196 --bold "❌ Failed to install ${repo}."; fi;
       else     
-        gum style --foreground 42 --bold "Package already installed: ${pkgname} in ${target}/${pkgname} (${keyvers})"
+        gum style --foreground 42 --bold "Package already installed: ${pkgname} in ${target}/${pkgname} ($(eval "${pkgname}" "$V_FLAGS"))"
       fi
       popd > /dev/null
     else
