@@ -11,7 +11,7 @@ E_MATCH='--exact'
 PACKAGE="$(echo "PACKAGE")"
 PKG_SHARE_NENE="${HOME}/.local/share/nene/"
 mkdir -p ${PKG_SHARE_NENE}
-touch ${PKG_SHARE_NENE}/packages.json
+
 
 __BASE_REPO__="nene"
 BASHER_PKG="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
@@ -258,7 +258,9 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
       read -r url repo < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf ${E_MATCH} --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0)
         #echo "$url $repo"
       if [ -n "$keyword" ]; then
-        curl -s "https://api.github.com/repos/luisadha/${repo}/contents/bin"
+        curl -s "https://api.github.com/repos/luisadha/${repo}/contents/bin" > ${PKG_SHARE_NENE}/${repo}.json
+        fetch_latest_version
+        fetch_latest_date
         exit 0;
       else
         echo "❌ Tidak ditemukan repo dari $url"
