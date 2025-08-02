@@ -251,7 +251,7 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
       ;;
     -sS|-Ss)
       keyword="$2";
-      keyvers="$2 --version"
+      
         if [ -z "$keyword" ]; then
           echo "Error: option -$arg request an argument"; exit 2;
         fi
@@ -259,8 +259,8 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
         #echo "$url $repo"
       if [ -n "$keyword" ]; then
         curl -s "https://api.github.com/repos/luisadha/${repo}/contents/bin" > ${PKG_SHARE_NENE}/${repo}.json
-        fetch_latest_version
-        fetch_latest_date
+        fetch_latest_version "${repo}"
+        fetch_latest_date "${repo}"
         exit 0;
       else
         echo "❌ Tidak ditemukan repo dari $url"
