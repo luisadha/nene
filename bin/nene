@@ -264,7 +264,7 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
         fetch_latest_date "${repo}"
         exit 0;
       else
-        echo "❌ Tidak ditemukan repo dari $url"
+        echo "❌ Can't find repository from $url"
         exit 1;
       fi
     ;;
@@ -292,7 +292,7 @@ keyword="$2"
     if [ -x "$repo" ]; then
         gum spin --spinner minidot --title "Unstalling ${repo}..." -- \
           rm -f "${repo}"
-            if [ $? -eq 0 ]; then gum style --foreground 42 --bold "✅ ${repo} was successfull uninstall!"
+            if [ $? -eq 0 ]; then gum style --foreground 212 --bold "🗑️ Package ${repo} removed successfully"
             else gum style --foreground 196 --bold "❌ Failed to uninstall ${repo}."; fi;
     fi
           popd > /dev/null
