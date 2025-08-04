@@ -1,20 +1,21 @@
 #!/usr/bin/bash
 #set -xv
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE
-VERSION="1.5.42b"
 [ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
-unset HISTSIZE
-# shellcheck disable=SC1090
 
-V_FLAGS='--version'
-E_MATCH='--exact'
+# shellcheck disable=SC1090
+PACKAGE="nene"
+VERSION="1.5.42b"
+NEPI="luisadha.my.id" # formerly not-echo-not-true.carrd.co
+V_FLAGS='--version' # GLOBAL FLAGS
+E_MATCH='--exact' # FZF FLAGS
 PACKAGE="$(echo "PACKAGE")"
 PKG_SHARE_NENE="${HOME}/.local/share/nene/"
-mkdir -p ${PKG_SHARE_NENE}
-
-
 __BASE_REPO__="nene"
 BASHER_PKG="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
+
+
+mkdir -p ${PKG_SHARE_NENE}
 default_apps() {
  if [[ -n "$BASHER_ROOT" && -d "$BASHER_PKG" ]]; then
     exec python3 "${BASHER_PKG}/not-echo-not-true.py"
