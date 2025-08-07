@@ -5,7 +5,7 @@
 
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.5.42b"
+VERSION="1.5.54b"
 NEPI="luisadha.my.id" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
 E_MATCH='--exact' # FZF FLAGS
@@ -108,6 +108,8 @@ cat <<'EOF'
 -m
 -v
 -h
+-R
+--uninstall
 --api-termux
 --select-url
 --homepage
@@ -290,7 +292,7 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
         exit 1;
       fi
     ;;
-    -U|--uninstall)
+    -R|--uninstall)
 keyword="$2"
         if [ -z "$keyword" ]; then
           echo "Error: option -$arg requires an argument"; exit 2
