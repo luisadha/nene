@@ -2,7 +2,7 @@ PREFIX  := /data/data/com.termux/files/usr
 MANDIR  := $(PREFIX)/share/man
 BINDIR  := $(PREFIX)/bin
 LIBEXEC := $(PREFIX)/libexec
-ETCDIR	:= $(PREFIX)/usr/etc
+ETCDIR	:= $(PREFIX)/etc
 
 COMPLET	:= nene.completions.bash
 BIN     := nene
