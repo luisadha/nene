@@ -98,6 +98,25 @@ sleep 0.4;
 echo "..done"
 return 0
 }
+available_options() {
+cat <<'EOF'
+-a
+-u
+-S
+-Ss
+-Si
+-m
+-v
+-h
+--api-termux
+--select-url
+--homepage
+--search
+--mode
+--version
+--help
+EOF
+}
 help() {
 cat <<'EOF'
 Nene is both a static site and a set of Bash tools you can run straight from your terminal
@@ -129,6 +148,8 @@ fi
 
 for arg in "$@"; do
   case "$arg" in
+    flags)
+        available_options;;
     --homepage)
         homepage;;
     -a|--api-termux)
