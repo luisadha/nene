@@ -1,13 +1,21 @@
 #!/usr/bin/bash
 #set -xv
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE
-VERSION="1.5.40-nightly"
 [ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
-unset HISTSIZE
-# shellcheck disable=SC1090
 
+# shellcheck disable=SC1090
+PACKAGE="nene"
+VERSION="1.5.42b"
+NEPI="luisadha.my.id" # formerly not-echo-not-true.carrd.co
+V_FLAGS='--version' # GLOBAL FLAGS
+E_MATCH='--exact' # FZF FLAGS
+PACKAGE="$(echo "PACKAGE")"
+PKG_SHARE_NENE="${HOME}/.local/share/nene/"
 __BASE_REPO__="nene"
 BASHER_PKG="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
+
+
+mkdir -p ${PKG_SHARE_NENE}
 default_apps() {
  if [[ -n "$BASHER_ROOT" && -d "$BASHER_PKG" ]]; then
     exec python3 "${BASHER_PKG}/not-echo-not-true.py"
@@ -31,6 +39,18 @@ check_dependencies() {
     echo "👉 Please install them and try again."
     exit 1
   fi
+}
+fetch_latest_version() {
+local pkg="$1"
+    curl -s https://api.github.com/repos/luisadha/${pkg}/releases |
+jq -r 'sort_by(.published_at) | last | .tag_name'
+    return 0
+};
+fetch_latest_date() {
+local pkg="$1"
+    curl -s https://api.github.com/repos/luisadha/${pkg}/releases \
+  | jq -r 'max_by(.published_at).published_at[:10]'
+   return 0
 }
 online_apps() {
     read -r __url__ < <(curl -s https://not-echo-not-true.carrd.co |
@@ -101,15 +121,15 @@ help() {
 cat <<'EOF'
 Nene is both a static site and a set of Bash tools you can run straight from your terminal
 Usage :
-  -a    --api-termux    Installs nene-ak47 to run Nene via WebApp using Android Share
-  -u    --select-url    Select a webapp to open the link. This option is only effective when used after the -a option
-        --homepage      Open homepage related this project
-    -Ss QUERY           Search package metadata in JSON format
-    -Si QUERY           Search and install the globally specified package
-  -S    --search=QUERY  Execute the explicitly specified application
-  -m    --mode=online   Select and run through the link if not set default offline
-  -v    --version       Print version script and exit
-  -h    --help          Print this message and exit
+  -a    --api-termux     Installs nene-ak47 to run Nene via WebApp using Android Share
+  -u    --select-url     Select a webapp to open the link. This option is only effective when used after the -a option
+        --homepage       Open homepage related this project
+    -Ss PACKAGE          Search package metadata in JSON format
+    -Si PACKAGE          Search and install the globally specified package
+  -S    --search=PACKAGE Execute the explicitly specified application
+  -m    --mode=online    Select and run through the link if not set default offline
+  -v    --version        Print version script and exit
+  -h    --help           Print this message and exit
 EOF
 }
 version() {
@@ -211,7 +231,7 @@ exit 1;
                 else
                     SPARAM="$SELECT_ARG";
                 fi;
-read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__";
+read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf ${E_MATCH} --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__";
 # shellcheck disable=SC1090
 . <(curl -sL "$__url__" 2>/dev/null);
       shift;
@@ -245,7 +265,7 @@ exit 1
 SPARAM="$_S_ARG";
 fi;
 # shellcheck disable=SC1090
-read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__";
+read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf ${E_MATCH} --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__";
 # shellcheck disable=SC1090
 . <(curl -sL "$__url__" 2>/dev/null);
       shift;
@@ -253,18 +273,56 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
       ;;
     -sS|-Ss)
       keyword="$2";
+      
         if [ -z "$keyword" ]; then
           echo "Error: option -$arg request an argument"; exit 2;
         fi
-      read -r url repo < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0)
+      read -r url repo < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf ${E_MATCH} --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0)
         #echo "$url $repo"
       if [ -n "$keyword" ]; then
-        curl -s "https://api.github.com/repos/luisadha/${repo}/contents/bin"
+        curl -s "https://api.github.com/repos/luisadha/${repo}/contents/bin" > "${PKG_SHARE_NENE}"/"${repo}".json
+        curl -s "https://api.github.com/repos/luisadha/${repo}/releases"  > "${PKG_SHARE_NENE}"/"${repo}"-release.json
+        fetch_latest_version "${repo}"
+        fetch_latest_date "${repo}"
         exit 0;
       else
-        echo "❌ Tidak ditemukan repo dari $url"
+        echo "❌ Can't find repository from $url"
         exit 1;
       fi
+    ;;
+    -U|--uninstall)
+keyword="$2"
+        if [ -z "$keyword" ]; then
+          echo "Error: option -$arg requires an argument"; exit 2
+        fi
+  read -r url repo < <(
+    curl -s https://not-echo-not-true.carrd.co 2>/dev/null | 
+    html2text |
+    grep -oP '(?<=\])\(\K[^)]+' |
+    grep '^https\?://' |
+    grep -E 'github\.com|github\.io|luisadha\.my\.id' |
+    sort -ur |
+    awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
+    fzf ${E_MATCH} --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0
+  )
+
+  if [ -n "$url" ] && [ -n "$repo" ]; then
+      target="$PREFIX/bin"
+      pkgname="$repo";
+      mkdir -p "$target"
+          pushd "$target" > /dev/null
+    if [ -x "$repo" ]; then
+        gum spin --spinner minidot --title "Unstalling ${repo}..." -- \
+          rm -f "${repo}"
+            if [ $? -eq 0 ]; then gum style --foreground 212 --bold "🗑️ Package ${repo} removed successfully"
+            else gum style --foreground 196 --bold "❌ Failed to uninstall ${repo}."; fi;
+    fi
+          popd > /dev/null
+  else
+    gum log --level error "Can't find package named ${keyword}"
+    exit 1
+  fi
+  exit 0
     ;;
     -Si|-iS)
       keyword="$2"
@@ -279,7 +337,7 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
     grep -E 'github\.com|github\.io|luisadha\.my\.id' |
     sort -ur |
     awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
-    fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0
+    fzf ${E_MATCH} --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0
   )
 
   if [ -n "$url" ] && [ -n "$repo" ]; then
@@ -287,6 +345,8 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
     if [ "$status" = "200" ]; then
       target="$PREFIX/bin"
       pkgname="$repo";
+      IV="${pkgname} --version 2>/dev/null | cut -d' ' -f2"
+      LV="$(fetch_latest_version ${pkgname})"
       mkdir -p "$target"
       pushd "$target" > /dev/null
       if [ ! -x "$repo" ]; then
@@ -294,16 +354,17 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
           wget --https-only -qO "${repo}" "${url}" && chmod +x "${repo}"
             if [ $? -eq 0 ]; then gum style --foreground 42 --bold "✅ ${repo} was successfully installed!"
             else gum style --foreground 196 --bold "❌ Failed to install ${repo}."; fi;
-      else
-        gum style --foreground 42 --bold "Requirement already satisfied: ${pkgname} in ${target}/${pkgname}"
+      else     
+        gum style --foreground 42 --bold "Package already installed: ${pkgname} in ${target}/${pkgname} ($(eval "${pkgname}" "$V_FLAGS"))"
       fi
       popd > /dev/null
     else
       gum log --level warn "${keyword}, the package is registered but cannot be installed yet (error code: ${status})"
-      exit 1
+      exit 1;
     fi
   else
     gum log --level error "Can't find package named ${keyword}"
+    exit 1;
   fi
   exit 0
   ;;
