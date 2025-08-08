@@ -305,6 +305,7 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
 
     if [ $? -eq 0 ]; then
       gum style --foreground 212 --bold "🗑️ Package ${keyword} removed successfully"
+      source "$PREFIX/etc/bash_completion.d/nene.completions.bash"
     else
       gum style --foreground 196 --bold "❌ Failed to uninstall ${keyword}."
     fi
