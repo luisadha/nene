@@ -61,9 +61,7 @@ online_apps() {
     sort -ur |
     awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
     fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t');
-    [ -z "$__url__" ] && echo -e "\nCaught ^"
-# shellcheck disable=SC1090
-    . <(curl -sL "$__url__")
+    [ -z "$__url__" ] && echo -e "\nCaught ^" || . <(curl -sL "$__url__")
    return 0
 }
 url() {
@@ -258,18 +256,30 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
       shift;
         exit 0
       ;;
-    -S|--search)
-_S_ARG="$2";
-                if [[ -z "$_S_ARG" ]]; then
-echo -e "Error: option $arg request an argument $_S_ARG";
-exit 1
-                else                                                                   
-SPARAM="$_S_ARG";
-fi;
-# shellcheck disable=SC1090
-read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf ${E_MATCH} --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__";
-# shellcheck disable=SC1090
-. <(curl -sL "$__url__" 2>/dev/null);
+    -l|--list)
+if [ ! -f ~/.cache/nene-list ]; then
+curl -s https://not-echo-not-true.carrd.co |
+html2text |
+grep -oP '(?<=\])\(\K[^)]+' |
+grep '^https\?://' |
+grep -E 'github\.com|github\.io|luisadha\.my\.id' |
+xargs -n1 basename > ~/.cache/nene-list
+fi
+
+mapfile -t __endpoint__ < ~/.cache/nene-list
+for cmd in "${__endpoint__[@]}"; do
+    if command -v "$cmd" &>/dev/null; then
+        encode=$(file --mime-encoding "$(which "$cmd")" | awk '{print $2}' || echo "unknown")
+        now=$(echo "now `$cmd --version 2>/dev/null | xargs -r -n1 | tail -n1`")
+        echo "$(basename "$(command -v "$cmd")")/main,${now} ($encode) [installed]"
+    else
+        encode=$(file --mime-encoding "$(type -p "$cmd")" | awk '{print $2}' | :)
+        latest=$(fetch_latest_version "${cmd}")
+        echo "$cmd/main,${latest}"
+        
+    fi
+done
+
       shift;
         exit 0
       ;;
