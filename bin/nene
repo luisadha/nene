@@ -311,7 +311,7 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
   else
     gum style --foreground 11 --bold "⚠️  Command ${keyword} not found in PATH."
   fi
-  shift 2
+  exit $?
      ;;
     -Si|-iS)
       keyword="$2"
