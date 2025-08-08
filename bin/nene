@@ -5,7 +5,7 @@
 
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.5.55b"
+VERSION="1.5.56b"
 NEPI="luisadha.my.id" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
 E_MATCH='--exact' # FZF FLAGS
@@ -384,7 +384,7 @@ keyword="$2"
   exit 0
   ;;
     *)
-     [ "$1" == "-R" || "$1" == "--uninstall" ] && suggest || echo "Error: Unknown options"
+     echo "Error: Unknown options" 2>&1;
       exit 1;
     ;;
   esac
