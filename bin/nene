@@ -52,19 +52,6 @@ local pkg="$1"
   | jq -r 'max_by(.published_at).published_at[:10]'
    return 0
 }
-suggest() {
-read -r __url__ __endpoint__ < <(
-  curl -s https://not-echo-not-true.carrd.co 2>/dev/null |
-  html2text |
-  grep -oP '(?<=\])\(\K[^)]+' |
-  grep '^https\?://' |
-  grep -E 'github\.com|github\.io|luisadha\.my\.id' |
-  sort -ur |
-  awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
-  fzf --exact --with-nth=2 --prompt="Choose to Remove (script): " --delimiter='\t' -1 -0
-)
-echo "$__endpoint__"
-}
 online_apps() {
     read -r __url__ < <(curl -s https://not-echo-not-true.carrd.co |
     html2text |
@@ -305,40 +292,27 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
         exit 1;
       fi
     ;;
-    -R|--uninstall)
-keyword="$2"
-        if [ -z "$keyword" ]; then
-          echo "Error: option -$arg requires an argument"; exit 2
-        fi
-  read -r url repo < <(
-    curl -s https://not-echo-not-true.carrd.co 2>/dev/null | 
-    html2text |
-    grep -oP '(?<=\])\(\K[^)]+' |
-    grep '^https\?://' |
-    grep -E 'github\.com|github\.io|luisadha\.my\.id' |
-    sort -ur |
-    awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
-    fzf ${E_MATCH} --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0
-  )
-
-  if [ -n "$url" ] && [ -n "$repo" ]; then
-      target="$PREFIX/bin"
-      pkgname="$repo";
-      mkdir -p "$target"
-          pushd "$target" > /dev/null
-    if [ -x "$repo" ]; then
-        gum spin --spinner minidot --title "Unstalling ${repo}..." -- \
-          rm -f "${repo}"
-            if [ $? -eq 0 ]; then gum style --foreground 212 --bold "🗑️ Package ${repo} removed successfully"
-            else gum style --foreground 196 --bold "❌ Failed to uninstall ${repo}."; fi;
-    fi
-          popd > /dev/null
-  else
-    gum log --level error "Can't find package named ${keyword}"
-    exit 1
+   -R|--uninstall)
+  keyword="$2"
+  if [ -z "$keyword" ]; then
+    echo "Error: option $arg requires an argument"
+    exit 2
   fi
-  exit 0
-    ;;
+
+  if command -v "$keyword" &>/dev/null; then
+    gum spin --spinner minidot --title "Uninstalling ${keyword}..." -- \
+      rm -rf "$(command -v "$keyword")"
+
+    if [ $? -eq 0 ]; then
+      gum style --foreground 212 --bold "🗑️ Package ${keyword} removed successfully"
+    else
+      gum style --foreground 196 --bold "❌ Failed to uninstall ${keyword}."
+    fi
+  else
+    gum style --foreground 11 --bold "⚠️  Command ${keyword} not found in PATH."
+  fi
+  shift 2
+     ;;
     -Si|-iS)
       keyword="$2"
         if [ -z "$keyword" ]; then
