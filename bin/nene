@@ -9,6 +9,7 @@ VERSION="1.5.56b"
 NEPI="luisadha.my.id" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
 E_MATCH='--exact' # FZF FLAGS
+R_MATCH='--extended'
 PACKAGE="$(echo "PACKAGE")"
 PKG_SHARE_NENE="${HOME}/.local/share/nene/"
 __BASE_REPO__="nene"
@@ -296,7 +297,7 @@ keyword="$2"
   grep -E 'github\.com|github\.io|luisadha\.my\.id' |
   sort -ur |
   awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
-  fzf --extended -with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0
+  fzf ${R_MATCH} --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0
 ) 
     if [ -n "$keyword" ]; then
         curl -s "https://api.github.com/repos/luisadha/${repo}/contents/bin" > "${PKG_SHARE_NENE}"/"${repo}".json
