@@ -296,7 +296,7 @@ keyword="$2"
   grep -E 'github\.com|github\.io|luisadha\.my\.id' |
   sort -ur |
   awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
-  fzf --extended -nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0
+  fzf --extended -with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0
 ) 
     if [ -n "$keyword" ]; then
         curl -s "https://api.github.com/repos/luisadha/${repo}/contents/bin" > "${PKG_SHARE_NENE}"/"${repo}".json
