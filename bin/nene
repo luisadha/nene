@@ -14,8 +14,31 @@ PACKAGE="$(echo "PACKAGE")"
 PKG_SHARE_NENE="${HOME}/.local/share/nene/"
 __BASE_REPO__="nene"
 BASHER_PKG="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
-
-
+available_options() {
+cat <<'EOF'
+-a
+-u
+-S
+-Ss
+-Si
+-Sy
+-m
+-v
+-h
+-R
+--dry-run
+--wet-run
+--install
+--uninstall
+--api-termux
+--select-url
+--homepage
+--list
+--mode
+--version
+--help
+EOF
+}
 mkdir -p ${PKG_SHARE_NENE}
 default_apps() {
  if [[ -n "$BASHER_ROOT" && -d "$BASHER_PKG" ]]; then
@@ -96,27 +119,6 @@ EOF
 sleep 0.4;
 echo "..done"
 return 0
-}
-available_options() {
-cat <<'EOF'
--a
--u
--S
--Ss
--Si
--m
--v
--h
--R
---uninstall
---api-termux
---select-url
---homepage
---search
---mode
---version
---help
-EOF
 }
 help() {
 cat <<'EOF'
@@ -232,9 +234,7 @@ exit 1;
                 else
                     SPARAM="$SELECT_ARG";
                 fi;
-read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf ${E_MATCH} --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__";
-# shellcheck disable=SC1090
-. <(curl -sL "$__url__" 2>/dev/null);
+read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf ${E_MATCH} --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__"; . <(curl -sL "$__url__" 2>/dev/null);
       shift;
         exit 0
       ;;
@@ -258,14 +258,13 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
         exit 0
       ;;
     -l|--list)
-if [ ! -f ~/.cache/nene-list ]; then
 curl -s https://not-echo-not-true.carrd.co |
 html2text |
 grep -oP '(?<=\])\(\K[^)]+' |
 grep '^https\?://' |
 grep -E 'github\.com|github\.io|luisadha\.my\.id' |
 xargs -n1 basename > ~/.cache/nene-list
-fi
+
 
 mapfile -t __endpoint__ < ~/.cache/nene-list
 for cmd in "${__endpoint__[@]}"; do
@@ -331,7 +330,7 @@ keyword="$2"
   fi
   exit $?
      ;;
-    -I|--install)
+    -Sy|-Si|--install)
       keyword="$2"
         if [ -z "$keyword" ]; then
           echo "Error: option -$arg requires an argument"; exit 2
