@@ -218,7 +218,7 @@ modes="$SPARAM";
           fi
         shift;
       ;;
-    --search=*)
+    --wet-run=*)
                 if [[ "$arg" == *=* ]]; then
                   parse="$arg";
                 else
@@ -237,7 +237,7 @@ read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/d
       shift;
         exit 0
       ;;
-    -S=*)
+    --dry-run=*)
                 if [[ "$arg" == *=* ]]; then
                   parse="$arg";
                 else
@@ -252,7 +252,7 @@ exit 1;
                 fi;
 read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__";
 # shellcheck disable=SC1090
-. <(curl -sL "$__url__" 2>/dev/null);
+
       shift;
         exit 0
       ;;
@@ -284,23 +284,7 @@ done
         exit 0
       ;;
     -sS|-Ss)
-      keyword="$2";
-      
-        if [ -z "$keyword" ]; then
-          echo "Error: option -$arg request an argument"; exit 2;
-        fi
-      read -r url repo < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf ${E_MATCH} --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0)
-        #echo "$url $repo"
-      if [ -n "$keyword" ]; then
-        curl -s "https://api.github.com/repos/luisadha/${repo}/contents/bin" > "${PKG_SHARE_NENE}"/"${repo}".json
-        curl -s "https://api.github.com/repos/luisadha/${repo}/releases"  > "${PKG_SHARE_NENE}"/"${repo}"-release.json
-        fetch_latest_version "${repo}"
-        fetch_latest_date "${repo}"
-        exit 0;
-      else
-        echo "❌ Can't find repository from $url"
-        exit 1;
-      fi
+      :
     ;;
    -R|--uninstall)
   keyword="$2"
@@ -324,7 +308,7 @@ done
   fi
   exit $?
      ;;
-    -Si|-iS)
+    -I|--install)
       keyword="$2"
         if [ -z "$keyword" ]; then
           echo "Error: option -$arg requires an argument"; exit 2
