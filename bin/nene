@@ -2,34 +2,39 @@
 #set -xv
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE
 [ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
-
 # shellcheck disable=SC1090
 PACKAGE="nene"
 VERSION="1.5.56b"
 NEPI="luisadha.my.id" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
 E_MATCH='--exact' # FZF FLAGS
-R_MATCH='--extended'
+S_MATCH='--smart'
+STARGS=1; 
+NDARGS=2;
+RDARGS=3;
+THARGS=4;
+NULLARGS=0;
 PACKAGE="$(echo "PACKAGE")"
 PKG_SHARE_NENE="${HOME}/.local/share/nene/"
 __BASE_REPO__="nene"
 BASHER_PKG="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
 available_options() {
-cat <<'EOF'
--a
--u
--S
--Ss
--Si
--Sy
--m
--v
--h
--R
---dry-run
+cat <<EOF
+-a  `#install api`
+-u  `#select-url`
+-S  `#search`
+-Ss `#Search with Patern`
+-Si `#Search and install`
+-Sy  `#Search and`
+-Syu `#Search and `
+-m   `#Mode=1 or 0`
+-v   `#Version`
+-h   `#Help`
+-R   `#Remove`
+--dry-run 
 --wet-run
---install
---uninstall
+install
+uninstall
 --api-termux
 --select-url
 --homepage
@@ -40,6 +45,23 @@ cat <<'EOF'
 EOF
 }
 mkdir -p ${PKG_SHARE_NENE}
+list_packages() {
+curl -s "$NEPI" |html2text|grep -oP '(?<=\])\(\K[^)]+'|grep '^https\?://'|grep -E 'github\.com|github\.io' |
+xargs -r -n1 basename > ~/.cache/nene-list
+mapfile -t __endpoint__ < ~/.cache/nene-list
+for cmd in "${__endpoint__[@]}"; do
+    if command -v "$cmd" &>/dev/null; then
+        encode=$(file --mime-encoding "$(which "$cmd")" | awk '{print $2}' || echo "unknown")
+        now=$(echo "now `$cmd --version 2>/dev/null | xargs -r -n1 | tail -n1`")
+        echo "$(basename "$(command -v "$cmd")")/main,${now} ($encode) [installed]"
+    else
+        encode=$(file --mime-encoding "$(type -p "$cmd")" | awk '{print $2}' | :)
+        latest=$(fetch_latest_version "${cmd}")
+        echo "$cmd/main,${latest}"
+
+    fi
+  done
+}
 default_apps() {
  if [[ -n "$BASHER_ROOT" && -d "$BASHER_PKG" ]]; then
     exec python3 "${BASHER_PKG}/not-echo-not-true.py"
@@ -120,7 +142,7 @@ sleep 0.4;
 echo "..done"
 return 0
 }
-help() {
+_help() {
 cat <<'EOF'
 Nene is both a static site and a set of Bash tools you can run straight from your terminal
 Usage :
@@ -151,232 +173,83 @@ fi
 
 for arg in "$@"; do
   case "$arg" in
-    flags)
-        available_options;;
-    --homepage)
-        homepage;;
-    -a|--api-termux)
-        addon;;
-    -u|--select-url)
-        url;;
-    -h|--help)
-        help;;
-    -v|--version)
-        version;;
-   --mode|--mode=*)
-          if [[ "$arg" == *=* ]]; then
-            parse="$arg";
-            #echo "$parse"
-          else
-            parse="${arg}=";
-            #echo "$parse"
-          fi;
-MODE_ARG="${arg#--mode=}";
-          if [[ -z "$MODE_ARG" ]]; then
-echo -e "Invalid option, you mean \`${parse}online' ?";
-exit 1;
-          else
-              SPARAM="$MODE_ARG";
-             # echo "$SPARAM"
-          fi;
-modes="$SPARAM";
-          if [[ "$modes" == "online" ]]; then
-          online_apps;
-          elif [[ "$modes" == "default" ]]; then
-          default_apps;
-          elif [[ "$modes" == "offline" ]]; then
-          default_apps;
-          else
-          echo "Unknown value in $arg";
-          exit 2;
-          fi
-        shift;
-      ;;
-    -m|-m=*)
-          if [[ "$arg" == *=* ]]; then
-            parse="$arg";
-            #echo "$parse"
-          else
-            parse="${arg}=";
-            #echo "$parse"
-          fi;
-M_ARG="${arg#-m=}";
-          if [[ -z "$M_ARG" ]]; then
-echo -e "Invalid option, you mean \`${parse}online' ?";
-exit 1;
-          else
-              SPARAM="$M_ARG";
-             # echo "$SPARAM"
-          fi;
-modes="$SPARAM";
-          if [[ "$modes" == "online" ]]; then
-          online_apps;
-          elif [[ "$modes" == "default" ]]; then
-          default_apps;
-          elif [[ "$modes" == "offline" ]]; then
-          default_apps;
-          else
-          echo "Unknown value in $arg";
-          exit 2;
-          fi
+    flags)  available_options;;
+    -Qe|list)   list_packages;;
+    --homepage)      homepage;;
+    -a|--api-termux)    addon;;
+    -u|--select-url)      url;;
+    -h|--help)          _help;;
+    -v|--version)     version;;
+    -m=* | --mode=*)
+      if [[ "$arg" == *=* ]]; then parse="$arg";
+      else parse="${arg}="; fi;
+MODE_ARG="${arg#--mode=}"
+M_ARG="${arg#-m=}"
+          if [ -z "$MODE_ARG" ] || [ -z "$M_ARG" ]; then echo -e "Invalid option, you mean \`${parse}online' ?"; exit 1; fi 
+          if [[ "$M_ARG" == "$STARGS" ]]; then online_apps;
+          elif [[ "$MODE_ARG" == "$STARGS" ]]; then online_apps;
+          elif [[ "$M_ARG" == "$NULLARGS" ]]; then default_apps;
+          elif [[ "$MODE_ARG" == "$NULLARGS" ]]; then default_apps;
+          else echo "Value must be 1 or 0 in $arg"; exit 2; fi
         shift;
       ;;
     --wet-run=*)
-                if [[ "$arg" == *=* ]]; then
-                  parse="$arg";
-                else
-                  parse="${arg}=";
-                fi;
-SELECT_ARG="${arg#--search=}";
-                if [[ -z "$SELECT_ARG" ]]; then
-echo -e "Invalid option, you mean \`${parse}PACKAGE' ?";
-exit 1;
-                else
-                    SPARAM="$SELECT_ARG";
-                fi;
+        if [[ "$arg" == *=* ]]; then parse="$arg";
+        else parse="${arg}="; fi;
+SELECT_ARG="${arg#--wet-run=}"; 
+          if [[ -z "$SELECT_ARG" ]]; then echo -e "Invalid option, you mean \`${parse}PACKAGE' ?"; exit 1;
+          else SPARAM="$SELECT_ARG"; fi;
 read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf ${E_MATCH} --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__"; . <(curl -sL "$__url__" 2>/dev/null);
-      shift;
-        exit 0
+        shift;
       ;;
     --dry-run=*)
-                if [[ "$arg" == *=* ]]; then
-                  parse="$arg";
-                else
-                  parse="${arg}=";
-                fi;
-S_ARG="${arg#-S=}";
-                if [[ -z "$S_ARG" ]]; then
-echo -e "Invalid option, you mean \`${parse}PACKAGE' ?";
-exit 1;
-                else
-                    SPARAM="$S_ARG";
-                fi;
-read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__";
-# shellcheck disable=SC1090
-
-      shift;
-        exit 0
+        if [[ "$arg" == *=* ]]; then  parse="$arg";
+        else parse="${arg}="; fi;
+S_ARG="${arg#--dry-run=}";
+            if [[ -z "$S_ARG" ]]; then echo -e "Invalid option, you mean \`${parse}PACKAGE' ?"; exit 1;
+            else  SPARAM="$S_ARG"; fi;
+read -r __url__ __endpoint__ < <(curl -s https://not-echo-not-true.carrd.co 2>/dev/null | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' | fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -1 -0 -q "${SPARAM:-}"); [ -z "$SPARAM" ] && echo -e "\nCaught ^C" || echo -e "Executing.. $__endpoint__"; # shellcheck disable=SC1090
+        shift;
       ;;
-    -l|--list)
-curl -s https://not-echo-not-true.carrd.co |
-html2text |
-grep -oP '(?<=\])\(\K[^)]+' |
-grep '^https\?://' |
-grep -E 'github\.com|github\.io|luisadha\.my\.id' |
-xargs -n1 basename > ~/.cache/nene-list
-
-
-mapfile -t __endpoint__ < ~/.cache/nene-list
-for cmd in "${__endpoint__[@]}"; do
-    if command -v "$cmd" &>/dev/null; then
-        encode=$(file --mime-encoding "$(which "$cmd")" | awk '{print $2}' || echo "unknown")
-        now=$(echo "now `$cmd --version 2>/dev/null | xargs -r -n1 | tail -n1`")
-        echo "$(basename "$(command -v "$cmd")")/main,${now} ($encode) [installed]"
-    else
-        encode=$(file --mime-encoding "$(type -p "$cmd")" | awk '{print $2}' | :)
-        latest=$(fetch_latest_version "${cmd}")
-        echo "$cmd/main,${latest}"
-        
-    fi
-done
-
-      shift;
-        exit 0
-      ;;
-    -sS|-Ss)
-keyword="$2"
-        if [ -z "$keyword" ]; then
-          echo "Error: option -$arg requires an argument"; exit 2
-        fi
-     read -r url repo < <(
-  curl -s https://not-echo-not-true.carrd.co 2>/dev/null |
-  html2text |
-  grep -oP '(?<=\])\(\K[^)]+' |
-  grep '^https\?://' |
-  grep -E 'github\.com|github\.io|luisadha\.my\.id' |
-  sort -ur |
-  awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
-  fzf --extented --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0
-) 
-    if [ -n "$keyword" ]; then
-        curl -s "https://api.github.com/repos/luisadha/${repo}/contents/bin" > "${PKG_SHARE_NENE}"/"${repo}".json
-        curl -s "https://api.github.com/repos/luisadha/${repo}/releases"  > "${PKG_SHARE_NENE}"/"${repo}"-release.json
-       
-        exit 0;
-      else
-        echo "❌ Can't find package from $url"
-        exit 1;
-      fi
-    ;;
-   -R|--uninstall)
-  keyword="$2"
-  if [ -z "$keyword" ]; then
-    echo "Error: option $arg requires an argument"
-    exit 2
-  fi
-
-  if command -v "$keyword" &>/dev/null; then
-    gum spin --spinner minidot --title "Uninstalling ${keyword}..." -- \
-      rm -rf "$(command -v "$keyword")"
-
-    if [ $? -eq 0 ]; then
-      gum style --foreground 212 --bold "🗑️ Package ${keyword} removed successfully"
-      source "$PREFIX/etc/bash_completion.d/nene.completions.bash"
-    else
-      gum style --foreground 196 --bold "❌ Failed to uninstall ${keyword}."
-    fi
-  else
-    gum style --foreground 11 --bold "⚠️  Command ${keyword} not found in PATH."
-  fi
-  exit $?
+   -R|uninstall)
+     keyword="$2"
+        if [ -z "$keyword" ]; then echo "Error: option $arg requires an argument";  exit 2; fi
+    if command -v "$keyword" &>/dev/null; then gum spin --spinner minidot --title "Uninstalling ${keyword}..." -- \
+      rm -rf "$(command -v "$keyword")";
+    if [ $? -eq 0 ]; then gum style --foreground 212 --bold "🗑️ Package ${keyword} removed successfully";  source "$PREFIX/etc/bash_completion.d/nene.completions.bash"
+    else gum style --foreground 196 --bold "❌ Failed to uninstall ${keyword}."; fi
+  else gum style --foreground 11 --bold "⚠️  Command ${keyword} not found in PATH."; fi
+      exit $?
      ;;
-    -Sy|-Si|--install)
+    -S*|install)
       keyword="$2"
         if [ -z "$keyword" ]; then
           echo "Error: option -$arg requires an argument"; exit 2
         fi
   read -r url repo < <(
-    curl -s https://not-echo-not-true.carrd.co 2>/dev/null | 
-    html2text |
-    grep -oP '(?<=\])\(\K[^)]+' |
-    grep '^https\?://' |
-    grep -E 'github\.com|github\.io|luisadha\.my\.id' |
-    sort -ur |
-    awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
-    fzf --extended --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0
-  )
+    curl -s https://not-echo-not-true.carrd.co 2>/dev/null |html2text|grep -oP '(?<=\])\(\K[^)]+'|grep '^https\?://'|grep -E 'github\.com|github\.io|luisadha\.my\.id'|sort -ur|awk '{print $0 "\t" gensub(".*/", "", "g", $0)}'|fzf --extended --with-nth=2 --prompt="Choose (script): " --delimiter='\t' -q "${keyword:-}" -1 -0
+  );
 
-  if [ -n "$url" ] && [ -n "$repo" ]; then
+  if [ -n "$url" ] && [ -n "$repo" ]; then    
     status=$(curl -s -o /dev/null -w "%{http_code}" "https://api.github.com/repos/luisadha/${repo}/contents/bin")
     if [ "$status" = "200" ]; then
       target="$PREFIX/bin"
       pkgname="$repo";
       IV="${pkgname} --version 2>/dev/null | cut -d' ' -f2"
       LV="$(fetch_latest_version ${pkgname})"
+      curl -s "https://api.github.com/repos/luisadha/${repo}/contents/bin" > "${PKG_SHARE_NENE}"/"${repo}".json
+      curl -s "https://api.github.com/repos/luisadha/${repo}/releases"  > "${PKG_SHARE_NENE}"/"${repo}"-release.json
       mkdir -p "$target"
       pushd "$target" > /dev/null
-      if [ ! -x "$repo" ]; then
-        gum spin --spinner minidot --title "Installing ${repo}..." -- \
-          wget --https-only -qO "${repo}" "${url}" && chmod +x "${repo}"
-            if [ $? -eq 0 ]; then gum style --foreground 42 --bold "✅ ${repo} was successfully installed!"
-            else gum style --foreground 196 --bold "❌ Failed to install ${repo}."; fi;
-      else     
-        gum style --foreground 42 --bold "Package already installed: ${pkgname} in ${target}/${pkgname} ($(eval "${pkgname}" "$V_FLAGS"))"
-      fi
+      if [ ! -x "$repo" ]; then gum spin --spinner minidot --title "Installing ${repo}..." -- \ wget --https-only -qO "${repo}" "${url}" && chmod +x "${repo}"
+        if [ $? -eq 0 ]; then gum style --foreground 42 --bold "✅ ${repo} was successfully installed!"
+          else gum style --foreground 196 --bold "❌ Failed to install ${repo}."; fi;
+        else gum style --foreground 42 --bold "Package already installed: ${pkgname} in ${target}/${pkgname} ($(eval "${pkgname}" "$V_FLAGS"))"; fi
       popd > /dev/null
-    else
-      gum log --level warn "${keyword}, the package is registered but cannot be installed yet (error code: ${status})"
-      exit 1;
-    fi
-  else
-    gum log --level error "Can't find package named ${keyword}"
-    exit 1;
-  fi
-  exit 0
-  ;;
-    *)
-     echo "Error: Unknown options" 2>&1;
-      exit 1;
+    else  gum log --level warn "${keyword} — the package is registered but has no releases available (error code: ${status})"; exit 2; fi
+  else gum log --level error "Can't find package named ${keyword}"; exit 1; fi; exit $?
+    ;;
+    *) echo "Error: Unknown options" 2>&1; exit 1;
     ;;
   esac
 done
