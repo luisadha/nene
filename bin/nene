@@ -4,7 +4,7 @@
 [ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.5.60b"
+VERSION="1.5.61b"
 NEPI="luisadha.my.id" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
 E_MATCH='--exact' # FZF FLAGS
@@ -410,6 +410,7 @@ for arg in "$@"; do
   -Sy|--sync)      update_remote_db;;
   -Syy|--sync-all)    sync_database;;  
   -Qe|--list)   load_local_db; list_packages;;
+  -Qi|--query-info) cat $PKG_SHARE_NENE/"$2"-release.json | yq -P -o y; exit $?;;
   -S| --install)  install_package "$2"; exit $?;;
   -R|--uninstall) uninstall_package "$2"; exit $?;;
   -Qi) list_packages_installed;;
