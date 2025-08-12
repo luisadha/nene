@@ -6,7 +6,7 @@ _nene() {
   if [[ "$COMP_CWORD" -eq 1 ]]; then
     COMPREPLY=( $(compgen -W "$(nene flags)" -- "$word") )
 
-  elif [[ "$prev" == "-R" ]]; then
+  elif [[ "$prev" == "-R" ]] || [[ "$prev" == "-Qi" ]]; then
     local list_file="$HOME/.local/share/nene/pkg-installed"
     if [[ -f "$list_file" ]]; then
       mapfile -t completions < "$list_file"
