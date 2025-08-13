@@ -410,7 +410,7 @@ for arg in "$@"; do
   -Sy|--sync)      update_remote_db;;
   -Syy|--sync-all)    sync_database;;  
   -Qe|--list)   load_local_db; list_packages;;
-  -Qi|--query-info) cat $PKG_SHARE_NENE/"$2"-release.json | yq -P -o y; exit $?;;
+  -Qi|--query-info) cat $PKG_SHARE_NENE/"$2"-release.json | yq -P -o y | sed 's/^[ \t]*//'; exit $?;;
   -Qq|--query-quiet) list_packages_installed;;
   -Q|--query)       cat $PKG_SHARE_NENE/pkg-installed; exit $?;;
   -S| --install)  install_package "$2"; exit $?;;
