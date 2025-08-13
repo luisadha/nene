@@ -22,52 +22,19 @@ BASHER_PKG="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
 DRY_RUN=0
 MODE=0
 DB_FILE="$HOME/.local/share/nene/update-lists"
-available_options() {
-cat <<EOF
--a  `#install api`
--u  `#select-url`
--S  `#search`
--Ss `#Search with Patern`
--Si `#Search and install`
--Sy  `#Search and`
--Syu `#Search and `
--m   `#Mode=1 or 0`
--v   `#Version`
--h   `#Help`
--R   `#Remove`
---dry-run 
---wet-run
-install
-uninstall
-list
---api-termux
---select-url
---homepage
---list
---mode
---version
---help
-EOF
-}
+
 
 # =========================
 # Install package (-S)
 # =========================
 install_package() {
-
-
     local keyword="$1"
     local url repo status target pkgname
-
-
     # Validasi input
     if [ -z "$keyword" ]; then
         echo "Error: option -S requires an argument" >&2
         exit 2
     fi
-
-
-
 # Pisahkan nama paket & versi
 pkgname="${keyword%@*}"
 pkgver="${keyword#*@}"
@@ -403,6 +370,39 @@ if [[ "$1" == "-s" || "$1" == "--s" ]]; then
   echo -e "Invalid option, you means \`-Ss' ?";
     exit 1
 fi
+
+available_options() {
+cat <<EOF
+-Q
+-Qe
+-Qi
+-Qq
+-R
+-S
+-Sy
+-Syy
+-a
+-m
+-h
+-u
+-v
+--api-termux
+--dry-run
+--help
+--mode
+--homepage
+--install
+--list
+--query
+--query-info
+--query-quiet
+--select-url
+--sync
+--sync-all
+--uninstall
+--version
+EOF
+}
 
 for arg in "$@"; do
   case "$arg" in
