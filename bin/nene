@@ -65,7 +65,7 @@ url() {
     return 0
 }
 homepage() {
-    termux-open-url "$NEPI"
+    termux-open-url https://luisadha.my.id
     return 0
 }
 addon() {
@@ -145,7 +145,7 @@ for arg in "$@"; do
        --homepage)      homepage;;
        --dry-run | --dry-run=1) DRY_RUN=1;;
        --dry-run=*) echo "Value must be 1 in $arg" >&2; exit 2;;
-    -m=1 | --mode=1)  MODE=1
+    -m=1 | --mode-online=1)  MODE=1
 read -r __url__ __endpoint__ < <(curl -s "${NEPI}"|html2text|grep -oP '(?<=\])\(\K[^)]+'|grep '^https\?://'|grep -E 'github\.com|github\.io'|sort -ur |awk '{print $0 "\t" gensub(".*/", "", "g", $0)}'|fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t'); [ -z "$__url__" ] &&  echo -e "\nCaught ^" 
       ;;    
     -m=0 | --mode-online=0)  MODE=0;;
