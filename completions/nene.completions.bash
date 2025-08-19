@@ -6,13 +6,13 @@ _nene() {
   if [[ "$COMP_CWORD" -eq 1 ]]; then
     COMPREPLY=( $(compgen -W "$(nene flags)" -- "$word") )
 
-  elif [[ "$prev" == "-R" ]] || [[ "$prev" == "-Qi" ]]; then
+  elif [[ "$prev" == "-r" ]] || [[ "$prev" == "--remove" ]]; then
     local list_file="$HOME/.local/share/nene/pkg-installed"
     if [[ -f "$list_file" ]]; then
       mapfile -t completions < "$list_file"
       COMPREPLY=( $(compgen -W "${completions[*]}" -- "$word") )
     fi
-  elif [[ "$prev" == "-S" ]]; then
+  elif [[ "$prev" == "-i" ]] || [[ "$prev" == "--install" ]] then
     local list_file="$HOME/.local/share/nene/update-lists"
 
     if [[ -f "$list_file" ]]; then
