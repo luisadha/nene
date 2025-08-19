@@ -22,8 +22,7 @@ BASHER_PKG="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
 DRY_RUN=0
 MODE=0
 DB_FILE="$HOME/.local/share/nene/update-lists"
-
-
+PROMPT="Choose a script to run online"
 default_apps() {
  if [[ -n "$BASHER_ROOT" && -d "$BASHER_PKG" ]]; then
     exec python3 "${BASHER_PKG}/not-echo-not-true.py"
@@ -146,7 +145,7 @@ for arg in "$@"; do
        --dry-run | --dry-run=1) DRY_RUN=1;;
        --dry-run=*) echo "Value must be 1 in $arg" >&2; exit 2;;
     -m=1 | --mode-online=1)  MODE=1
-read -r __url__ __endpoint__ < <(curl -s "${NEPI}"|html2text|grep -oP '(?<=\])\(\K[^)]+'|grep '^https\?://'|grep -E 'github\.com|github\.io'|sort -ur |awk '{print $0 "\t" gensub(".*/", "", "g", $0)}'|fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t'); [ -z "$__url__" ] &&  echo -e "\nCaught ^" 
+read -r __url__ __endpoint__ < <(curl -s "${NEPI}"|html2text|grep -oP '(?<=\])\(\K[^)]+'|grep '^https\?://'|grep -E 'github\.com|github\.io'|sort -ur |awk '{print $0 "\t" gensub(".*/", "", "g", $0)}'|fzf --with-nth=2 --prompt="$PROMPT: " -0 --delimiter='\t'); [ -z "$__url__" ] &&  echo -e "\nCaught ^" 
       ;;    
     -m=0 | --mode-online=0)  MODE=0;;
     *) echo "${UNKNOWN}" >&2; exit 1;
@@ -162,6 +161,6 @@ if [[ $MODE -eq 1 ]]; then
     echo "[DRY-RUN] Not Really Execute ${__endpoint__}" 
     echo <(true) 2>/dev/null; # Do nothing
   else
-    . <(curl -sL ${__url__})
+    . <(curl -sL ${__url__}) 
   fi
 fi
