@@ -24,244 +24,6 @@ MODE=0
 DB_FILE="$HOME/.local/share/nene/update-lists"
 
 
-# =========================
-# Install package (-S)
-# =========================
-install_package() {
-    local keyword="$1"
-    local url repo status target pkgname
-    # Validasi input
-    if [ -z "$keyword" ]; then
-        echo "Error: option -S requires an argument" >&2
-        exit 2
-    fi
-# Pisahkan nama paket & versi
-pkgname="${keyword%@*}"
-pkgver="${keyword#*@}"
-[ "$pkgname" = "$pkgver" ] && pkgver="latest"
-
-# Ambil repo dari select_repo
-read -r url repo <<< "$(select_repo "$pkgname")"
-
-# Kalau versi latest → ambil dari bin atau release terbaru
-if [[ "$pkgver" == "latest" ]]; then
-    # Cari release terbaru
-    release_url=$(curl -s "https://api.github.com/repos/luisadha/${repo}/releases/latest" \
-        | grep "browser_download_url" | cut -d '"' -f 4 | head -n 1)
-else
-    # Cari release versi spesifik
-    release_url=$(curl -s "https://api.github.com/repos/luisadha/${repo}/releases/tags/${pkgver}" \
-        | grep "browser_download_url" | cut -d '"' -f 4 | head -n 1)
-fi
-
-# Instalasi dari release jika ada
-if [[ -n "$release_url" ]]; then
-    echo "[INFO] Installing ${pkgname}@${pkgver} from release..."
-    tmp_dir=$(mktemp -d)
-    wget -qO "$tmp_dir/pkg.tar.gz" "$release_url" || { echo "Download failed"; exit 1; }
-    tar -xzf "$tmp_dir/pkg.tar.gz" -C "$PREFIX/bin" --strip-components=1
-    chmod +x "$PREFIX/bin/$repo"
-    rm -rf "$tmp_dir"
-else
-    echo "[INFO] No release found, installing from bin..."
-    status=$(check_repo_status "$repo")
-    if [[ "$status" != "200" ]]; then
-        gum log --level warn "${keyword} — the package is registered but has no releases available (code: ${status})"
-        exit 2
-    fi
-    install_pkg "$repo" "$url"
-fi
-
-}
-
-# =========================
-# Pilih repository
-# =========================
-select_repo() {
-    local keyword="$1"
-    curl -s https://not-echo-not-true.carrd.co 2>/dev/null |
-        html2text |
-        grep -oP '(?<=\])\(\K[^)]+' |
-        grep '^https\?://' |
-        grep -E 'github\.com|github\.io|luisadha\.my\.id' |
-        sort -ur |
-        awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
-        fzf --extended --with-nth=2 --prompt="Choose (script): " \
-            --delimiter='\t' -q "${keyword:-}" -1 -0
-}
-
-# =========================
-# Cek status repo GitHub
-# =========================
-check_repo_status() {
-    local repo="$1"
-    curl -s -o /dev/null -w "%{http_code}" \
-        "https://api.github.com/repos/luisadha/${repo}/contents/bin" 2>/dev/null
-}
-
-# =========================
-# Instalasi package
-# =========================
-install_pkg() {
-    local repo="$1" url="$2"
-    local target="$PREFIX/bin"
-    local pkgname="$repo"
-
-    mkdir -p "$target"
-
-    # Simpan metadata JSON
-    curl -s "https://api.github.com/repos/luisadha/${repo}/contents/bin" \
-        > "${PKG_SHARE_NENE}/${repo}.json"
-    curl -s "https://api.github.com/repos/luisadha/${repo}/releases" \
-        > "${PKG_SHARE_NENE}/${repo}-release.json"
-
-    pushd "$target" >/dev/null
-    if [ ! -x "$repo" ]; then
-        gum spin --spinner minidot --title "Installing ${repo}..." -- \
-            wget --https-only -qO "${repo}" "${url}" && chmod +x "${repo}"
-
-        if [ $? -eq 0 ]; then
-            gum style --foreground 42 --bold "✅ ${repo} was successfully installed!"
-        else
-            gum style --foreground 196 --bold "❌ Failed to install ${repo}."
-            return 1
-        fi
-    else
-        gum style --foreground 42 --bold \
-            "Package already installed: ${pkgname} in ${target}/${pkgname} ($(eval "${pkgname}" "$V_FLAGS"))"
-    fi
-    popd >/dev/null
-}
-
-
-# Path file database lokal
-
-
-# 1. Update remote database (fetch from server)
-update_remote_db() {
-  mkdir -p "$(dirname "$DB_FILE")"
-  curl -s "$NEPI" \
-    | html2text \
-    | grep -oP '(?<=\])\(\K[^)]+' \
-    | grep '^https\?://' \
-    | grep -E 'github\.com|github\.io' \
-    | xargs -r -n1 basename > "$DB_FILE"
-
-  if [ $? -eq 0 ] && [ -s "$DB_FILE" ]; then
-    echo "✅ Remote database updated successfully."
-    return 0
-  else
-    echo "❌ Failed to update remote database or file empty."
-    return 1
-  fi
-}
-
-# 2. Load database lokal ke array
-load_local_db() {
-  if [ -f "$DB_FILE" ]; then
-    mapfile -t PACKAGE_LIST < "$DB_FILE"
-  else
-    PACKAGE_LIST=()
-  fi
-}
-load_local_db
-sync_database() {
-  local db_file="$HOME/.local/share/nene/update-lists"
-  local tmp_file="$(mktemp)"
-  local green="\e[32m"
-  local red="\e[31m"
-  local yellow="\e[33m"
-  local reset="\e[0m"
-
-  echo -e ":: Synchronizing nene package database..."
-
-  # Github.com
-  echo -n " github.com "
-  if curl -s "$NEPI" \
-      | html2text \
-      | grep -oP '(?<=\])\(\K[^)]+' \
-      | grep '^https\?://' \
-      | grep -E 'github\.com' \
-      | xargs -r -n1 basename > "$tmp_file.github"; then
-    echo -e "${green}OK${reset}"
-  else
-    echo -e "${red}FAIL${reset}"
-  fi
-
-  # Github.io
-  echo -n " github.io "
-  if curl -s "$NEPI" \
-      | html2text \
-      | grep -oP '(?<=\])\(\K[^)]+' \
-      | grep '^https\?://' \
-      | grep -E 'github\.io' \
-      | xargs -r -n1 basename > "$tmp_file.githubio"; then
-    echo -e "${green}OK${reset}"
-  else
-    echo -e "${red}FAIL${reset}"
-  fi
-
-  # Gabungkan semua ke database lokal
-  cat "$tmp_file.github" "$tmp_file.githubio" > "$db_file"
-  rm -f "$tmp_file.github" "$tmp_file.githubio"
-
-  if [ -s "$db_file" ]; then
-    echo -e ":: Local database updated: ${yellow}$db_file${reset}"
-    return 0
-  else
-    echo -e "${red}:: Failed to update local database${reset}"
-    return 1
-  fi
-}
-# 4. List packages dari local database
-list_packages() {
-  if [ ${#PACKAGE_LIST[@]} -eq 0 ]; then
-    echo "Database kosong, silakan sync database dulu."
-    return 1
-  fi
-
-  for pkg in "${PACKAGE_LIST[@]}"; do
-    if command -v "$pkg" &>/dev/null; then
-      ver=$("$pkg" --version 2>/dev/null | head -n1)
-      echo -e "github.io ${ver} [installed]" >&1 
-    else
-      echo -e "github.io $pkg" >&2
-    fi
-  done 1> >(tee $PKG_SHARE_NENE/sync-list) 2> >(tee $PKG_SHARE_NENE/pkg-available)
-}
-
-list_packages_installed() {
-grep -s --color=always "installed" "$PKG_SHARE_NENE/sync-list" | sed 's/github\.io[[:space:]]\+//'
-}
-list_packages_installed_short() {
-  list_packages_installed | awk '{print $1}'
-}
-list_packages_installed_short > $PKG_SHARE_NENE/pkg-installed
-uninstall_package() {
-    local keyword="$1"
-
-    if [ -z "$keyword" ]; then
-        echo "Error: uninstall requires a package name" >&2
-        return 2
-    fi
-
-    if command -v "$keyword" &>/dev/null; then
-        gum spin --spinner minidot --title "Uninstalling ${keyword}..." -- \
-            rm -rf "$(command -v "$keyword")"
-
-        if [ $? -eq 0 ]; then
-            gum style --foreground 212 --bold "🗑️ Package ${keyword} removed successfully"
-        else
-            gum style --foreground 196 --bold "❌ Failed to uninstall ${keyword}."
-            return 1
-        fi
-    else
-        gum style --foreground 11 --bold "⚠️ Command ${keyword} not found in PATH."
-        return 1
-    fi
-}
-
-
 default_apps() {
  if [[ -n "$BASHER_ROOT" && -d "$BASHER_PKG" ]]; then
     exec python3 "${BASHER_PKG}/not-echo-not-true.py"
@@ -286,20 +48,8 @@ check_dependencies() {
     exit 1
   fi
 }
-fetch_latest_version() {
-local pkg="$1"
-    curl -s https://api.github.com/repos/luisadha/${pkg}/releases |
-jq -r 'sort_by(.published_at) | last | .tag_name'
-    return 0
-};
-fetch_latest_date() {
-local pkg="$1"
-    curl -s https://api.github.com/repos/luisadha/${pkg}/releases \
-  | jq -r 'max_by(.published_at).published_at[:10]'
-   return 0
-}
 online_apps() {
-    read -r __url__ < <(curl -s https://not-echo-not-true.carrd.co |
+    read -r __url__ < <(curl -s "$NEPI" |
     html2text |
     grep -oP '(?<=\])\(\K[^)]+' |
     grep '^https\?://' |
@@ -311,11 +61,11 @@ online_apps() {
    
 }
 url() {
-    read -r __url__ < <(curl -s https://not-echo-not-true.carrd.co | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | fzf --prompt="Indexing URL: " | xargs -r termux-open-url);
+    read -r __url__ < <(curl -s "$NEPI" | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | fzf --prompt="Indexing URL: " | xargs -r termux-open-url);
     return 0
 }
 homepage() {
-    termux-open-url https://not-echo-not-true.carrd.co
+    termux-open-url $NEPI
     return 0
 }
 addon() {
@@ -366,40 +116,18 @@ if [[ $# -eq 0 ]]; then
 default_apps;
 fi
 
-if [[ "$1" == "-s" || "$1" == "--s" ]]; then
-  echo -e "Invalid option, you means \`-Ss' ?";
+if [[ "$1" == "-m" || "$1" == "--m" ]]; then
+  echo -e "Invalid option, you means \`-m=1' ?";
     exit 1
 fi
 
 available_options() {
 cat <<EOF
--Q
--Qe
--Qi
--Qq
--R
--S
--Sy
--Syy
--a
--m
--h
--u
--v
 --api-termux
 --dry-run
 --help
 --mode
 --homepage
---install
---list
---query
---query-info
---query-quiet
---select-url
---sync
---sync-all
---uninstall
 --version
 EOF
 }
@@ -407,14 +135,6 @@ EOF
 for arg in "$@"; do
   case "$arg" in
     flags)        available_options;;
-  -Sy|--sync)      update_remote_db;;
-  -Syy|--sync-all)    sync_database;;  
-  -Qe|--list)   load_local_db; list_packages;;
-  -Qi|--query-info) cat $PKG_SHARE_NENE/"$2"-release.json | yq -P -o y | sed 's/^[ \t]*//'; exit $?;;
-  -Qq|--query-quiet) list_packages_installed;;
-  -Q|--query)       cat $PKG_SHARE_NENE/pkg-installed; exit $?;;
-  -S| --install)  install_package "$2"; exit $?;;
-  -R|--uninstall) uninstall_package "$2"; exit $?;;
     -a|--api-termux)    addon;;
     -u|--select-url)      url;;
     -h|--help)          _help;;
