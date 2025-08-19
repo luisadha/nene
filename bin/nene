@@ -112,7 +112,7 @@ if [[ $# -eq 0 ]]; then
 default_apps;
 fi
 
-if [[ "$1" == "-m" || "$1" == "--m" ]]; then
+if [[ "$1" == "-m" || "$1" == "--m*" ]]; then
   echo -e "Invalid option, you means \`-m=1' ?";
     exit 1
 fi
@@ -128,7 +128,7 @@ cat <<EOF
 --api-termux
 --dry-run
 --help
---mode
+--mode-fuzzy
 --homepage
 --version
 EOF
@@ -144,10 +144,10 @@ for arg in "$@"; do
        --homepage)      homepage;;
        --dry-run | --dry-run=1) DRY_RUN=1;;
        --dry-run=*) echo "Value must be 1 in $arg" >&2; exit 2;;
-    -m=1 | --mode-online=1)  MODE=1
-read -r __url__ __endpoint__ < <(curl -s "${NEPI}"|html2text|grep -oP '(?<=\])\(\K[^)]+'|grep '^https\?://'|grep -E 'github\.com|github\.io'|sort -ur |awk '{print $0 "\t" gensub(".*/", "", "g", $0)}'|fzf --with-nth=2 --prompt="$PROMPT: " -0 --delimiter='\t'); [ -z "$__url__" ] &&  echo -e "\nNo internet connections or no input selected. ^" 
+    -m=1 | --mode-fuzzy=1)  MODE=1
+read -r __url__ __endpoint__ < <(curl -s "${NEPI}"|html2text|grep -oP '(?<=\])\(\K[^)]+'|grep '^https\?://'|grep -E 'github\.com|github\.io'|sort -ur |awk '{print $0 "\t" gensub(".*/", "", "g", $0)}'|fzf --with-nth=2 --prompt="$PROMPT: " -0 --delimiter='\t'); [ -z "$__url__" ] &&  echo -e "\nNo internet connections or no input selected. ^C" 
       ;;    
-    -m=0 | --mode-online=0)  MODE=0;;
+    -m=0 | --mode-fuzzy=0)  MODE=0;;
     *) echo "${UNKNOWN}" >&2; exit 1;
     ;;
   esac
