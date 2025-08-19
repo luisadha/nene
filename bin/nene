@@ -4,7 +4,7 @@
 [ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.5.61b"
+VERSION="1.5.67b"
 NEPI="https://luisadha.my.id/" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
 E_MATCH='--exact' # FZF FLAGS
@@ -15,6 +15,8 @@ NDARGS=2;
 RDARGS=3;
 THARGS=4;
 NULLARGS=0;
+SUPPRESS='--no-messages'
+QUIET='--quiet'
 PACKAGE="$(echo "PACKAGE")"
 PKG_SHARE_NENE="${HOME}/.local/share/nene/"
 __BASE_REPO__="nene"
@@ -23,6 +25,27 @@ DRY_RUN=0
 MODE=0
 DB_FILE="$HOME/.local/share/nene/update-lists"
 PROMPT="Choose a script to run online"
+INSTALL="CTRL-i: to install" 
+REMOVE="CTRL-r: to remove packages"
+
+update_remote_db() {
+  mkdir -p "$(dirname "$DB_FILE")"
+  curl -s "$NEPI" \
+    | html2text \
+    | grep -oP '(?<=\])\(\K[^)]+' \
+    | grep '^https\?://' \
+    | grep -E 'github\.com|github\.io' \
+    | xargs -r -n1 basename > "$DB_FILE"
+
+  if [ $? -eq 0 ] && [ -s "$DB_FILE" ]; then
+    echo "✅ Remote database updated successfully."
+    return 0
+  else
+    echo "❌ Failed to update remote database or file empty."
+    return 1
+  fi
+}
+
 default_apps() {
  if [[ -n "$BASHER_ROOT" && -d "$BASHER_PKG" ]]; then
     exec python3 "${BASHER_PKG}/not-echo-not-true.py"
@@ -60,7 +83,7 @@ online_apps() {
    
 }
 url() {
-    read -r __url__ < <(curl -s "$NEPI" | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io|luisadha\.my\.id' | sort -ur | fzf --prompt="Indexing URL: " | xargs -r termux-open-url);
+    read -r __url__ < <(curl -s "$NEPI" | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io' | sort -ur | fzf --prompt="Indexing URL: " | xargs -r termux-open-url);
     return 0
 }
 homepage() {
@@ -112,7 +135,7 @@ if [[ $# -eq 0 ]]; then
 default_apps;
 fi
 
-if [[ "$1" == "-m" || "$1" == "--m*" ]]; then
+if [[ "$1" == "-m" || "$1" == "--m" ]]; then
   echo -e "Invalid option, you means \`-m=1' ?";
     exit 1
 fi
@@ -120,34 +143,111 @@ fi
 available_options() {
 cat <<EOF
 -a
--u
+-u 
+-s
 -h
 -m
--v
+-v 
+-u
+-i
+-r
+--remove
+--install
+--update
 --select-url
 --api-termux
 --dry-run
 --help
---mode-fuzzy
+--mode
 --homepage
 --version
 EOF
 }
-
+offline_status() {
+    echo -e "No internet connections" >&2;
+    return 2
+}
+error_exit_seconds ()
+{
+  echo "Deb file URL not found in release JSON. Check GitHub repository structure. (code: ${HTTP_STATUS:=404})";
+}
 for arg in "$@"; do
   case "$arg" in
     flags)        available_options;;
     -a|--api-termux)    addon;;
-    -u|--select-url)      url;;
+    -s|--select-url)      url;;
     -h|--help)          _help;;
     -v|--version)        version;;
        --homepage)      homepage;;
        --dry-run | --dry-run=1) DRY_RUN=1;;
        --dry-run=*) echo "Value must be 1 in $arg" >&2; exit 2;;
-    -m=1 | --mode-fuzzy=1)  MODE=1
-read -r __url__ __endpoint__ < <(curl -s "${NEPI}"|html2text|grep -oP '(?<=\])\(\K[^)]+'|grep '^https\?://'|grep -E 'github\.com|github\.io'|sort -ur |awk '{print $0 "\t" gensub(".*/", "", "g", $0)}'|fzf --with-nth=2 --prompt="$PROMPT: " -0 --delimiter='\t'); [ -z "$__url__" ] &&  echo -e "\nNo internet connections or no input selected. ^C" 
+    -u|--update)
+      update_remote_db
+      ;;
+    -r|--remove)
+      export pkg=$2
+if dpkg -s "$pkg" >/dev/null 2>&1; then
+   # echo "Paket bisa dihapus"
+    :
+else
+    sed -i "/^$pkg$/d" "$PKG_SHARE_NENE/pkg-installed"
+    echo "Cannot remove this packages"
+    exit 2
+fi
+    read -r __url__ __endpoint__ < <(curl -s "${NEPI}" | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io' | sort -ur | awk '{endpoint=gensub(".*/", "", "g", $0)
+    full="https://luisadha.github.io/" endpoint
+    print full "\t" endpoint                    }' | fzf -0 --with-nth=2 --prompt="$REMOVE: " --delimiter=$'\t' --bind="ctrl-r:execute(dpkg -r \"\$pkg\")+abort" -q ${pkg:-$__url__} ); [ -z "$2" ] && echo "Argument required $2";
+         exit $?
+         ;;
+    -i|--install)
+      export pkg=$2 
+      export Package=$pkg
+if dpkg -s "$pkg" >/dev/null 2>&1; then
+    dpkg-query -W -f='${Package} ${Version}\n${Description}' "$pkg" 2>/dev/null
+    echo "$Package" >> $PKG_SHARE_NENE/pkg-installed 
+    sort -u $PKG_SHARE_NENE/pkg-installed -o $PKG_SHARE_NENE/pkg-installed
+    pkg+=" ";
+    exit
+  else
+    :
+fi
+  export fetch_latests_deb="$(curl -s https://api.github.com/repos/luisadha/$pkg/releases/latest | grep "browser_download_url.*\.deb"|cut -d '"' -f 4)"
+trap 'error_exit_seconds' ERR
+export HTTP_STATUS="$(curl -s -o /dev/null -w "%{http_code}" "$fetch_latests_deb" 2>/dev/null)"
+
+if [ "$HTTP_STATUS" == "200" ]; then
+  :
+elif [ "$HTTP_STATUS" == "302" ]; then
+  :
+else 
+  error_exit_seconds;
+  exit 2;
+fi
+    read -r __url__ __endpoint__ < <(curl -s "${NEPI}" | html2text | grep -oP $SUPPRESS '(?<=\])\(\K[^)]+' | grep $SUPPRESS '^https\?://' | grep $SUPPRESS -E 'github\.com|github\.io' | sort -ur | awk -v rilis="$fetch_latests_deb" '{endpoint=gensub(".*/", "", "g", $0)
+    full="https://luisadha.github.io/" endpoint
+    print full "\t" endpoint "\t" rilis                       }' 2>/dev/null | fzf -0 --with-nth=2 --prompt="$INSTALL: " --delimiter=$'\t' --bind="ctrl-i:execute(
+                tmpfile=\$(mktemp) && \
+                wget -O \"\$tmpfile\" {3} && \
+                dpkg -i \"\$tmpfile\" && \
+                rm -f \"\$tmpfile\" && exit)+abort" -q ${pkg:-$__url__} ); [ -z "$2" ] && echo "Argument required $2";
+                exit $?
+                ;;
+    -m=1 | --mode-online=1)  MODE=1 
+      trap 'offline_status' ERR
+read -r __url__ __endpoint__ < <(curl -s "${NEPI}" \
+| html2text \
+| grep -oP '(?<=\])\(\K[^)]+' \
+| grep '^https\?://' \
+| grep -E 'github\.com|github\.io' \
+| sort -ur \
+| awk '{
+    endpoint=gensub(".*/", "", "g", $0)
+    full="https://luisadha.github.io/" endpoint
+    print full "\t" endpoint
+  }' | fzf -0 --with-nth=2 --prompt="$PROMPT: " --delimiter=$'\t'); [ -z "$__url__" ] && offline_status
+      shift 2
       ;;    
-    -m=0 | --mode-fuzzy=0)  MODE=0;;
+    -m=0 | --mode-online=0)  MODE=0;;
     *) echo "${UNKNOWN}" >&2; exit 1;
     ;;
   esac
@@ -161,6 +261,7 @@ if [[ $MODE -eq 1 ]]; then
     echo "[DRY-RUN] Not Really Execute ${__endpoint__}" 
     echo <(true) 2>/dev/null; # Do nothing
   else
+    echo
     . <(curl -sL ${__url__}) 
   fi
 fi
