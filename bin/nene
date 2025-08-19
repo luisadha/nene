@@ -5,7 +5,7 @@
 # shellcheck disable=SC1090
 PACKAGE="nene"
 VERSION="1.5.61b"
-NEPI="luisadha.my.id" # formerly not-echo-not-true.carrd.co
+NEPI="https://luisadha.my.id/" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
 E_MATCH='--exact' # FZF FLAGS
 S_MATCH='--smart'
@@ -145,7 +145,7 @@ for arg in "$@"; do
        --dry-run | --dry-run=1) DRY_RUN=1;;
        --dry-run=*) echo "Value must be 1 in $arg" >&2; exit 2;;
     -m=1 | --mode-online=1)  MODE=1
-read -r __url__ __endpoint__ < <(curl -s "${NEPI}"|html2text|grep -oP '(?<=\])\(\K[^)]+'|grep '^https\?://'|grep -E 'github\.com|github\.io'|sort -ur |awk '{print $0 "\t" gensub(".*/", "", "g", $0)}'|fzf --with-nth=2 --prompt="$PROMPT: " -0 --delimiter='\t'); [ -z "$__url__" ] &&  echo -e "\nCaught ^" 
+read -r __url__ __endpoint__ < <(curl -s "${NEPI}"|html2text|grep -oP '(?<=\])\(\K[^)]+'|grep '^https\?://'|grep -E 'github\.com|github\.io'|sort -ur |awk '{print $0 "\t" gensub(".*/", "", "g", $0)}'|fzf --with-nth=2 --prompt="$PROMPT: " -0 --delimiter='\t'); [ -z "$__url__" ] &&  echo -e "\nNo internet connections or no input selected. ^" 
       ;;    
     -m=0 | --mode-online=0)  MODE=0;;
     *) echo "${UNKNOWN}" >&2; exit 1;
