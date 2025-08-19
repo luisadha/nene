@@ -65,7 +65,7 @@ url() {
     return 0
 }
 homepage() {
-    termux-open-url $NEPI
+    termux-open-url "$NEPI"
     return 0
 }
 addon() {
@@ -99,9 +99,6 @@ Usage :
   -a    --api-termux     Installs nene-ak47 to run Nene via WebApp using Android Share
   -u    --select-url     Select a webapp to open the link. This option is only effective when used after the -a option
         --homepage       Open homepage related this project
-    -Ss PACKAGE          Search package metadata in JSON format
-    -Si PACKAGE          Search and install the globally specified package
-  -S    --search=PACKAGE Execute the explicitly specified application
   -m    --mode=online    Select and run through the link if not set default offline
   -v    --version        Print version script and exit
   -h    --help           Print this message and exit
@@ -123,6 +120,12 @@ fi
 
 available_options() {
 cat <<EOF
+-a
+-u
+-h
+-m
+-v
+--select-url
 --api-termux
 --dry-run
 --help
@@ -145,7 +148,7 @@ for arg in "$@"; do
     -m=1 | --mode=1)  MODE=1
 read -r __url__ __endpoint__ < <(curl -s "${NEPI}"|html2text|grep -oP '(?<=\])\(\K[^)]+'|grep '^https\?://'|grep -E 'github\.com|github\.io'|sort -ur |awk '{print $0 "\t" gensub(".*/", "", "g", $0)}'|fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t'); [ -z "$__url__" ] &&  echo -e "\nCaught ^" 
       ;;    
-    -m=0 | --mode=0)  MODE=0;;
+    -m=0 | --mode-online=0)  MODE=0;;
     *) echo "${UNKNOWN}" >&2; exit 1;
     ;;
   esac
