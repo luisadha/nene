@@ -201,6 +201,8 @@ fi
          exit $?
          ;;
     -i|--install)
+trap 'error_exit_seconds' ERR
+[ -z "$2" ] && echo "Argument required $2" && exit 0
       export pkg=$2 
       export Package=$pkg
 if dpkg -s "$pkg" >/dev/null 2>&1; then
@@ -213,7 +215,7 @@ if dpkg -s "$pkg" >/dev/null 2>&1; then
     :
 fi
   export fetch_latests_deb="$(curl -s https://api.github.com/repos/luisadha/$pkg/releases/latest | grep "browser_download_url.*\.deb"|cut -d '"' -f 4)"
-trap 'error_exit_seconds' ERR
+
 export HTTP_STATUS="$(curl -s -o /dev/null -w "%{http_code}" "$fetch_latests_deb" 2>/dev/null)"
 
 if [ "$HTTP_STATUS" == "200" ]; then
@@ -231,8 +233,7 @@ trap - ERR
                 tmpfile=\$(mktemp) && \
                 wget -O \"\$tmpfile\" {3} && \
                 dpkg -i \"\$tmpfile\" && \
-                rm -f \"\$tmpfile\" && exit)+abort" -q ${pkg:-$__url__} ); [ -z "$2" ] && echo "Argument required $2";
-                exit 0
+                rm -f \"\$tmpfile\" && exit)+abort" -q ${pkg:-$__url__} ); shift
                 ;;
     -m=1 | --mode-online=1)  MODE=1 
       trap 'offline_status' ERR
