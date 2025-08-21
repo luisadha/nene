@@ -27,7 +27,10 @@ DB_FILE="$HOME/.local/share/nene/update-lists"
 PROMPT="Choose a script to run online"
 INSTALL="CTRL-i: to install" 
 REMOVE="CTRL-r: to remove packages"
-
+info_all_dpkg() {
+while IFS= read -r pkg; do   dpkg -s "$pkg" 2>/dev/null;   echo    # baris kosong sebagai pemisah
+done < pkg-installed 
+}
 update_remote_db() {
   mkdir -p "$(dirname "$DB_FILE")"
   curl -s "$NEPI" \
@@ -150,7 +153,9 @@ cat <<EOF
 -v 
 -u
 -i
+-I
 -r
+--info-all
 --remove
 --install
 --update
@@ -184,6 +189,9 @@ for arg in "$@"; do
        --dry-run=*) echo "Value must be 1 in $arg" >&2; exit 2;;
     -u|--update)
       update_remote_db
+      ;;
+    -I|--info-all)
+      info_all_dpkg
       ;;
     -r|--remove)
       export pkg=$2
