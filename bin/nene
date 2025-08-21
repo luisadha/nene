@@ -216,9 +216,9 @@ trap 'error_exit_seconds' ERR
 export HTTP_STATUS="$(curl -s -o /dev/null -w "%{http_code}" "$fetch_latests_deb" 2>/dev/null)"
 
 if [ "$HTTP_STATUS" == "200" ]; then
-  :
+  echo
 elif [ "$HTTP_STATUS" == "302" ]; then
-  :
+  echo
 else 
   error_exit_seconds;
   exit 2;
@@ -230,7 +230,7 @@ fi
                 wget -O \"\$tmpfile\" {3} && \
                 dpkg -i \"\$tmpfile\" && \
                 rm -f \"\$tmpfile\" && exit)+abort" -q ${pkg:-$__url__} ); [ -z "$2" ] && echo "Argument required $2";
-                exit $?
+                exit 0
                 ;;
     -m=1 | --mode-online=1)  MODE=1 
       trap 'offline_status' ERR
