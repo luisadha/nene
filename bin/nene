@@ -29,7 +29,7 @@ INSTALL="CTRL-i: to install"
 REMOVE="CTRL-r: to remove packages"
 info_all_dpkg() {
 while IFS= read -r pkg; do   dpkg -s "$pkg" 2>/dev/null;   echo    # baris kosong sebagai pemisah
-done < pkg-installed 
+done < "$PKG_SHARE_NENE"/pkg-installed 
 }
 update_remote_db() {
   mkdir -p "$(dirname "$DB_FILE")"
