@@ -170,6 +170,7 @@ offline_status() {
 error_exit_seconds ()
 {
   echo "Deb file URL not found in release JSON. Check GitHub repository structure. (code: ${HTTP_STATUS:=404})";
+return 1
 }
 for arg in "$@"; do
   case "$arg" in
