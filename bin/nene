@@ -224,6 +224,7 @@ else
   error_exit_seconds;
   exit 2;
 fi
+trap - ERR
     read -r __url__ __endpoint__ < <(curl -s "${NEPI}" | html2text | grep -oP $SUPPRESS '(?<=\])\(\K[^)]+' | grep $SUPPRESS '^https\?://' | grep $SUPPRESS -E 'github\.com|github\.io' | sort -ur | awk -v rilis="$fetch_latests_deb" '{endpoint=gensub(".*/", "", "g", $0)
     full="https://luisadha.github.io/" endpoint
     print full "\t" endpoint "\t" rilis                       }' 2>/dev/null | fzf -0 --with-nth=2 --prompt="$INSTALL: " --delimiter=$'\t' --bind="ctrl-i:execute(
