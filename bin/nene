@@ -206,7 +206,7 @@ trap 'error_exit_seconds' ERR
       export pkg=$2 
       export Package=$pkg
 if dpkg -s "$pkg" >/dev/null 2>&1; then
-    dpkg-query -W -f='${Package} ${Version}\n${Description}' "$pkg" 2>/dev/null
+    dpkg-query -W -f='${Package} ${Version}\n${Description}\n' "$pkg" 2>/dev/null
     echo "$Package" >> $PKG_SHARE_NENE/pkg-installed 
     sort -u $PKG_SHARE_NENE/pkg-installed -o $PKG_SHARE_NENE/pkg-installed
     pkg+=" ";
