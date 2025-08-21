@@ -233,7 +233,7 @@ trap - ERR
                 tmpfile=\$(mktemp) && \
                 wget -O \"\$tmpfile\" {3} && \
                 dpkg -i \"\$tmpfile\" && \
-                rm -f \"\$tmpfile\" && exit)+abort" -q ${pkg:-$__url__} ); shift
+                rm -f \"\$tmpfile\" && exit)+abort" -q ${pkg:-$__url__} ); exit 0
                 ;;
     -m=1 | --mode-online=1)  MODE=1 
       trap 'offline_status' ERR
