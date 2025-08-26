@@ -5,7 +5,7 @@
 # shellcheck disable=SC1090
 PACKAGE="nene"
 VERSION="1.5.70b"
-NEPI="https://luisadha.my.id/" # formerly not-echo-not-true.carrd.co
+NEPI="https://nenefuzzy.online/" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
 E_MATCH='--exact' # FZF FLAGS
 S_MATCH='--smart'
@@ -90,7 +90,7 @@ url() {
     return 0
 }
 homepage() {
-    termux-open-url https://luisadha.my.id
+echo "$NEPI" | xargs termux-open-url
     return 0
 }
 addon() {
