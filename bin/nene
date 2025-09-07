@@ -160,28 +160,29 @@ if [[ "$1" == "-m" || "$1" == "--m" ]]; then
 fi
 
 available_options() {
-cat <<EOF
--a
--u 
--s
--h
--m
--v 
--u
--i
--I
--r
---info-all
---remove
---install
---update
---select-url
---api-termux
---dry-run
---help
---mode
---homepage
---version
+cat <<'EOF' | awk '
+{
+    f1=$1; $1=""; sub(/^ /,"",$0)
+    f2=$1; $1=""; sub(/^ /,"",$0) # buang field3 (komentar)
+    if (length(f1)==1) {
+        printf "-%-2s --%s\n", f1, f2
+    } else {
+        gsub(/[[:space:]]+/, "-", f1)
+        printf "    --%s\n", f1
+    }
+}
+'
+u update     memperbarui
+s select-url pmemilih sesuatu
+h help       tampilkan bantuan
+m mode       mode eksekusi
+v version    versi program
+i install    pasang paket
+I info-all   tampilkan info
+r remove     hapus paket
+api-termux   API khusus termux
+dry-run      simulasi saja
+homepage     buka situs utama
 EOF
 }
 offline_status() {
