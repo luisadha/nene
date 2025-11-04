@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import os
 import sys
 import time
@@ -30,8 +29,8 @@ def banner():
     print("Author: luisadha")
     print("Source: https://github.com/luisadha/nene/tree/main\n")
 
+# Ambil apps dari update-lists
 raw_apps = []
-
 pkg_file = os.path.join(os.environ["HOME"], ".local/share/nene/update-lists")
 
 if os.path.isfile(pkg_file):
@@ -55,6 +54,7 @@ if os.path.isfile(pkg_file):
             raw_apps.append((name, url, label))
 else:
     print(f"No package file found at {pkg_file}")
+
 # Sortir berdasarkan nama
 apps = sorted(raw_apps, key=lambda x: x[0])
 
@@ -64,18 +64,17 @@ while True:
 
     if not apps:
         print("No installed apps found.\nExiting..")
-        break         
-        max_len = max(len(f"{i}) {name}") for i, (name, _, _) in enumerate(apps, start=1))
-        
-        for i, (name, _, status) in enumerate(apps, start=1):
-            print(f"{i}) {name:<{max_len - len(str(i))+1}} | {status}")
-            print(f"0) EXIT".ljust(max_len) + " |")
-    #max_name_len = max(len(name) for name, _, _ in apps)
+        break
+
+    # Hitung panjang kolom nomor + nama
+    max_len = max(len(f"{i}) {name}") for i, (name, _, _) in enumerate(apps, start=1))
 
     # Tampilkan menu
-    #for i, (name, _, status) in enumerate(apps, start=1):
-     #   print(f"{i}) {name.ljust(max_name_len)} | {status}")
-    #print("0) EXIT")
+    for i, (name, _, status) in enumerate(apps, start=1):
+        print(f"{i}) {name:<{max_len - len(str(i))}} | {status}")
+
+    # EXIT
+    print(f"{'0) EXIT':<{max_len}} |")
 
     # Input user
     try:
