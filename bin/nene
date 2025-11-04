@@ -229,15 +229,27 @@ while [[ $# -gt 0 ]]; do
     -a|--api-termux)
       addon; shift;;
     -s*|--select-url)
-if [[ "$1" == *c* ]]; then
-select_url "termux-clipboard-set"
-termux-toast "Copied!"
-elif [[ "$1" == *o* ]]; then
-select_url "termux-open-url"
-else
-select_url "termux-open-url"
-fi
-shift;;
+    # Ambil semua karakter setelah -s
+    opts="${1#-s}"  # hapus prefix -s
+    [[ -z "$opts" ]] && opts="o"  # default ke 'o' kalau kosong
+
+    # Loop tiap karakter
+    for opt in $(echo "$opts" | grep -o .); do
+        case "$opt" in
+            c)
+                select_url "termux-clipboard-set"
+                termux-toast "Copied!"
+                ;;
+            o)
+                select_url "termux-open-url"
+                ;;
+            *)
+                echo "Unknown select-url option: $opt"
+                ;;
+        esac
+    done
+    shift
+    ;;
     -h|--help)
       show_help; shift;;
     -v|--version)
