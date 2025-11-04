@@ -265,8 +265,8 @@ while [[ $# -gt 0 ]]; do
                 echo "Unknown select-url option: $opt"
                 ;;
         esac
-     echo "" > $URL_CACHE
     done
+     echo "" > $URL_CACHE
     shift
     ;;
     -h|--help)
