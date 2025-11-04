@@ -30,6 +30,7 @@ def banner():
     print("Author: luisadha")
     print("Source: https://github.com/luisadha/nene/tree/main\n")
 
+raw_apps = []
 # === Load apps dari pkg-installed
 pkg_file = os.path.join(os.environ["HOME"], ".local/share/nene/pkg-installed")
 
