@@ -5,7 +5,7 @@ import sys
 import time
 import shutil
 
-__version__ = "1.6.0"
+__version__ = "1.6.0-libnene"
 
 def center_text(text):
     width = shutil.get_terminal_size((80, 20)).columns
@@ -32,7 +32,7 @@ def banner():
 
 raw_apps = []
 
-pkg_file = os.path.join(os.environ["HOME"], ".local/share/nene/pkg-installed")
+pkg_file = os.path.join(os.environ["HOME"], ".local/share/nene/update-lists")
 
 if os.path.isfile(pkg_file):
     with open(pkg_file, "r", encoding="utf-8") as f:
