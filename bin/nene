@@ -1,10 +1,9 @@
 #!/data/data/com.termux/files/usr/bin/bash
-set -xv
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE
 #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.5.90-m249"  
+VERSION="1.5.91-m249"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
@@ -16,7 +15,7 @@ NDARGS=2;
 RDARGS=3;
 THARGS=4;
 NULLARGS=0;
-
+export FZF_DEFAULT_OPTS="--height=40% --layout=reverse --info=inline --border --margin=1 --padding=1"
 GLOBAL_NOTIF_DRY_RUN="[DRY-RUN] Not Really Execute"
 SUPPRESS='--no-messages'
 QUIET='--quiet'
@@ -236,8 +235,11 @@ while [[ $# -gt 0 ]]; do
       version; shift;;
    -H|--homepage)
       homepage; shift;;
-   -n|--dry-run|--dry-run=0|--dry-run=1)
-DRY_RUN="${1#*=}";
+    -n|--dry-run)
+DRY_RUN=1; shift;;
+    --dry-run=*)
+DRY_RUN="${1#*=}"; [[ "$DRY_RUN" == "1" ]] && DRY_RUN=1 || DRY_RUN=0
+#echo "DRY_RUN='${DRY_RUN}'"
 export DRY_RUN_PROMPT="[DRY-RUN MODE]"; shift;;
     -u|--update)
       update_remote_db; shift ;;
@@ -457,11 +459,11 @@ __dry_run_ifof()
 printf "%s " $message && cat "$PKGS_INSTALLED" |sort -ur|fzf|xargs -r echo
 }
 __name__() {
-    case "$MODE-$DRY_RUN" in
+    case "$MODE-${DRY_RUN:-}" in
         0-1) __dry_run_ifof ;;
-        0-0) __main_off ;;
+    0- |0-0) __main_off ;;
         1-1) __dry_run_ifon ;;
-        1-0) ( set +Eeuo pipefail; curl -sL "${__url__}" | bash ) ;;
+    1- |1-0) ( set +Eeuo pipefail; curl -sL "${__url__}" | bash ) ;;
     esac
 }
 __main__() {
