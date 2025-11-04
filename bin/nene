@@ -148,8 +148,9 @@ online_apps() {
     [ -z "$__url__" ] &&  echo -e "\nCaught ^" || . <(curl -sL $__url__);
 
 }
-url() {
-    read -r __url__ < <(curl -s "$NEPI" | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io' | sort -ur | fzf --prompt="Indexing URL: " | xargs -r termux-open-url);
+select_url() {
+    local cmd="$1"
+    read -r __url__ < <(curl -s "$NEPI" | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io' | sort -ur | fzf --prompt="Indexing URL: " | xargs -r $cmd);
     return 0
 }
 homepage() {
@@ -228,7 +229,14 @@ while [[ $# -gt 0 ]]; do
     -a|--api-termux)
       addon; shift;;
     -s|--select-url)
-      url; shift;;
+if [[ "$1" == *c* ]]; then
+select_url "${1:+termux-clipboard-set}"
+elif [[ "$1" == *o" ]]; then; 
+select_url "${1:+termux-open-url}"
+else
+select_url "${1:-termux-open-url}"
+fi
+shift;;
     -h|--help)
       show_help; shift;;
     -v|--version)
