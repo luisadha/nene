@@ -329,15 +329,14 @@ if [ "$EXIST" = true ]; then
     fi
 
   if dpkg -s "$pkg" >/dev/null 2>&1; then
-      dpkg-query -W -f='${Package} ${Version}\t${Description}\n' "$pkg"
       echo "$pkg" >> "$PKG_SHARE_NENE/pkg-installed"
       sort -u "$PKG_SHARE_NENE/pkg-installed" -o "$PKG_SHARE_NENE/pkg-installed"
-      #exit 0
+      dpkg-query -W -f='${Package} ${Version}\t${Description}\t' "$pkg"
     fi
 
   # Tentukan pesan aksi
   if [ "$INSTALLED_VERSION" = "$LATEST_VERSION" ]; then
-    echo "$pkg is already up to date (v$INSTALLED_VERSION)."
+    echo -ne "already up to date (v$INSTALLED_VERSION)."
       exit 0
     else
 ASK_TO_ACTION="Would you like to upgrade?"
