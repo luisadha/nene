@@ -1,35 +1,95 @@
-#!/usr/bin/bash
-#set -xv
+#!/data/data/com.termux/files/usr/bin/bash
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE
-[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
+#[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.5.70b"
-NEPI="https://nenefuzzy.online/" # formerly not-echo-not-true.carrd.co
+VERSION="1.5.91-m249"
+SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
+NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
 E_MATCH='--exact' # FZF FLAGS
 S_MATCH='--smart'
 UNKNOWN="Error: Unknown options"
-STARGS=1; 
+STARGS=1;
 NDARGS=2;
 RDARGS=3;
 THARGS=4;
 NULLARGS=0;
+export FZF_DEFAULT_OPTS="--height=40% --layout=reverse --info=inline --border --margin=1 --padding=1"
+GLOBAL_NOTIF_DRY_RUN="[DRY-RUN] Not Really Execute"
 SUPPRESS='--no-messages'
 QUIET='--quiet'
+QUIET_MODE=""
 PACKAGE="$(echo "PACKAGE")"
 PKG_SHARE_NENE="${HOME}/.local/share/nene/"
+PKGS_INSTALLED="$PKG_SHARE_NENE/pkg-installed"
 __BASE_REPO__="nene"
 BASHER_PKG="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
-DRY_RUN=0
-MODE=0
+DRY_RUN=
+DRY_RUN_PROMPT=
+MODE=
 DB_FILE="$HOME/.local/share/nene/update-lists"
 PROMPT="Choose a script to run online"
-INSTALL="CTRL-i: to install" 
-REMOVE="CTRL-r: to remove packages"
+INSTALL="ALT-i: confirm to install this package"
+REMOVE="ALT-r: confirm to remove this package"
+
+#run_single_mode || run_dual_mode
+available_options() {
+cat <<'EOF' | awk '
+{
+    f1=$1; $1=""; sub(/^ /,"",$0)
+    f2=$1; $1=""; sub(/^ /,"",$0)
+    desc = $0
+    if (length(f1)==1) {
+        printf "-%-2s --%-17s %s\n", f1, f2, desc
+    } else {
+        gsub(/[[:space:]]+/, "-", f1)
+        printf "    --%-12s %s\n", f1, desc
+    }
+}
+'
+u update                      Update local package repository data from the server.
+s select-url                  Open the source page or website of each package.
+h help                        Display this help message and exit.
+m mode-online=[n]             Set data source: 1 for online packages, 0 for offline local packages, Both modes open the interactive menu interface.
+v version                     Show program version information.
+i install                     Install the selected package (auto-handles updates), This option can also be combined with -q (quiet: Suppress fzf output) or -n (dry-run).
+I info-all                    Display detailed information about all available packages.
+r remove                      Uninstall the selected packages from the system.
+a api-termux                  Enable running Nene scripts directly from shared websites or URLs.
+n dry-run                     No action; perform a simulation of events that would occur.
+H homepage                    Open the official homepage of Nene.
+EOF
+exit 0
+}
+mapfile -t FLAGS < <(available_options | xargs -d'\')
+catch_curl_error() {
+  local code=$?
+  local func=${FUNCNAME[1]:-main}
+  local lastcmd=${BASH_COMMAND}
+  echo "${DRY_RUN:-"[ERROR]"} ($func) Command '$lastcmd' failed with exit code $code"
+
+  # Jika error dari curl, identifikasi kodenya
+  if [[ $lastcmd == curl* ]]; then
+    case $code in
+      6)  msg="Couldn't resolve host" ;;
+      7)  msg="Failed to connect to host" ;;
+      28) msg="Operation timeout" ;;
+      *)  msg="Other curl error ($code)" ;;
+    esac
+    echo "[CURL] $msg"
+  fi
+}
+#catch_curl_error() {
+#  code=$?
+#  printf '%s: function name=%s, exit status=%s\n' "$FUNCNAME" "$1" "$code"
+#}
+check_connection() {
+  curl -Is --connect-timeout 3 https://github.com >/dev/null 2>&1;
+}
 info_all_dpkg() {
 while IFS= read -r pkg; do   dpkg -s "$pkg" 2>/dev/null;   echo    # baris kosong sebagai pemisah
-done < "$PKG_SHARE_NENE"/pkg-installed 
+done < "$PKG_SHARE_NENE"/pkg-installed
 }
 update_remote_db() {
   mkdir -p "$(dirname "$DB_FILE")"
@@ -44,11 +104,14 @@ update_remote_db() {
     echo "✅ Remote database updated successfully."
     return 0
   else
-    echo "❌ Failed to update remote database or file empty."
+    echo "❌ Failed to update remote database"
     return 1
   fi
 }
-
+checking_update() {
+  local pkg=$1
+curl -s https://api.github.com/repos/luisadha/$pkg/releases/latest | grep "browser_download_url.*\.deb"|cut -d '"' -f 4
+}
 default_apps() {
  if [[ -n "$BASHER_ROOT" && -d "$BASHER_PKG" ]]; then
     exec python3 "${BASHER_PKG}/not-echo-not-true.py"
@@ -59,7 +122,7 @@ default_apps() {
 }
 check_dependencies() {
   local missing=()
-  local dependencies=("python3" "jq" "termux-open-url" "sort" "xargs" "html2text" "fzf" "awk" "grep" "gum" "wget" "curl") 
+  local dependencies=("python3" "jq" "termux-open-url" "sort" "xargs" "html2text" "fzf" "awk" "grep" "gum" "wget" "curl")
 
   for cmd in "${dependencies[@]}"; do
     if ! command -v "$cmd" &>/dev/null; then
@@ -83,7 +146,7 @@ online_apps() {
     awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
     fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t');
     [ -z "$__url__" ] &&  echo -e "\nCaught ^" || . <(curl -sL $__url__);
-   
+
 }
 url() {
     read -r __url__ < <(curl -s "$NEPI" | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io' | sort -ur | fzf --prompt="Indexing URL: " | xargs -r termux-open-url);
@@ -114,36 +177,23 @@ sampai anda mengantinya lagi."
     read wait
 EOF
 sleep 0.4;
+echo "Installing.. "
+cp -f ~/bin/nene-ak47.sh ~/bin/termux-url-opener
+sleep 0.5
 echo "..done"
 return 0
 }
-FLAGS=(
-  "-h, --help|Tampilkan bantuan"
-  "-v, --version|Lihat versi program"
-  "-o, --output <f>|Simpan hasil ke file"
-  "-q, --quiet|Jalankan tanpa output"
-)
-
 show_help() {
-  echo "Usage: ${0##*/} [options]"
+echo -e "$SUMMARY\n"
+echo -e "Usage: ${0##*/} [ushvIaH] [-ri(qn) ARGUMENT].."
+echo -e "\t --mode-online=[n] --dry-run=[n] "
   echo
   echo "Options:"
   for f in "${FLAGS[@]}"; do
     IFS="|" read -r flag desc <<< "$f"
     printf "  %-18s %s\n" "$flag" "$desc"
   done
-}
-_help() {
-cat <<'EOF'
-Nene is both a static site and a set of Bash tools you can run straight from your terminal
-Usage :
-  -a    --api-termux     Installs nene-ak47 to run Nene via WebApp using Android Share
-  -u    --select-url     Select a webapp to open the link. This option is only effective when used after the -a option
-        --homepage       Open homepage related this project
-  -m    --mode=online    Select and run through the link if not set default offline
-  -v    --version        Print version script and exit
-  -h    --help           Print this message and exit
-EOF
+  exit 0
 }
 version() {
 echo "nene v${VERSION}"
@@ -151,7 +201,9 @@ return 0
 }
 
 if [[ $# -eq 0 ]]; then
-default_apps;
+#default_apps; deprecreted
+nene --mode-online=0
+exit 0
 fi
 
 if [[ "$1" == "-m" || "$1" == "--m" ]]; then
@@ -159,62 +211,48 @@ if [[ "$1" == "-m" || "$1" == "--m" ]]; then
     exit 1
 fi
 
-available_options() {
-cat <<'EOF' | awk '
-{
-    f1=$1; $1=""; sub(/^ /,"",$0)
-    f2=$1; $1=""; sub(/^ /,"",$0) # buang field3 (komentar)
-    if (length(f1)==1) {
-        printf "-%-2s --%s\n", f1, f2
-    } else {
-        gsub(/[[:space:]]+/, "-", f1)
-        printf "    --%s\n", f1
-    }
-}
-'
-u update     memperbarui
-s select-url pmemilih sesuatu
-h help       tampilkan bantuan
-m mode       mode eksekusi
-v version    versi program
-i install    pasang paket
-I info-all   tampilkan info
-r remove     hapus paket
-api-termux   API khusus termux
-dry-run      simulasi saja
-homepage     buka situs utama
-EOF
-}
 offline_status() {
-    echo -e "No internet connections" >&2;
-    return 2
+   echo -e "No internet connections";
+  return 6
 }
 error_exit_seconds ()
 {
-  echo "Deb file URL not found in release JSON. Check GitHub repository structure. (code: ${HTTP_STATUS:=404})";
+  echo "$DRY_RUN_PROMPT Deb file URL not found in release JSON. Check GitHub repository structure. (code: ${HTTP_STATUS:=404})";
 return 1
 }
-for arg in "$@"; do
-  case "$arg" in
-    flags)        available_options;;
-    -a|--api-termux)    addon;;
-    -s|--select-url)      url;;
-    -h|--help)          _help;;
-    -v|--version)        version;;
-       --homepage)      homepage;;
-       --dry-run | --dry-run=1) DRY_RUN=1;;
-       --dry-run=*) echo "Value must be 1 in $arg" >&2; exit 2;;
+
+while [[ $# -gt 0 ]]; do
+ case "$1" in
+    flags)
+      available_options;;
+    -a|--api-termux)
+      addon; shift;;
+    -s|--select-url)
+      url; shift;;
+    -h|--help)
+      show_help; shift;;
+    -v|--version)
+      version; shift;;
+   -H|--homepage)
+      homepage; shift;;
+    -n|--dry-run)
+DRY_RUN=1; shift;;
+    --dry-run=*)
+DRY_RUN="${1#*=}"; [[ "$DRY_RUN" == "1" ]] && DRY_RUN=1 || DRY_RUN=0
+#echo "DRY_RUN='${DRY_RUN}'"
+export DRY_RUN_PROMPT="[DRY-RUN MODE]"; shift;;
     -u|--update)
-      update_remote_db
-      ;;
+      update_remote_db; shift ;;
     -I|--info-all)
-      info_all_dpkg
-      ;;
+      info_all_dpkg; shift;;
     -r|--remove)
+#      set -xv
+      [ -z "$2" ] && echo "Argument required for ${2:-"--remove"} <package>" && exit 2;
       export pkg=$2
 if dpkg -s "$pkg" >/dev/null 2>&1; then
    # echo "Paket bisa dihapus"
-    :
+if check_connection; then echo; else offline_status; exit $?; fi
+    echo
 else
     sed -i "/^$pkg$/d" "$PKG_SHARE_NENE/pkg-installed"
     echo "Cannot remove this packages"
@@ -222,74 +260,227 @@ else
 fi
     read -r __url__ __endpoint__ < <(curl -s "${NEPI}" | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io' | sort -ur | awk '{endpoint=gensub(".*/", "", "g", $0)
     full="https://luisadha.github.io/" endpoint
-    print full "\t" endpoint                    }' | fzf -0 --with-nth=2 --prompt="$REMOVE: " --delimiter=$'\t' --bind="ctrl-r:execute(dpkg -r \"\$pkg\")+abort" -q ${pkg:-$__url__} ); [ -z "$2" ] && echo "Argument required $2";
-         exit $?
+    print full "\t" endpoint                    }' | fzf -0 --with-nth=2 --prompt="$REMOVE: " --delimiter=$'\t' --bind="alt-r:execute(dpkg -r \"\$pkg\")+abort" -q ${pkg:-$__url__} );
+         set +vx
+         exit $?;
          ;;
-    -i|--install)
-trap 'error_exit_seconds' ERR
-[ -z "$2" ] && echo "Argument required $2" && exit 0
-      export pkg=$2 
-      export Package=$pkg
-if dpkg -s "$pkg" >/dev/null 2>&1; then
-    dpkg-query -W -f='${Package} ${Version}\n${Description}\n' "$pkg" 2>/dev/null
-    echo "$Package" >> $PKG_SHARE_NENE/pkg-installed 
-    sort -u $PKG_SHARE_NENE/pkg-installed -o $PKG_SHARE_NENE/pkg-installed
-    pkg+=" ";
-    exit
+    -i*|--install) [ -z "$2" ] && echo "Argument required for ${2:-"--install"} <package>" && exit 1
+
+      if check_connection; then echo; else offline_status; exit $?; fi
+      # kalau mengandung q juga, aktifkan quiet
+      if [[ "$1" == *q* ]]; then
+QUIET_MODE=true
+export FZF_DEFAULT_OPTS=(--bind="one:execute(tmpfile=\$(mktemp) && wget -O \"\$tmpfile\" {3} && dpkg -i \"\$tmpfile\" && rm -f \"\$tmpfile\" && exit)+abort" )
+      else
+QUIET_MODE=false
+export FZF_DEFAULT_OPTS=(--bind="alt-i:execute(tmpfile=\$(mktemp) && wget -O \"\$tmpfile\" {3} && dpkg -i \"\$tmpfile\" && rm -f \"\$tmpfile\" && exit)+abort" )
+      fi;
+      if [[ "$1" == *n* ]]; then
+DRY_RUN_MODE=true
+__dry_run_ifi() {
+  echo "$GLOBAL_NOTIF_DRY_RUN"
+}
+      else
+DRY_RUN_MODE=false
+      fi
+
+
+      if [ "$QUIET_MODE" == "true" ]; then
+SKIP_FZF_PROMPT="$FZF_DEFAULT_OPTS"
+      else
+SKIP_FZF_PROMPT="$FZF_DEFAULT_OPTS"
+      fi
+      if [ "$DRY_RUN_MODE" == "true" ]; then
+unset FZF_DEFAULT_OPTS
+SKIP_FZF_PROMPT=(-f=$pkg)
+DRY_RUN_PROMPT="[DRY-RUN MODE]"
+      fi
+
+pkg="$2"
+Package="$pkg"
+
+  # Cek apakah paket sudah terpasang (ada di PATH)
+  if command -v "$pkg" >/dev/null 2>&1; then
+EXIST="true"
   else
-    :
-fi
-  export fetch_latests_deb="$(curl -s https://api.github.com/repos/luisadha/$pkg/releases/latest | grep "browser_download_url.*\.deb"|cut -d '"' -f 4)"
-
-export HTTP_STATUS="$(curl -s -o /dev/null -w "%{http_code}" "$fetch_latests_deb" 2>/dev/null)"
-
-if [ "$HTTP_STATUS" == "200" ]; then
-  echo
-elif [ "$HTTP_STATUS" == "302" ]; then
-  echo
-else 
-  error_exit_seconds;
-  exit 2;
-fi
-trap - ERR
-    read -r __url__ __endpoint__ < <(curl -s "${NEPI}" | html2text | grep -oP $SUPPRESS '(?<=\])\(\K[^)]+' | grep $SUPPRESS '^https\?://' | grep $SUPPRESS -E 'github\.com|github\.io' | sort -ur | awk -v rilis="$fetch_latests_deb" '{endpoint=gensub(".*/", "", "g", $0)
-    full="https://luisadha.github.io/" endpoint
-    print full "\t" endpoint "\t" rilis                       }' 2>/dev/null | fzf -0 --with-nth=2 --prompt="$INSTALL: " --delimiter=$'\t' --bind="ctrl-i:execute(
-                tmpfile=\$(mktemp) && \
-                wget -O \"\$tmpfile\" {3} && \
-                dpkg -i \"\$tmpfile\" && \
-                rm -f \"\$tmpfile\" && exit)+abort" -q ${pkg:-$__url__} ); exit 0
-                ;;
-    -m=1 | --mode-online=1)  MODE=1 
-      trap 'offline_status' ERR
-read -r __url__ __endpoint__ < <(curl -s "${NEPI}" \
-| html2text \
-| grep -oP '(?<=\])\(\K[^)]+' \
-| grep '^https\?://' \
-| grep -E 'github\.com|github\.io' \
-| sort -ur \
-| awk '{
-    endpoint=gensub(".*/", "", "g", $0)
-    full="https://luisadha.github.io/" endpoint
-    print full "\t" endpoint
-  }' | fzf -0 --with-nth=2 --prompt="$PROMPT: " --delimiter=$'\t'); [ -z "$__url__" ] && offline_status
-      shift 2
-      ;;    
-    -m=0 | --mode-online=0)  MODE=0;;
-    *) echo "${UNKNOWN}" >&2; exit 1;
-    ;;
-  esac
-  shift
-done
-
-# --- Eksekusi setelah semua flag diparsing ---
-
-if [[ $MODE -eq 1 ]]; then
-  if [[ $DRY_RUN -eq 1 ]]; then
-    echo "[DRY-RUN] Not Really Execute ${__endpoint__}" 
-    echo <(true) 2>/dev/null; # Do nothing
-  else
-    echo
-    . <(curl -sL ${__url__}) 
+EXIST="false"
   fi
+
+  # Ambil versi terpasang (jika ada)
+INSTALLED_VERSION=$(dpkg -s "$pkg" 2>/dev/null | awk '/Version/ {print $2}' | cut -d- -f1)
+
+  # Ambil versi terbaru dari GitHub
+API_URL="https://api.github.com/repos/luisadha/$pkg/releases/latest"
+LATEST_JSON=$(curl -sSL "$API_URL")
+LATEST_VERSION=$(echo "$LATEST_JSON" | jq -r .tag_name | sed 's/^v//')
+LATEST_BODY=$(echo "$LATEST_JSON" | jq -r .body)
+
+if [ "$EXIST" = true ]; then
+    if [ "$LATEST_VERSION" = "null" ]; then
+      echo "No release data found for $pkg."
+      exit 1
+    fi
+  # Tentukan pesan aksi
+  if [ "$INSTALLED_VERSION" = "$LATEST_VERSION" ]; then
+    echo "$pkg is already up to date (v$INSTALLED_VERSION)."
+      exit 0
+    else
+ASK_TO_ACTION="Would you like to upgrade?"
+      echo -e "Current: $pkg $INSTALLED_VERSION"
+      echo -e "Upgradeable: $pkg $LATEST_VERSION\n"
+      echo -e "Changes:\n$LATEST_BODY\n"
+    fi
+  else
+ASK_TO_ACTION="Would you like to install?"
+    echo -e "$DRY_RUN_PROMPT Repository: $API_URL\n"
+  fi
+
+  echo "$DRY_RUN_PROMPT $ASK_TO_ACTION"
+  read -r proceed
+
+  __dry_run_ifi 2>/dev/null
+
+  # Jika sudah terpasang, tampilkan info dan keluar
+    if dpkg -s "$pkg" >/dev/null 2>&1; then
+      dpkg-query -W -f='${Package} ${Version}\n${Description}\n' "$pkg"
+      echo "$pkg" >> "$PKG_SHARE_NENE/pkg-installed"
+      sort -u "$PKG_SHARE_NENE/pkg-installed" -o "$PKG_SHARE_NENE/pkg-installed"
+      #exit 0
+    fi
+
+  # Ambil file .deb terbaru
+fetch_latest_deb=$(echo "$LATEST_JSON" | grep -o '"browser_download_url": *"[^"]*\.deb"' | cut -d '"' -f 4)
+
+  # Validasi URL
+HTTP_STATUS=$(curl -sSL -o /dev/null -w "%{http_code}" "$fetch_latest_deb" 2>/dev/null)
+  if [ "$HTTP_STATUS" != "200" ] && [ "$HTTP_STATUS" != "302" ]; then
+    exit 2
+  fi
+
+  # Pilih endpoint dan install
+  read -r __url__ __endpoint__ < <(
+    curl -s "${NEPI}" |
+      html2text |
+      grep -oP '(?<=\])\(\K[^)]+' |
+      grep -E '^https?://' |
+      grep -E 'github\.com|github\.io' |
+      sort -ur |
+      awk -v rilis="$fetch_latest_deb" '{
+        endpoint=gensub(".*/", "", "g", $0);
+        full="https://luisadha.github.io/" endpoint;
+        print full "\t" endpoint "\t" rilis;
+      }' |
+      fzf   --with-nth=2 \
+          --prompt="$INSTALL: " \
+          --delimiter=$'\t' \
+          "${SKIP_FZF_PROMPT}" -q ${pkg} );
+      exit $?;
+      ;;
+    -m=1 | --mode-online=1) MODE="${1#*=}"
+set -Eeuo pipefail
+trap catch_curl_error ERR
+data=$(
+  curl -fsS "${NEPI}" \
+  | html2text \
+  | grep -oP '(?<=\])\(\K[^)]+' \
+  | grep '^https\?://' \
+  | grep -E 'github\.com|github\.io' \
+  | sort -ur \
+  | awk '{
+      endpoint=gensub(".*/", "", "g", $0)
+      full="https://luisadha.github.io/" endpoint
+      print full "\t" endpoint
+    }'
+)
+# fzf bisa exit 130 kalau dibatalkan, maka periksa hasilnya
+if [[ -z "$data" ]]; then
+  echo "[ERROR] Failed to fetch data from ${NEPI}" >&2
+  exit 1
 fi
+
+mapfile -t selection < <(
+  printf "%s" "$data" \
+  | fzf -0 --with-nth=2 --prompt="$PROMPT: " --delimiter=$'\t' || {
+      echo "[ERROR] User selection failed or canceled" >&2
+      exit 1
+    }
+)
+
+[[ -z "${selection[0]:-}" ]] && {
+  echo "[ERROR] No selection returned from fzf" >&2
+  exit 1
+}
+
+# parsing hasil ke dua variabel
+read -r __url__ __endpoint__ <<<"${selection[0]}"
+
+# pastikan dua variabel terisi
+if [[ -z "$__url__" || -z "$__endpoint__" ]]; then
+  echo "[ERROR] Empty URL or endpoint" >&2
+  exit 1
+fi
+      shift;;
+    -m=0 | --mode-online=0)  MODE="${1#*=}"
+      echo
+      shift;;
+    *)
+url_regex="^(https?|ftp)://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(:[0-9]+)?(/.*)?$"
+
+if [[ "$1" =~ $url_regex ]]; then
+curl -L "$1" | bash
+    echo "Process completed."
+    read wait
+else
+    echo "$1 bukan URL valid"
+fi
+      echo "${UNKNOWN}" >&2;
+      shift;;
+  esac
+done
+      #shift $((OPTIND - 1))
+__main_off () {
+cat "$PKGS_INSTALLED" |sort -ur|fzf|xargs -r bash >> ~/nene-nohup.out
+exit 0
+}
+__main_on () {
+  echo
+  . <(curl -sL ${__url__})
+
+}
+__dry_run_ifon()
+{
+  echo "[DRY-RUN] Not Really Execute ${__endpoint__}" >&2;
+  echo <(true) 2>/dev/null;
+  exit 1 # Do nothing
+}
+__dry_run_ifof()
+{
+  local message="$GLOBAL_NOTIF_DRY_RUN"
+printf "%s " $message && cat "$PKGS_INSTALLED" |sort -ur|fzf|xargs -r echo
+}
+__name__() {
+    case "$MODE-${DRY_RUN:-}" in
+        0-1) __dry_run_ifof ;;
+    0- |0-0) __main_off ;;
+        1-1) __dry_run_ifon ;;
+    1- |1-0) ( set +Eeuo pipefail; curl -sL "${__url__}" | bash ) ;;
+    esac
+}
+__main__() {
+    case "$MODE" in
+      1) ( #set +Eeuo pipefail;
+        . < <(curl -sL "${__url__}" )
+        );;
+      0) __main_off;;
+    esac
+}
+pass() {
+  # aktifkan jika mode development
+  ( termux-open ~/nene-nohup.out ) &
+}
+#set -xv
+# Untuk production kalau misal rilis pake yang ini lebih stabil
+ __name__ || __main__
+# Untuk development dry-run, logging output, verbosity you can do, experimental tidak stabil
+#eval : 'if'$(__name__)'||'$`__main__`:'then'
+#  pass
