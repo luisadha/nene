@@ -327,6 +327,14 @@ if [ "$EXIST" = true ]; then
       echo "No release data found for $pkg."
       exit 1
     fi
+
+  if dpkg -s "$pkg" >/dev/null 2>&1; then
+      dpkg-query -W -f='${Package} ${Version}\n${Description}\n' "$pkg"
+      echo "$pkg" >> "$PKG_SHARE_NENE/pkg-installed"
+      sort -u "$PKG_SHARE_NENE/pkg-installed" -o "$PKG_SHARE_NENE/pkg-installed"
+      #exit 0
+    fi
+
   # Tentukan pesan aksi
   if [ "$INSTALLED_VERSION" = "$LATEST_VERSION" ]; then
     echo "$pkg is already up to date (v$INSTALLED_VERSION)."
@@ -347,13 +355,6 @@ ASK_TO_ACTION="Would you like to install?"
 
   __dry_run_ifi 2>/dev/null
 
-  # Jika sudah terpasang, tampilkan info dan keluar
-    if dpkg -s "$pkg" >/dev/null 2>&1; then
-      dpkg-query -W -f='${Package} ${Version}\n${Description}\n' "$pkg"
-      echo "$pkg" >> "$PKG_SHARE_NENE/pkg-installed"
-      sort -u "$PKG_SHARE_NENE/pkg-installed" -o "$PKG_SHARE_NENE/pkg-installed"
-      #exit 0
-    fi
 
   # Ambil file .deb terbaru
 fetch_latest_deb=$(echo "$LATEST_JSON" | grep -o '"browser_download_url": *"[^"]*\.deb"' | cut -d '"' -f 4)
