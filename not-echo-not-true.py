@@ -5,7 +5,7 @@ import sys
 import time
 import shutil
 
-__version__ = "1.5.41b"
+__version__ = "1.6.0"
 
 def center_text(text):
     width = shutil.get_terminal_size((80, 20)).columns
@@ -30,25 +30,39 @@ def banner():
     print("Author: luisadha")
     print("Source: https://github.com/luisadha/nene/tree/main\n")
 
-# Daftar aplikasi dan URL-nya (tanpa nomor)
-raw_apps = [
-    ("Alrc-Termux", "https://alrc.luisadha.my.id", "Install for free"),
-    ("Anti-hangman", "https://luisadha.github.io/anti-hangman", "Free Trial"),
-    ("Ascii-Live-Termux", "https://luisadha.github.io/ascii-live-termux", "Free Trial"),
-    ("Brandomusic", "https://luisadha.github.io/brandomusic", "Free Trial"),
-    ("Pangram-Cli", "https://luisadha.github.io/pangram-cli", "Free Trial"),
-    ("Termcreed", "https://luisadha.github.io/termcreed", "Free Trial"),
-    ("Weapon-Url-Opener", "https://luisadha.github.io/weapon-url-opener", "Free Trial"),
-    ("Weapon-Url-Opener (Nightly)", "https://luisadha.github.io/weapon-url-opener-nightly", "Free Trial"),
-]
+# === Load apps dari pkg-installed ===
+pkg_file = os.path.expanduser("~/.local/share/nene/pkg-installed")
+raw_apps = []
+
+if os.path.isfile(pkg_file):
+    with open(pkg_file, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split(maxsplit=2)
+            if len(parts) == 3:
+                name, url, label = parts
+            elif len(parts) == 2:
+                name, url = parts
+                label = "Free Trial"
+            else:
+                continue
+            raw_apps.append((name, url, label))
+else:
+    print(f"No package file found at {pkg_file}")
 
 # Sortir berdasarkan nama
 apps = sorted(raw_apps, key=lambda x: x[0])
 
+# === Menu utama ===
 while True:
     banner()
 
-    # Hitung lebar kolom nama aplikasi terpanjang
+    if not apps:
+        print("No installed apps found.\nExiting..")
+        break
+
     max_name_len = max(len(name) for name, _, _ in apps)
 
     # Tampilkan menu
@@ -62,19 +76,16 @@ while True:
         if not choice.isdigit():
             continue
         choice = int(choice)
-    except EOFError:
-        print("\nAutomatically selected (0) because end-of-file was reached.\nExiting..")
-        sys.exit(1)
-    except KeyboardInterrupt:
-        print("\nCaught ^C\nExiting..")
-        sys.exit(1)
+    except (EOFError, KeyboardInterrupt):
+        print("\nExiting..")
+        sys.exit(0)
 
     if choice == 0:
         print("You selected (0)\nExiting..")
         break
     elif 1 <= choice <= len(apps):
         name, url, _ = apps[choice - 1]
-        print(f"You selected ({choice}): {name}")
+        print(f"You selected ({choice}): {name}\nLaunching..")
         time.sleep(1)
         os.system(f'bash -c "source <(curl -sSL {url})"')
     else:
