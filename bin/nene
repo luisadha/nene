@@ -23,6 +23,7 @@ QUIET_MODE=""
 PACKAGE="$(echo "PACKAGE")"
 PKG_SHARE_NENE="${HOME}/.local/share/nene/"
 PKGS_INSTALLED="$PKG_SHARE_NENE/pkg-installed"
+URL_CACHE="$PKG_SHARE_NENE/nene_last_url"
 __BASE_REPO__="nene"
 BASHER_PKG="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
 DRY_RUN=
@@ -149,9 +150,26 @@ online_apps() {
 
 }
 select_url() {
-    local cmd="$1"
-    read -r __url__ < <(curl -s "$NEPI" | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io' | sort -ur | fzf --prompt="Indexing URL: " | xargs -r $cmd);
-    return 0
+    local cmd="${1:-echo}"
+
+    if [[ -s "$URL_CACHE" ]]; then
+        # pakai URL yang tersimpan
+        __url__=$(<"$URL_CACHE")
+    else
+        # pilih URL baru via fzf
+        __url__=$(curl -s "$NEPI" \
+            | html2text \
+            | grep -oP '(?<=\])\(\K[^)]+' \
+            | grep '^https\?://' \
+            | grep -E 'github\.com|github\.io' \
+            | sort -ur \
+            | fzf --prompt="Indexing URL: ")
+        # simpan ke cache
+        echo "$__url__" > "$URL_CACHE"
+    fi
+
+    # eksekusi perintah
+    [[ -n "$__url__" ]] && xargs -r <<< "$__url__" $cmd
 }
 homepage() {
 echo "$NEPI" | xargs termux-open-url
