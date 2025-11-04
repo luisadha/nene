@@ -50,7 +50,7 @@ cat <<'EOF' | awk '
 }
 '
 u update                      Update local package repository data from the server.
-s select-url                  Open the source page or website of each package.
+s select-url                  Open the source page or website of each package, This option can also be combined with -c (copy: Copy selected a url into clipboard) or -o (open: mean open a selected url, Same as -s).
 h help                        Display this help message and exit.
 m mode-online=[n]             Set data source: 1 for online packages, 0 for offline local packages, Both modes open the interactive menu interface.
 v version                     Show program version information.
@@ -209,7 +209,7 @@ return 0
 }
 show_help() {
 echo -e "$SUMMARY\n"
-echo -e "Usage: ${0##*/} [ushvIaH] [-ri(qn) ARGUMENT].."
+echo -e "Usage: ${0##*/} [uhvIaHsco] [-ri(qn) ARGUMENT].."
 echo -e "\t --mode-online=[n] --dry-run=[n] "
   echo
   echo "Options:"
