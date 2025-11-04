@@ -10,9 +10,16 @@ def center_text(text):
     width = shutil.get_terminal_size((80, 20)).columns
     return text.center(width)
 
+
 def logo():
     text = "[ !echo <(!True) ]"
-    width = shutil.get_terminal_size((80, 20)).columns
+
+    # coba baca lebar terminal via tput (tetap berfungsi lewat pipe)
+    try:
+        width = int(subprocess.check_output(['tput', 'cols']).decode().strip())
+    except Exception:
+        width = shutil.get_terminal_size((80, 20)).columns
+
     padding = (width - len(text) - 2) // 2
     padding = max(padding, 0)
     banner = "=" * padding + " " + text + " " + "=" * padding
