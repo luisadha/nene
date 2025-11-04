@@ -230,11 +230,12 @@ while [[ $# -gt 0 ]]; do
       addon; shift;;
     -s|--select-url)
 if [[ "$1" == *c* ]]; then
-select_url "${1:+termux-clipboard-set}"
-elif [[ "$1" == *o" ]]; then; 
-select_url "${1:+termux-open-url}"
+select_url "termux-clipboard-set"
+termux-toast "Copied!"
+elif [[ "$1" == *o* ]]; then
+select_url "termux-open-url"
 else
-select_url "${1:-termux-open-url}"
+select_url "termux-open-url"
 fi
 shift;;
     -h|--help)
