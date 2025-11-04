@@ -261,7 +261,7 @@ fi
     read -r __url__ __endpoint__ < <(curl -s "${NEPI}" | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io' | sort -ur | awk '{endpoint=gensub(".*/", "", "g", $0)
     full="https://luisadha.github.io/" endpoint
     print full "\t" endpoint                    }' | fzf -0 --with-nth=2 --prompt="$REMOVE: " --delimiter=$'\t' --bind="alt-r:execute(dpkg -r \"\$pkg\")+abort" -q ${pkg:-$__url__} );
-         [ $? -ne 0] && nene -r "$pkg"; echo "Cannot remove this packages" || which $pkg
+         [ $? -ne 0 ] && nene -r "$pkg"; echo "Cannot remove this packages" || which $pkg
          exit $?;
          ;;
     -i*|--install) [ -z "$2" ] && echo "Argument required for ${2:-"--install"} <package>" && exit 1
