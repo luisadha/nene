@@ -31,7 +31,7 @@ def banner():
     print("Source: https://github.com/luisadha/nene/tree/main\n")
 
 raw_apps = []
-# === Load apps dari pkg-installed
+
 pkg_file = os.path.join(os.environ["HOME"], ".local/share/nene/pkg-installed")
 
 if os.path.isfile(pkg_file):
@@ -46,12 +46,15 @@ if os.path.isfile(pkg_file):
             elif len(parts) == 2:
                 name, url = parts
                 label = "Free Trial"
+            elif len(parts) == 1:
+                name = parts[0]
+                url = f"https://luisadha.github.io/{name.lower()}"  # default URL
+                label = "Free Trial"
             else:
                 continue
             raw_apps.append((name, url, label))
 else:
     print(f"No package file found at {pkg_file}")
-
 # Sortir berdasarkan nama
 apps = sorted(raw_apps, key=lambda x: x[0])
 
