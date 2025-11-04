@@ -253,8 +253,8 @@ if dpkg -s "$pkg" >/dev/null 2>&1; then
    # echo "Paket bisa dihapus"
 if check_connection; then echo; else offline_status; exit $?; fi
     # rue
-if grep -Fxq "$pkg" "$PKG_FILE"; then
-    sed -i "/^$pkg$/d" "$PKG_FILE"
+if grep -Fxq "$pkg" "$PKGS_INSTALLED"; then
+    sed -i "/^$pkg$/d" "$PKGS_INSTALLED"
     echo "Package '$pkg' successfully removed."
 else
     echo "Package '$pkg' not found."
