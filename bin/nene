@@ -149,27 +149,32 @@ online_apps() {
     [ -z "$__url__" ] &&  echo -e "\nCaught ^" || . <(curl -sL $__url__);
 
 }
-select_url() {
-    local cmd="${1:-echo}"
-
+fzf_walker() {
+    # hanya jalankan fzf kalau cache kosong
     if [[ -s "$URL_CACHE" ]]; then
-        # pakai URL yang tersimpan
-        __url__=$(<"$URL_CACHE")
+        cat "$URL_CACHE"
     else
-        # pilih URL baru via fzf
-        __url__=$(curl -s "$NEPI" \
+        local url
+        url=$(curl -s "$NEPI" \
             | html2text \
             | grep -oP '(?<=\])\(\K[^)]+' \
             | grep '^https\?://' \
             | grep -E 'github\.com|github\.io' \
             | sort -ur \
             | fzf --prompt="Indexing URL: ")
-        # simpan ke cache
-        echo "$__url__" > "$URL_CACHE"
+        echo "$url" > "$URL_CACHE"
+        echo "$url"
     fi
+}
 
-    # eksekusi perintah
-    [[ -n "$__url__" ]] && xargs -r <<< "$__url__" $cmd
+select_url() {
+    local cmd="${1:-echo}"
+    local url
+
+    url=$(fzf_walker)
+    [[ -z "$url" ]] && return 1
+
+    echo "$url" | xargs -r $cmd
 }
 homepage() {
 echo "$NEPI" | xargs termux-open-url
@@ -247,26 +252,28 @@ while [[ $# -gt 0 ]]; do
     -a|--api-termux)
       addon; shift;;
     -s*|--select-url)
-    # Ambil semua karakter setelah -s
-    opts="${1#-s}"  # hapus prefix -s
-    [[ -z "$opts" ]] && opts="o"  # default ke 'o' kalau kosong
+    opts="${1#-s}"
+    [[ -z "$opts" ]] && opts="o"
 
-    # Loop tiap karakter
+    url=$(fzf_walker)  # panggil sekali
+
     for opt in $(echo "$opts" | grep -o .); do
         case "$opt" in
             c)
-                select_url "termux-clipboard-set"
+                echo "$url" | termux-clipboard-set
                 termux-toast "Copied!"
                 ;;
             o)
-                select_url "termux-open-url"
+                termux-open-url "$url"
                 ;;
             *)
                 echo "Unknown select-url option: $opt"
                 ;;
         esac
     done
-     echo "" > $URL_CACHE
+
+    # reset cache setelah semua operasi selesai
+    : > "$URL_CACHE"
     shift
     ;;
     -h|--help)
@@ -302,13 +309,13 @@ else
     sed -i "/^$pkg$/d" "$PKG_SHARE_NENE/pkg-installed"
     # succesfully removed
     # echo "Package '$pkg' successfully removed."
-    echo "Cannot remove this packages" 
+    echo "Cannot remove this packages"
     exit 2
 fi
     read -r __url__ __endpoint__ < <(curl -s "${NEPI}" | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io' | sort -ur | awk '{endpoint=gensub(".*/", "", "g", $0)
     full="https://luisadha.github.io/" endpoint
     print full "\t" endpoint }' | fzf -0 --with-nth=2 --prompt="$REMOVE: " --delimiter=$'\t' --bind="alt-r:execute(dpkg -r \"\$pkg\")+abort" -q ${pkg:-$__url__} );
-    echo "Package '$pkg' successfully removed."  
+    echo "Package '$pkg' successfully removed."
          exit $?;
          ;;
     -i*|--install) [ -z "$2" ] && echo "Argument required for ${2:-"--install"} <package>" && exit 1
