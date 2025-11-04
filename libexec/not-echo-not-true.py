@@ -64,14 +64,18 @@ while True:
 
     if not apps:
         print("No installed apps found.\nExiting..")
-        break
-
-    max_name_len = max(len(name) for name, _, _ in apps)
+        break         
+        max_len = max(len(f"{i}) {name}") for i, (name, _, _) in enumerate(apps, start=1))
+        
+        for i, (name, _, status) in enumerate(apps, start=1):
+            print(f"{i}) {name:<{max_len - len(str(i))+1}} | {status}")
+            print(f"0) EXIT".ljust(max_len) + " |")
+    #max_name_len = max(len(name) for name, _, _ in apps)
 
     # Tampilkan menu
-    for i, (name, _, status) in enumerate(apps, start=1):
-        print(f"{i}) {name.ljust(max_name_len)} | {status}")
-    print("0) EXIT")
+    #for i, (name, _, status) in enumerate(apps, start=1):
+     #   print(f"{i}) {name.ljust(max_name_len)} | {status}")
+    #print("0) EXIT")
 
     # Input user
     try:
