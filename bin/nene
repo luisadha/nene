@@ -3,7 +3,7 @@
 #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.5.91-m249"
+VERSION="1.5.92-m249"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
@@ -252,16 +252,23 @@ export DRY_RUN_PROMPT="[DRY-RUN MODE]"; shift;;
 if dpkg -s "$pkg" >/dev/null 2>&1; then
    # echo "Paket bisa dihapus"
 if check_connection; then echo; else offline_status; exit $?; fi
-    true
+    # rue
+if grep -Fxq "$pkg" "$PKG_FILE"; then
+    sed -i "/^$pkg$/d" "$PKG_FILE"
+    echo "Package '$pkg' successfully removed."
+else
+    echo "Package '$pkg' not found."
+fi
 else
     sed -i "/^$pkg$/d" "$PKG_SHARE_NENE/pkg-installed"
     # succesfully removed
+    echo "Cannot remove this packages" 
     exit 2
 fi
     read -r __url__ __endpoint__ < <(curl -s "${NEPI}" | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io' | sort -ur | awk '{endpoint=gensub(".*/", "", "g", $0)
     full="https://luisadha.github.io/" endpoint
     print full "\t" endpoint                    }' | fzf -0 --with-nth=2 --prompt="$REMOVE: " --delimiter=$'\t' --bind="alt-r:execute(dpkg -r \"\$pkg\")+abort" -q ${pkg:-$__url__} );
-         [ $? -ne 0 ] && nene -r "$pkg"; echo "Cannot remove this packages" || which $pkg
+         
          exit $?;
          ;;
     -i*|--install) [ -z "$2" ] && echo "Argument required for ${2:-"--install"} <package>" && exit 1
