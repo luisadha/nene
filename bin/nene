@@ -228,7 +228,7 @@ while [[ $# -gt 0 ]]; do
       available_options;;
     -a|--api-termux)
       addon; shift;;
-    -s|--select-url)
+    -s*|--select-url)
 if [[ "$1" == *c* ]]; then
 select_url "termux-clipboard-set"
 termux-toast "Copied!"
