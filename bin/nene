@@ -201,8 +201,8 @@ return 0
 }
 
 if [[ $# -eq 0 ]]; then
-#default_apps; deprecreted
-nene --mode-online=0
+default_apps; # deprecreted
+#nene --mode-online=0
 exit 0
 fi
 
