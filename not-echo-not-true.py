@@ -30,9 +30,8 @@ def banner():
     print("Author: luisadha")
     print("Source: https://github.com/luisadha/nene/tree/main\n")
 
-# === Load apps dari pkg-installed ===
-pkg_file = os.path.expanduser("~/.local/share/nene/pkg-installed")
-raw_apps = []
+# === Load apps dari pkg-installed
+pkg_file = os.path.join(os.environ["HOME"], ".local/share/nene/pkg-installed")
 
 if os.path.isfile(pkg_file):
     with open(pkg_file, "r", encoding="utf-8") as f:
