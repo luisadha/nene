@@ -74,7 +74,7 @@ while True:
         print(f"{i}) {name:<{max_len - len(str(i))}} | {status}")
 
     # EXIT
-    print(f"{'0) EXIT':<{max_len}} |")
+    print(f"{'0) EXIT':<{max_len}} ")
 
     # Input user
     try:
