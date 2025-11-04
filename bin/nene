@@ -329,7 +329,7 @@ if [ "$EXIST" = true ]; then
     fi
 
   if dpkg -s "$pkg" >/dev/null 2>&1; then
-      dpkg-query -W -f='${Package} ${Version}\n${Description}\n' "$pkg"
+      dpkg-query -W -f='${Package} ${Version}\t${Description}\n' "$pkg"
       echo "$pkg" >> "$PKG_SHARE_NENE/pkg-installed"
       sort -u "$PKG_SHARE_NENE/pkg-installed" -o "$PKG_SHARE_NENE/pkg-installed"
       #exit 0
