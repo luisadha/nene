@@ -434,13 +434,18 @@ fi
 url_regex="^(https?|ftp)://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(:[0-9]+)?(/.*)?$"
 
 if [[ "$1" =~ $url_regex ]]; then
-curl -L "$1" | bash
-    echo "Process completed."
-    read wait
+    curl -L "$1" | bash
+    echo ""
+    read -r -p "Process completed."
+elif [[ "$1" == --* ]]; then
+    # Opsi panjang
+    echo "${UNKNOWN} : $1" >&2
+elif [[ "$1" == -* ]]; then
+    # Opsi pendek
+    echo "${UNKNOWN} : $1" >&2
 else
-    echo "$1 bukan URL valid"
+    echo "No valid URL or option provided."
 fi
-      echo "${UNKNOWN}" >&2;
       shift;;
   esac
 done
