@@ -1,4 +1,3 @@
-=======
 # nene |   Package Manager 
 ## Summary
 
