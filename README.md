@@ -24,17 +24,7 @@ Path == myApps
 See https://luisadha.github.io/ {myApps} Change {myApps} to route each of my curl-based applications and follow each page's instructions on how to run those curl-based scripts (see: Usage in bold) or simply use this nene script to collect them
 
 Exclusion site https://alrc.luisadha.my.id This subdomain will be always for Alrc Installer project
-## Options
-```sh
-Nene is both a static site and a set of Bash tools you can run straight from your terminal
-Usage:
-  -a    --api-termux    Install nene-ak47.sh into ~/bin for Run nene\'s app via Android Share
-  -u    --select-url    Select and open the link.
-  -s    --select=[apps] Execute the explicitly specified application.
-  -m    --mode=[online] Select and run through the link.
-  -v    --version       Print version script.
-  -h    --help          Print this message.
-```
+
 ## API
 API Instructions
 
@@ -49,7 +39,7 @@ This command will install additional features, the nene-ak47.sh script.
 
 Then, to replace your current termux-url-opener, use the following command:
 ```sh
-nene -Si weapon-url-opener-nightly
+nene -i weapon-url-opener-nightly
 ```
 This will display an interactive fuzzy search dialog.
 Select nene-ak47 to enable the "Share to Termux" button feature on supported web apps.
