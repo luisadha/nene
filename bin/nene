@@ -89,21 +89,8 @@ check_connection() {
   curl -Is --connect-timeout 3 https://github.com >/dev/null 2>&1;
 }
 info_all_dpkg() {
-local DB_FILE="$HOME/.local/share/nene/update-lists"
-local OUT_FILE="$HOME/.local/share/nene/pkg-installed"
-
-
-mkdir -p "$(dirname "$OUT_FILE")"
-
-while IFS= read -r pkg; do
-    [ -z "$pkg" ] && continue          # skip baris kosong
-    case "$pkg" in \#*) continue ;; esac  # skip komentar
-
-    dpkg -s "$pkg" >/dev/null 2>&1 && echo "$pkg" >> "$OUT_FILE"
-done < "$DB_FILE"
-
-# sort uniq hasil
-sort -u "$OUT_FILE" -o "$OUT_FILE"
+while IFS= read -r pkg; do   dpkg -s "$pkg" 2>/dev/null;   echo    # baris kosong sebagai pemisah
+done < "$PKG_SHARE_NENE"/pkg-installed
 }
 update_remote_db() {
   mkdir -p "$(dirname "$DB_FILE")"
@@ -424,6 +411,9 @@ HTTP_STATUS=$(curl -sSL -o /dev/null -w "%{http_code}" "$fetch_latest_deb" 2>/de
     exit 2
   fi
 
+echo "$pkg" >> "$PKG_SHARE_NENE/pkg-installed"
+sort -u "$PKG_SHARE_NENE/pkg-installed" -o "$PKG_SHARE_NENE/pkg-installed"
+    
   # Pilih endpoint dan install
   read -r __url__ __endpoint__ < <(
     curl -s "${NEPI}" |
