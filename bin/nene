@@ -3,7 +3,7 @@
 #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.5.93-m249"
+VERSION="1.5.94-m249"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
@@ -60,6 +60,7 @@ r remove                      Uninstall the selected packages from the system.
 a api-termux                  Enable running Nene scripts directly from shared websites or URLs.
 n dry-run                     No action; perform a simulation of events that would occur.
 H homepage                    Open the official homepage of Nene.
+d debug                       Enable debug mode. The program logs detailed diagnostic information and writes it to ~/nene-nohup.out.
 EOF
 exit 0
 }
@@ -282,6 +283,8 @@ while [[ $# -gt 0 ]]; do
       version; shift;;
    -H|--homepage)
       homepage; shift;;
+    -d|--debug|--debug=1)
+DEBUG=1; shift;;
     -n|--dry-run)
 DRY_RUN=1; shift;;
     --dry-run=*)
@@ -413,7 +416,7 @@ HTTP_STATUS=$(curl -sSL -o /dev/null -w "%{http_code}" "$fetch_latest_deb" 2>/de
 
 echo "$pkg" >> "$PKG_SHARE_NENE/pkg-installed"
 sort -u "$PKG_SHARE_NENE/pkg-installed" -o "$PKG_SHARE_NENE/pkg-installed"
-    
+
   # Pilih endpoint dan install
   read -r __url__ __endpoint__ < <(
     curl -s "${NEPI}" |
@@ -500,14 +503,39 @@ fi
   esac
 done
       #shift $((OPTIND - 1))
+
+if [[ $DEBUG -eq 1 ]]; then
+  pass() {
+    ( termux-open ~/nene-nohup.out ) &
+  }
+else
+  pass() {
+    :;
+  }
+fi
 __main_off () {
-cat "$PKGS_INSTALLED" |sort -ur|fzf|xargs -r bash >> ~/nene-nohup.out
-exit 0
+if [[ $DEBUG -eq 1 ]]; then
+{
+  while IFS= read -r line; do
+    printf '[%(%Y-%m-%d %H:%M:%S)T] %s\n' -1 "$line"
+  done
+} < <(
+  cat "$PKGS_INSTALLED" |sort -ur|fzf|xargs -r bash 2>&1) >>~/nene-nohup.out
+else
+  cat "$PKGS_INSTALLED" |sort -ur|fzf|xargs -r bash | tee /dev/tty
+fi
+
 }
 __main_on () {
-  echo
-  . <(curl -sL ${__url__})
-
+  if [[ $DEBUG -eq 1 ]]; then
+{
+  while IFS= read -r line; do
+    printf '[%(%Y-%m-%d %H:%M:%S)T] %s\n' -1 "$line"
+  done
+} < <( . <(curl -sL ${__url__}) 2>&1) >>~/nene-nohup.out
+else 
+ . <(curl -sL ${__url__})
+fi
 }
 __dry_run_ifon()
 {
@@ -523,7 +551,7 @@ printf "%s " $message && cat "$PKGS_INSTALLED" |sort -ur|fzf|xargs -r echo
 __name__() {
     case "$MODE-${DRY_RUN:-}" in
         0-1) __dry_run_ifof ;;
-    0- |0-0) __main_off ;;
+    0- |0-0) __main_off exit;;
         1-1) __dry_run_ifon ;;
     1- |1-0) ( set +Eeuo pipefail; curl -sL "${__url__}" | bash ) ;;
     esac
@@ -536,13 +564,9 @@ __main__() {
       0) __main_off;;
     esac
 }
-pass() {
-  # aktifkan jika mode development
-  ( termux-open ~/nene-nohup.out ) &
-}
-#set -xv
+
 # Untuk production kalau misal rilis pake yang ini lebih stabil
- __name__ || __main__
+# __name__ || __main__
 # Untuk development dry-run, logging output, verbosity you can do, experimental tidak stabil
-#eval : 'if'$(__name__)'||'$`__main__`:'then'
-#  pass
+eval : 'if'$(__name__)||$`__main__`:
+  pass
