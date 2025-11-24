@@ -3,11 +3,10 @@
 #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.5.94-m249"
+VERSION="1.5.95-m249"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
-V_FLAGS='--version' # GLOBAL FLAGS
-E_MATCH='--exact' # FZF FLAGS
+V_FLAGS='--version' # GLOBAL FLAGS                                     E_MATCH='--exact' # FZF FLAGS
 S_MATCH='--smart'
 UNKNOWN="Error: Unknown options"
 STARGS=1;
@@ -27,8 +26,7 @@ URL_CACHE="$PKG_SHARE_NENE/nene_last_url"
 __BASE_REPO__="nene"
 BASHER_PKG="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
 DRY_RUN=
-DRY_RUN_PROMPT=
-MODE=
+DRY_RUN_PROMPT=                                                        MODE=
 DB_FILE="$HOME/.local/share/nene/update-lists"
 PROMPT="Choose a script to run online"
 INSTALL="ALT-i: confirm to install this package"
@@ -528,12 +526,9 @@ fi
 }
 __main_on () {
   if [[ $DEBUG -eq 1 ]]; then
-{
-  while IFS= read -r line; do
-    printf '[%(%Y-%m-%d %H:%M:%S)T] %s\n' -1 "$line"
-  done
-} < <( . <(curl -sL ${__url__}) 2>&1) >>~/nene-nohup.out
-else 
+
+bash <(curl -sL "${__url__}") 2>&1 | ts '[%Y-%m-%d %H:%M:%S]' >> ~/nene-nohup.out
+else
  . <(curl -sL ${__url__})
 fi
 }
@@ -551,16 +546,16 @@ printf "%s " $message && cat "$PKGS_INSTALLED" |sort -ur|fzf|xargs -r echo
 __name__() {
     case "$MODE-${DRY_RUN:-}" in
         0-1) __dry_run_ifof ;;
-    0- |0-0) __main_off exit;;
+    0- |0-0) __main__ ;;
         1-1) __dry_run_ifon ;;
-    1- |1-0) ( set +Eeuo pipefail; curl -sL "${__url__}" | bash ) ;;
+    1- |1-0) __main__
+      #( set +Eeuo pipefail; curl -sL "${__url__}" | bash )
+      ;;
     esac
 }
 __main__() {
     case "$MODE" in
-      1) ( #set +Eeuo pipefail;
-        . <(curl -sL "${__url__}" )
-        );;
+      1) __main_on;;
       0) __main_off;;
     esac
 }
