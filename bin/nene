@@ -500,8 +500,8 @@ fi
       shift;;
   esac
 done
-      #shift $((OPTIND - 1))
-
+#shift $((OPTIND - 1))
+__main__() { :; }
 if [[ $DEBUG -eq 1 ]]; then
   pass() {
     ( termux-open ~/nene-nohup.out ) &
@@ -544,24 +544,20 @@ __dry_run_ifof()
 printf "%s " $message && cat "$PKGS_INSTALLED" |sort -ur|fzf|xargs -r echo
 }
 __name__() {
+function __main__() {
+    case "$MODE" in
+      1) __main_on; exit;;
+      0) __main_off; exit;;
+    esac
+}
     case "$MODE-${DRY_RUN:-}" in
         0-1) __dry_run_ifof ;;
     0- |0-0) __main__ ;;
         1-1) __dry_run_ifon ;;
-    1- |1-0) __main__
-      #( set +Eeuo pipefail; curl -sL "${__url__}" | bash )
-      ;;
+    1- |1-0) __main__ ;; #( set +Eeuo pipefail; curl -sL "${__url__}" | bash )
     esac
-}
-__main__() {
-    case "$MODE" in
-      1) __main_on;;
-      0) __main_off;;
-    esac
+    unset -f __main__
 }
 
-# Untuk production kalau misal rilis pake yang ini lebih stabil
-# __name__ || __main__
-# Untuk development dry-run, logging output, verbosity you can do, experimental tidak stabil
-eval : 'if'$(__name__)||$`__main__`:
+eval : 'if'$(__name__)'=='$`__main__`:
   pass
