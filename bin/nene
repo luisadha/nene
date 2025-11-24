@@ -531,7 +531,7 @@ __name__() {
 __main__() {
     case "$MODE" in
       1) ( #set +Eeuo pipefail;
-        . < <(curl -sL "${__url__}" )
+        . <(curl -sL "${__url__}" )
         );;
       0) __main_off;;
     esac
