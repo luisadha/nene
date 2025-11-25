@@ -18,7 +18,7 @@ export FZF_DEFAULT_OPTS="--height=40% --layout=reverse --info=inline --border --
 GLOBAL_NOTIF_DRY_RUN="[DRY-RUN] Not Really Execute"
 SUPPRESS='--no-messages'
 QUIET='--quiet'
-QUIET_MODE=""
+QUIET_MODE=
 PACKAGE="$(echo "PACKAGE")"
 PKG_SHARE_NENE="${HOME}/.local/share/nene/"
 PKGS_INSTALLED="$PKG_SHARE_NENE/pkg-installed"
@@ -26,13 +26,15 @@ URL_CACHE="$PKG_SHARE_NENE/nene_last_url"
 __BASE_REPO__="nene"
 BASHER_PKG="${HOME}/.basher/cellar/packages/luisadha/${__BASE_REPO__}"
 DRY_RUN=
-DRY_RUN_PROMPT=                                                        MODE=
+DRY_RUN_PROMPT=
+DEBUG=
+MODE=
 DB_FILE="$HOME/.local/share/nene/update-lists"
 PROMPT="Choose a script to run online"
 INSTALL="ALT-i: confirm to install this package"
 REMOVE="ALT-r: confirm to remove this package"
 
-#run_single_mode || run_dual_mode
+
 available_options() {
 cat <<'EOF' | awk '
 {
