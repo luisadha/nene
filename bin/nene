@@ -1,6 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE
-#[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
+# WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE    #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
 VERSION="1.5.95-m249"
@@ -33,7 +32,6 @@ DB_FILE="$HOME/.local/share/nene/update-lists"
 PROMPT="Choose a script to run online"
 INSTALL="ALT-i: confirm to install this package"
 REMOVE="ALT-r: confirm to remove this package"
-
 
 available_options() {
 cat <<'EOF' | awk '
@@ -69,7 +67,7 @@ catch_curl_error() {
   local code=$?
   local func=${FUNCNAME[1]:-main}
   local lastcmd=${BASH_COMMAND}
-  echo "${DRY_RUN:-"[ERROR]"} ($func) Command '$lastcmd' failed with exit code $code"
+  printf "${DRY_RUN:-"[ERROR]"} ($func) Command '$lastcmd' failed with exit code $code\n" >/dev/tty
 
   # Jika error dari curl, identifikasi kodenya
   if [[ $lastcmd == curl* ]]; then
@@ -81,11 +79,9 @@ catch_curl_error() {
     esac
     echo "[CURL] $msg"
   fi
+ return $code
 }
-#catch_curl_error() {
-#  code=$?
-#  printf '%s: function name=%s, exit status=%s\n' "$FUNCNAME" "$1" "$code"
-#}
+
 check_connection() {
   curl -Is --connect-timeout 3 https://github.com >/dev/null 2>&1;
 }
@@ -437,7 +433,7 @@ sort -u "$PKG_SHARE_NENE/pkg-installed" -o "$PKG_SHARE_NENE/pkg-installed"
       exit $?;
       ;;
     -m=1 | --mode-online=1) MODE="${1#*=}"
-set -Eeuo pipefail
+set -Eeo pipefail
 trap catch_curl_error ERR
 data=$(
   curl -fsS "${NEPI}" \
@@ -503,6 +499,7 @@ fi
   esac
 done
 #shift $((OPTIND - 1))
+
 __main__() { :; }
 if [[ $DEBUG -eq 1 ]]; then
   pass() {
@@ -531,8 +528,9 @@ __main_on () {
 
 bash <(curl -sL "${__url__}") 2>&1 | ts '[%Y-%m-%d %H:%M:%S]' >> ~/nene-nohup.out
 else
- . <(curl -sL ${__url__})
+  bash <(curl -sL "${__url__}") 2>&1 | tee >/dev/tty
 fi
+echo
 }
 __dry_run_ifon()
 {
