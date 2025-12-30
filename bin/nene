@@ -2,7 +2,7 @@
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE    #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.5.95-m249"
+VERSION="1.5.98-m249"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS                                     E_MATCH='--exact' # FZF FLAGS
@@ -33,6 +33,12 @@ PROMPT="Choose a script to run online"
 INSTALL="ALT-i: confirm to install this package"
 REMOVE="ALT-r: confirm to remove this package"
 
+html2text() {
+  sed 's/\\\//\//g' \
+  | grep -oiE 'https?://([^"'\'' ]+\.)?(github\.com|github\.io|raw\.githubusercontent\.com|gist\.github\.com)/[^"'\'' ]+' \
+  | sort -u
+}
+
 available_options() {
 cat <<'EOF' | awk '
 {
@@ -50,7 +56,7 @@ cat <<'EOF' | awk '
 u update                      Update local package repository data from the server.
 s select-url                  Open the source page or website of each package, This option can also be combined with -c (copy: Copy selected a url into clipboard) or -o (open: mean open a selected url, Same as -s).
 h help                        Display this help message and exit.
-m mode-online=[n]             Set data source: 1 for online packages, 0 for offline local packages, Both modes open the interactive menu interface.
+m mode-online=                Set data source: 1 for online packages, 0 for offline local packages, Both modes open the interactive menu interface.
 v version                     Show program version information.
 i install                     Install the selected package (auto-handles updates), This option can also be combined with -q (quiet: Suppress fzf output) or -n (dry-run).
 I info-all                    Display detailed information about all available packages.
@@ -63,11 +69,11 @@ EOF
 exit 0
 }
 mapfile -t FLAGS < <(available_options | xargs -d'\')
-catch_curl_error() {
+catch_any_error() {
   local code=$?
   local func=${FUNCNAME[1]:-main}
   local lastcmd=${BASH_COMMAND}
-  printf "${DRY_RUN:-"[ERROR]"} ($func) Command '$lastcmd' failed with exit code $code\n" >/dev/tty
+  printf "${DRY_RUN:-"[ERROR]"} ($func) Command '$lastcmd' failed with exit code $code\n" >/dev/tty >> ~/nene-nohup.out
 
   # Jika error dari curl, identifikasi kodenya
   if [[ $lastcmd == curl* ]]; then
@@ -91,11 +97,10 @@ done < "$PKG_SHARE_NENE"/pkg-installed
 }
 update_remote_db() {
   mkdir -p "$(dirname "$DB_FILE")"
+  connect(){ if check_connection; then echo; else offline_status;       exit $?; fi; }; connect; unset -f connect;
+
   curl -s "$NEPI" \
     | html2text \
-    | grep -oP '(?<=\])\(\K[^)]+' \
-    | grep '^https\?://' \
-    | grep -E 'github\.com|github\.io' \
     | xargs -r -n1 basename > "$DB_FILE"
 
   if [ $? -eq 0 ] && [ -s "$DB_FILE" ]; then
@@ -120,7 +125,7 @@ default_apps() {
 }
 check_dependencies() {
   local missing=()
-  local dependencies=("python3" "jq" "termux-open-url" "sort" "xargs" "html2text" "fzf" "awk" "grep" "gum" "wget" "curl")
+  local dependencies=("python3" "jq" "termux-open-url" "sort" "xargs" "ts" "fzf" "awk" "grep" "wget" "curl")
 
   for cmd in "${dependencies[@]}"; do
     if ! command -v "$cmd" &>/dev/null; then
@@ -134,6 +139,8 @@ check_dependencies() {
     exit 1
   fi
 }
+
+check_dependencies
 online_apps() {
     read -r __url__ < <(curl -s "$NEPI" |
     html2text |
@@ -147,6 +154,8 @@ online_apps() {
 
 }
 fzf_walker() {
+
+  connect=$(if check_connection; then echo; else offline_status; exit $?; fi);
     # hanya jalankan fzf kalau cache kosong
     if [[ -s "$URL_CACHE" ]]; then
         cat "$URL_CACHE"
@@ -154,11 +163,7 @@ fzf_walker() {
         local url
         url=$(curl -s "$NEPI" \
             | html2text \
-            | grep -oP '(?<=\])\(\K[^)]+' \
-            | grep '^https\?://' \
-            | grep -E 'github\.com|github\.io' \
-            | sort -ur \
-            | fzf --prompt="Indexing URL: ")
+            | fzf --ghost="$connect" --prompt="Indexing URL: ")
         echo "$url" > "$URL_CACHE"
         echo "$url"
     fi
@@ -228,7 +233,7 @@ exit 0
 fi
 
 if [[ "$1" == "-m" || "$1" == "--m" ]]; then
-  echo -e "Invalid option, you means \`-m=1' ?";
+  echo -e "Invalid option, Did you means \`-m=1' ?";
     exit 1
 fi
 
@@ -249,6 +254,7 @@ while [[ $# -gt 0 ]]; do
     -a|--api-termux)
       addon; shift;;
     -s*|--select-url)
+
     opts="${1#-s}"
     [[ -z "$opts" ]] && opts="o"
 
@@ -260,8 +266,8 @@ while [[ $# -gt 0 ]]; do
                 echo "$url" | termux-clipboard-set
                 termux-toast "Copied!"
                 ;;
-            o)
-                termux-open-url "$url"
+            o) 
+                termux-open-url "$url" &> /dev/null;
                 ;;
             *)
                 echo "Unknown select-url option: $opt"
@@ -303,12 +309,13 @@ if grep -Fxq "$pkg" "$PKGS_INSTALLED"; then
     sed -i "/^$pkg$/d" "$PKGS_INSTALLED"
     else
     echo "Package '$pkg' not found."
+    exit 2
 fi
 else
     sed -i "/^$pkg$/d" "$PKG_SHARE_NENE/pkg-installed"
     # succesfully removed
     # echo "Package '$pkg' successfully removed."
-    echo "Cannot remove this packages"
+    echo -e "Cannot remove this packages or Package '$pkg' not found."
     exit 2
 fi
     read -r __url__ __endpoint__ < <(curl -s "${NEPI}" | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io' | sort -ur | awk '{endpoint=gensub(".*/", "", "g", $0)
@@ -415,12 +422,8 @@ sort -u "$PKG_SHARE_NENE/pkg-installed" -o "$PKG_SHARE_NENE/pkg-installed"
 
   # Pilih endpoint dan install
   read -r __url__ __endpoint__ < <(
-    curl -s "${NEPI}" |
-      html2text |
-      grep -oP '(?<=\])\(\K[^)]+' |
-      grep -E '^https?://' |
-      grep -E 'github\.com|github\.io' |
-      sort -ur |
+    curl -s "${NEPI}" | \
+      html2text | \
       awk -v rilis="$fetch_latest_deb" '{
         endpoint=gensub(".*/", "", "g", $0);
         full="https://luisadha.github.io/" endpoint;
@@ -433,51 +436,8 @@ sort -u "$PKG_SHARE_NENE/pkg-installed" -o "$PKG_SHARE_NENE/pkg-installed"
       exit $?;
       ;;
     -m=1 | --mode-online=1) MODE="${1#*=}"
-set -Eeo pipefail
-trap catch_curl_error ERR
-data=$(
-  curl -fsS "${NEPI}" \
-  | html2text \
-  | grep -oP '(?<=\])\(\K[^)]+' \
-  | grep '^https\?://' \
-  | grep -E 'github\.com|github\.io' \
-  | sort -ur \
-  | awk '{
-      endpoint=gensub(".*/", "", "g", $0)
-      full="https://luisadha.github.io/" endpoint
-      print full "\t" endpoint
-    }'
-)
-# fzf bisa exit 130 kalau dibatalkan, maka periksa hasilnya
-if [[ -z "$data" ]]; then
-  echo "[ERROR] Failed to fetch data from ${NEPI}" >&2
-  exit 1
-fi
-
-mapfile -t selection < <(
-  printf "%s" "$data" \
-  | fzf -0 --with-nth=2 --prompt="$PROMPT: " --delimiter=$'\t' || {
-      echo "[ERROR] User selection failed or canceled" >&2
-      exit 1
-    }
-)
-
-[[ -z "${selection[0]:-}" ]] && {
-  echo "[ERROR] No selection returned from fzf" >&2
-  exit 1
-}
-
-# parsing hasil ke dua variabel
-read -r __url__ __endpoint__ <<<"${selection[0]}"
-
-# pastikan dua variabel terisi
-if [[ -z "$__url__" || -z "$__endpoint__" ]]; then
-  echo "[ERROR] Empty URL or endpoint" >&2
-  exit 1
-fi
       shift;;
     -m=0 | --mode-online=0)  MODE="${1#*=}"
-      echo
       shift;;
     *)
 url_regex="^(https?|ftp)://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(:[0-9]+)?(/.*)?$"
@@ -511,26 +471,70 @@ else
   }
 fi
 __main_off () {
+
+set -Eeo pipefail
+
 if [[ $DEBUG -eq 1 ]]; then
+
+trap catch_any_error ERR
 {
   while IFS= read -r line; do
     printf '[%(%Y-%m-%d %H:%M:%S)T] %s\n' -1 "$line"
   done
 } < <(
-  cat "$PKGS_INSTALLED" |sort -ur|fzf|xargs -r bash 2>&1) >>~/nene-nohup.out
+  grep -q . "$PKGS_INSTALLED" && return 1 || \
+  cat "$PKGS_INSTALLED" |sort -ur|fzf -0|xargs -r bash 2>&1) >>~/nene-nohup.out
 else
-  cat "$PKGS_INSTALLED" |sort -ur|fzf|xargs -r bash | tee /dev/tty
+	if [[ ! -s "$PKGS_INSTALLED" ]]; then 
+	message="You haven't installed anything yet"
+else 
+	message=""
+fi
+
+  cat "$PKGS_INSTALLED" | sort -ur | fzf --ghost="$message" | xargs -r bash | tee /dev/tty
 fi
 
 }
 __main_on () {
-  if [[ $DEBUG -eq 1 ]]; then
 
-bash <(curl -sL "${__url__}") 2>&1 | ts '[%Y-%m-%d %H:%M:%S]' >> ~/nene-nohup.out
-else
-  bash <(curl -sL "${__url__}") 2>&1 | tee >/dev/tty
+
+set -Eo pipefail
+trap catch_any_error ERR
+data=$(
+  curl -fsS "${NEPI}" 2>/dev/null \
+  | html2text \
+  | sort -ur \
+  | awk '{
+      endpoint=gensub(".*/", "", "g", $0)
+      full="https://luisadha.github.io/" endpoint
+      print full "\t" endpoint
+    }'
+)
+# fzf bisa exit 130 kalau dibatalkan, maka periksa hasilnya
+if [[ -z "$data" ]]; then
+  err="[ERROR] Failed to fetch data from ${NEPI}"
+  
 fi
-echo
+
+mapfile -t selection < <(
+  printf "%s" "$data" \
+  | fzf --ghost="$err" --with-nth=2 --prompt="$PROMPT: " --delimiter=$'\t' || {
+      echo "[ERROR] User selection failed or canceled" >&2
+      exit 1
+    }
+)
+
+read -r __url__ __endpoint__ <<<"${selection[0]}"
+if [[ -z "$__url__" || -z "$__endpoint__" ]]; then  echo "[ERROR] Empty URL or endpoint" >&2; fi
+if [[ $DEBUG -eq 1 ]]; then echo "[WARNING] Detailed debug are save at ~/nene-nohup.out" >&2; 
+bash <(curl -sL "${__url__}") 2>&1 | ts '[%Y-%m-%d %H:%M:%S]' >> ~/nene-nohup.out
+fi 
+[[ -z "${selection[0]:-}" ]] && {
+  echo "[INFO] No selection returned from fzf" >&2
+  exit 1
+}
+
+bash <(curl -sL "${__url__}") 2>&1 | tee >/dev/tty
 }
 __dry_run_ifon()
 {
@@ -540,8 +544,9 @@ __dry_run_ifon()
 }
 __dry_run_ifof()
 {
-  local message="$GLOBAL_NOTIF_DRY_RUN"
-printf "%s " $message && cat "$PKGS_INSTALLED" |sort -ur|fzf|xargs -r echo
+  local message="[DRY-RUN] Not Really Execute"
+printf '%s\n' "$message" >&2;
+cat "$PKGS_INSTALLED" |sort -ur|fzf -0|xargs -r echo
 }
 __name__() {
 function __main__() {
@@ -559,5 +564,5 @@ function __main__() {
     unset -f __main__
 }
 
-eval : 'if'$(__name__)'=='$`__main__`:
+: 'if'$(__name__)'=='$`__main__`:
   pass
