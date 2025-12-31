@@ -257,20 +257,32 @@ while [[ $# -gt 0 ]]; do
     -s*|--select-url)
     opts="${1#-s}"
     [[ -z "$opts" ]] && opts="o"
-
+    [[ "$1" == "--select-url" ]] && opts="o"
+    
     url=$(fzf_walker)  # panggil sekali
 
     for opt in $(echo "$opts" | grep -o .); do
         case "$opt" in
             c)
+                if [[ "$1" =~ ^-sc$ ]]; then
                 echo "$url" | termux-clipboard-set
-                termux-toast "Copied!"
+                [[ ! "$url" == "" ]] && termux-toast "Copied!"
+                 break
+                 # akhiri bagian sc meski gak ngefek, best practice aja
+                fi
                 ;;
             o)
+                if [[ "$1" =~ ^-sco$ ]]; then
+                termux-open-url "$url" &> /dev/null;
+                [[ ! "$url" == "" ]] && termux-toast "Copied!"
+                 break
+                 # akhiri bagian sco supaya ga bocor ke s
+                fi
+                # back to parent s juga sama dengan o
                 termux-open-url "$url" &> /dev/null;
                 ;;
             *)
-                echo "Unknown select-url option: $opt"
+                echo -n # output kosong menandakan escape aman dan opsi -s dan --select-url bebas dari error
                 ;;
         esac
     done
