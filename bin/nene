@@ -1,4 +1,3 @@
-
 #!/data/data/com.termux/files/usr/bin/bash
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE    #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
