@@ -3,7 +3,7 @@
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE    #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.5.99-lts"
+VERSION="1.5.98-lts"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS                                     E_MATCH='--exact' # FZF FLAGS
@@ -251,11 +251,11 @@ return 1
 while [[ $# -gt 0 ]]; do
  case "$1" in
     flags)
-      available_options;;
+      available_options | sed -n 's/.*\(-[^ ]\+ \+\(--[^ ]\+\)\).*/\1/p' | xargs -d'\n'
+      break;;
     -a|--api-termux)
       addon; shift;;
     -s*|--select-url)
-
     opts="${1#-s}"
     [[ -z "$opts" ]] && opts="o"
 
