@@ -1,8 +1,9 @@
+
 #!/data/data/com.termux/files/usr/bin/bash
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE    #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.5.98-m249"
+VERSION="1.5.99-lts"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS                                     E_MATCH='--exact' # FZF FLAGS
@@ -266,7 +267,7 @@ while [[ $# -gt 0 ]]; do
                 echo "$url" | termux-clipboard-set
                 termux-toast "Copied!"
                 ;;
-            o) 
+            o)
                 termux-open-url "$url" &> /dev/null;
                 ;;
             *)
@@ -316,9 +317,8 @@ else
     # succesfully removed
     # echo "Package '$pkg' successfully removed."
     echo -e "Cannot remove this packages or Package '$pkg' not found."
-    exit 2
 fi
-    read -r __url__ __endpoint__ < <(curl -s "${NEPI}" | html2text | grep -oP '(?<=\])\(\K[^)]+' | grep '^https\?://' | grep -E 'github\.com|github\.io' | sort -ur | awk '{endpoint=gensub(".*/", "", "g", $0)
+    read -r __url__ __endpoint__ < <(curl -s "${NEPI}" | html2text| awk '{endpoint=gensub(".*/", "", "g", $0)
     full="https://luisadha.github.io/" endpoint
     print full "\t" endpoint }' | fzf -0 --with-nth=2 --prompt="$REMOVE: " --delimiter=$'\t' --bind="alt-r:execute(dpkg -r \"\$pkg\")+abort" -q ${pkg:-$__url__} );
     echo "Package '$pkg' successfully removed."
@@ -485,10 +485,10 @@ trap catch_any_error ERR
   grep -q . "$PKGS_INSTALLED" && return 1 || \
   cat "$PKGS_INSTALLED" |sort -ur|fzf -0|xargs -r bash 2>&1) >>~/nene-nohup.out
 else
-	if [[ ! -s "$PKGS_INSTALLED" ]]; then 
-	message="You haven't installed anything yet"
-else 
-	message=""
+        if [[ ! -s "$PKGS_INSTALLED" ]]; then
+        message="You haven't installed anything yet"
+else
+        message=""
 fi
 
   cat "$PKGS_INSTALLED" | sort -ur | fzf --ghost="$message" | xargs -r bash | tee /dev/tty
@@ -513,7 +513,7 @@ data=$(
 # fzf bisa exit 130 kalau dibatalkan, maka periksa hasilnya
 if [[ -z "$data" ]]; then
   err="[ERROR] Failed to fetch data from ${NEPI}"
-  
+
 fi
 
 mapfile -t selection < <(
@@ -526,9 +526,9 @@ mapfile -t selection < <(
 
 read -r __url__ __endpoint__ <<<"${selection[0]}"
 if [[ -z "$__url__" || -z "$__endpoint__" ]]; then  echo "[ERROR] Empty URL or endpoint" >&2; fi
-if [[ $DEBUG -eq 1 ]]; then echo "[WARNING] Detailed debug are save at ~/nene-nohup.out" >&2; 
+if [[ $DEBUG -eq 1 ]]; then echo "[WARNING] Detailed debug are save at ~/nene-nohup.out" >&2;
 bash <(curl -sL "${__url__}") 2>&1 | ts '[%Y-%m-%d %H:%M:%S]' >> ~/nene-nohup.out
-fi 
+fi
 [[ -z "${selection[0]:-}" ]] && {
   echo "[INFO] No selection returned from fzf" >&2
   exit 1

@@ -12,7 +12,7 @@ _nene() {
       mapfile -t completions < "$list_file"
       COMPREPLY=( $(compgen -W "${completions[*]}" -- "$word") )
     fi
-  elif [[ "$prev" == "-i" ]] || [[ "$prev" == "--install" ]] then
+  elif [[ "$prev" == "-i" ]] || [[ "$prev" == "-iq" ]] || [[ "$prev" == "--install" ]] then
     local list_file="$HOME/.local/share/nene/update-lists"
 
     if [[ -f "$list_file" ]]; then
