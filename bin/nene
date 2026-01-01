@@ -336,10 +336,10 @@ fi
          exit $?;
          ;;
     -i*|--install) [ -z "$2" ] && echo "Argument required for ${2:-"--install"} <package>" && exit 1
-
+      if [[ "$1" == *q* ]]; then
       if check_connection; then echo; else offline_status; exit $?; fi
       # kalau mengandung q juga, aktifkan quiet
-      if [[ "$1" == *q* ]]; then
+      
 QUIET_MODE=true
 export FZF_DEFAULT_OPTS=(--bind="one:execute(tmpfile=\$(mktemp) && wget -O \"\$tmpfile\" {3} && dpkg -i \"\$tmpfile\" && rm -f \"\$tmpfile\" && exit)+abort" )
       else
