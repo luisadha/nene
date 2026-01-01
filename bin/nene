@@ -123,24 +123,6 @@ default_apps() {
     exec python3 "${PREFIX}/libexec/not-echo-not-true.py"
  fi
 }
-check_dependencies() {
-  local missing=()
-  local dependencies=("python3" "jq" "termux-open-url" "sort" "xargs" "ts" "fzf" "awk" "grep" "wget" "curl")
-
-  for cmd in "${dependencies[@]}"; do
-    if ! command -v "$cmd" &>/dev/null; then
-      missing+=("$cmd")
-    fi
-  done
-
-  if (( ${#missing[@]} > 0 )); then
-    echo "❌ Missing dependencies: ${missing[*]}"
-    echo "👉 Please install them and try again."
-    exit 1
-  fi
-}
-
-check_dependencies
 online_apps() {
     read -r __url__ < <(curl -s "$NEPI" |
     html2text |
