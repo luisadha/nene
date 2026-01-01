@@ -313,7 +313,7 @@ else
 fi
     read -r __url__ __endpoint__ < <(curl -s "${NEPI}" | html2text| awk '{endpoint=gensub(".*/", "", "g", $0)
     full="https://luisadha.github.io/" endpoint
-    print full "\t" endpoint }' | fzf --no-input -0 --with-nth=2 --prompt="$REMOVE: " --delimiter=$'\t' --bind="alt-r:execute(dpkg -r \"\$pkg\")+abort" -q ${pkg:-$__url__} );
+    print full "\t" endpoint }' | fzf --no-input --header-first -0 --with-nth=2 --header="$REMOVE: " --delimiter=$'\t' --bind="alt-r:execute(dpkg -r \"\$pkg\")+abort" -q ${pkg:-$__url__} );
     echo "Package '$pkg' successfully removed."
          exit $?;
          ;;
@@ -422,8 +422,8 @@ sort -u "$PKG_SHARE_NENE/pkg-installed" -o "$PKG_SHARE_NENE/pkg-installed"
         full="https://luisadha.github.io/" endpoint;
         print full "\t" endpoint "\t" rilis;
       }' |
-      fzf --no-input --with-nth=2 \
-          --prompt="$INSTALL: " \
+      fzf --no-input --header-first --with-nth=2 \
+          --header="$INSTALL: " \
           --delimiter=$'\t' \
           "${SKIP_FZF_PROMPT}" -q ${pkg} );
       exit $?;
