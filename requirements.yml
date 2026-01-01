@@ -2,4 +2,15 @@ packages:
   - git
   - curl
   - wget
+  - python3
   - termux-api
+  - jq
+  - yq
+  - fzf
+  - ts
+  - coreutils
+  - grep
+  - sed
+  - gawk
+  - findutils
+  - coreutils
