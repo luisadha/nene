@@ -6,7 +6,6 @@ packages:
   - sed
   - gawk
   - jq
-  - yq
   - fzf
   - python3
   - termux-api
