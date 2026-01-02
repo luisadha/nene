@@ -2,7 +2,7 @@
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE    #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.5.98-lts"
+VERSION="1.6.0-unstable"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS                                     E_MATCH='--exact' # FZF FLAGS
@@ -292,28 +292,16 @@ export DRY_RUN_PROMPT="[DRY-RUN MODE]"; shift;;
     -I|--info-all)
       info_all_dpkg; shift;;
     -r|--remove)
-#      set -xv
       [ -z "$2" ] && echo "Argument required for ${2:-"--remove"} <package>" && exit 2;
-      export pkg=$2
-if dpkg -s "$pkg" >/dev/null 2>&1; then
-   # echo "Paket bisa dihapus"
-if check_connection; then echo; else offline_status; exit $?; fi
-    # rue
-if grep -Fxq "$pkg" "$PKGS_INSTALLED"; then
-    sed -i "/^$pkg$/d" "$PKGS_INSTALLED"
-    else
-    echo "Package '$pkg' not found."
-    exit 2
-fi
-else
-    sed -i "/^$pkg$/d" "$PKG_SHARE_NENE/pkg-installed"
-    # succesfully removed
-    # echo "Package '$pkg' successfully removed."
-    echo -e "Cannot remove this packages or Package '$pkg' not found."
-fi
-    read -r __url__ __endpoint__ < <(curl -s "${NEPI}" | html2text| awk '{endpoint=gensub(".*/", "", "g", $0)
-    full="https://luisadha.github.io/" endpoint
-    print full "\t" endpoint }' | fzf --no-input --header-first -0 --with-nth=2 --header="$REMOVE: " --delimiter=$'\t' --bind="alt-r:execute(dpkg -r \"\$pkg\")+abort" -q ${pkg:-$__url__} );
+pkg=$2;
+connect=$(if check_connection; then echo; else offline_status; exit $?; fi);
+      if [ "$(dpkg -s "$pkg" >/dev/null 2>&1)" ] && [ "$(grep -Fxq "$pkg" "$PKGS_INSTALLED")" ]; then
+         sed -i "/^$pkg$/d" "$PKGS_INSTALLED"
+      else
+         echo "Package '$pkg' not found."
+         exit 2
+       fi
+    read -r __url__ __endpoint__ < <(curl -s "${NEPI}" | html2text| awk '{endpoint=gensub(".*/", "", "g", $0) full="https://luisadha.github.io/" endpoint print full "\t" endpoint }' | fzf --no-input --header-first -0 --with-nth=2 --header="$REMOVE " --delimiter=$'\t' --bind="alt-r:execute(dpkg -r \"\$pkg\")+abort" -q ${pkg:-$__url__} );
     echo "Package '$pkg' successfully removed."
          exit $?;
          ;;
