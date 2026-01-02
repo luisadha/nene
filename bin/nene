@@ -2,7 +2,7 @@
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE    #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.6.0-unstable"
+VERSION="1.6.1-unstable"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS                                     E_MATCH='--exact' # FZF FLAGS
@@ -32,7 +32,11 @@ DB_FILE="$HOME/.local/share/nene/update-lists"
 PROMPT="Choose a script to run online"
 INSTALL="ALT-i: confirm to install this package"
 REMOVE="ALT-r: confirm to remove this package"
-
+pkg_in_dpkg() {                                                   dpkg -s "$1" &>/dev/null
+}                                                               
+pkg_in_nene() {
+  grep -Fxq "$1" "$PKGS_INSTALLED"
+}
 html2text() {
   sed 's/\\\//\//g' \
   | grep -oiE 'https?://([^"'\'' ]+\.)?(github\.com|github\.io|raw\.githubusercontent\.com|gist\.github\.com)/[^"'\'' ]+' \
@@ -291,20 +295,48 @@ export DRY_RUN_PROMPT="[DRY-RUN MODE]"; shift;;
       update_remote_db; shift ;;
     -I|--info-all)
       info_all_dpkg; shift;;
-    -r|--remove)
+  -r|--remove)
       [ -z "$2" ] && echo "Argument required for ${2:-"--remove"} <package>" && exit 2;
 pkg=$2;
 connect=$(if check_connection; then echo; else offline_status; exit $?; fi);
-      if [ "$(dpkg -s "$pkg" >/dev/null 2>&1)" ] && [ "$(grep -Fxq "$pkg" "$PKGS_INSTALLED")" ]; then
-         sed -i "/^$pkg$/d" "$PKGS_INSTALLED"
-      else
-         echo "Package '$pkg' not found."
-         exit 2
-       fi
-    read -r __url__ __endpoint__ < <(curl -s "${NEPI}" | html2text| awk '{endpoint=gensub(".*/", "", "g", $0) full="https://luisadha.github.io/" endpoint print full "\t" endpoint }' | fzf --no-input --header-first -0 --with-nth=2 --header="$REMOVE " --delimiter=$'\t' --bind="alt-r:execute(dpkg -r \"\$pkg\")+abort" -q ${pkg:-$__url__} );
-    echo "Package '$pkg' successfully removed."
-         exit $?;
-         ;;
+# 1️⃣ Tidak ada di dpkg
+if ! pkg_in_dpkg "$pkg"; then
+  # kalau ada di nene → hapus data yatim
+  if pkg_in_nene "$pkg"; then
+    sed -i "/^$pkg$/d" "$PKGS_INSTALLED"
+    echo "Removed orphan entry '$pkg' from nene database."
+  fi
+
+  echo "Package '$pkg' not installed (dpkg)."
+  exit 2
+fi
+
+# 2️⃣ Ada di dpkg tapi tidak ada di nene
+if ! pkg_in_nene "$pkg"; then
+  echo "Package '$pkg' exists in dpkg but not registered in nene."
+  exit 2
+fi
+
+# 3️⃣ BARU BOLEH MUNCUL UI
+read -r key selected_pkg < <(
+  printf "%s\n" "$pkg" |
+  fzf --no-input --header-first \
+    --header="ALT-r: confirm remove package" \
+    --expect=alt-r \
+    --bind="alt-r:accept"
+)
+
+[ "$key" != "alt-r" ] && {
+  echo "Removal cancelled."
+  exit 0
+}
+
+# 4️⃣ ACTION SETELAH UI
+dpkg -r "$pkg" || exit $?
+sed -i "/^$pkg$/d" "$PKGS_INSTALLED"
+
+echo "Package '${selected_pkg:-$pkg}' successfully removed."
+      ;;
     -i*|--install) [ -z "$2" ] && echo "Argument required for ${2:-"--install"} <package>" && exit 1
       if [[ "$1" == *q* ]]; then
       if check_connection; then echo; else offline_status; exit $?; fi
