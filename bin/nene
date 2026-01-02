@@ -2,7 +2,7 @@
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE    #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.6.1-unstable"
+VERSION="1.6.2-unstable"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS                                     E_MATCH='--exact' # FZF FLAGS
@@ -42,7 +42,24 @@ html2text() {
   | grep -oiE 'https?://([^"'\'' ]+\.)?(github\.com|github\.io|raw\.githubusercontent\.com|gist\.github\.com)/[^"'\'' ]+' \
   | sort -u
 }
+ask_to_prompt() {
+  local prompt="$1"
+  local default="${2:-y}"
 
+  # quiet mode → auto yes
+  if (( QUIET )); then
+    echo "$prompt [auto-$default]"
+    return 0
+  fi
+
+  # non-interactive (pipe / CI)
+  if ! [ -t 0 ]; then
+    return 0
+  fi
+
+  read -rp "$prompt [y/N] " answer
+  [[ "${answer:-$default}" =~ ^[Yy]$ ]]
+}
 available_options() {
 cat <<'EOF' | awk '
 {
@@ -415,11 +432,13 @@ ASK_TO_ACTION="Would you like to install?"
     echo -e "$DRY_RUN_PROMPT Repository: $API_URL\n"
   fi
 
-  echo "$DRY_RUN_PROMPT $ASK_TO_ACTION"
-  read -r proceed
-
+  
+if ask_to_prompt "$DRY_RUN_PROMPT $ASK_TO_ACTION"; then
   __dry_run_ifi 2>/dev/null
-
+else
+  echo "Cancelled."
+  exit 130
+fi
 
   # Ambil file .deb terbaru
 fetch_latest_deb=$(echo "$LATEST_JSON" | grep -o '"browser_download_url": *"[^"]*\.deb"' | cut -d '"' -f 4)
