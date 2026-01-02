@@ -2,7 +2,7 @@
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE    #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.6.2-unstable"
+VERSION="1.6.3-unstable"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS                                     E_MATCH='--exact' # FZF FLAGS
@@ -47,7 +47,7 @@ ask_to_prompt() {
   local default="${2:-y}"
 
   # quiet mode → auto yes
-  if (( QUIET )); then
+  if (( QUIET_MODE )); then
     echo "$prompt [auto-$default]"
     return 0
   fi
