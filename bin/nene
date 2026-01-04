@@ -144,7 +144,7 @@ catch_any_error() {
   local msg=""
 
   {
-    printf '%s\n' "${DRY_RUN:-"[$ERROR_STYLE]"}"
+    printf '%s\n' "${DRY_RUN:-"$ERROR_STYLE"}"
     printf '\tFile "%s", in function %s\n' "${0##*/}" "$parent"
     printf '\tchild process: %s\n' "$child"
     printf 'failed with exit code %s\n' "$code"
