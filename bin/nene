@@ -2,9 +2,9 @@
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE    #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.6.3-unstable"
+VERSION="1.6.4-unstable"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
-NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
+NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co 
 V_FLAGS='--version' # GLOBAL FLAGS                                     E_MATCH='--exact' # FZF FLAGS
 S_MATCH='--smart'
 UNKNOWN="Error: Unknown options"
@@ -13,7 +13,8 @@ NDARGS=2;
 RDARGS=3;
 THARGS=4;
 NULLARGS=0;
-export FZF_DEFAULT_OPTS="--height=40% --layout=reverse --info=inline --border --margin=1 --padding=1"
+FZF_DEFAULT_OPTS
+# FZF_DEFAULT_OPTS="--height=40% --layout=reverse --info=inline --border --margin=1 --padding=1"
 GLOBAL_NOTIF_DRY_RUN="[DRY-RUN] Not Really Execute"
 SUPPRESS='--no-messages'
 QUIET='--quiet'
