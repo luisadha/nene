@@ -4,7 +4,7 @@
 #
 SETXVGLOBAL=
 PACKAGE="nene"
-VERSION="1.6.7-unstable"
+VERSION="1.6.8-unstable"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
@@ -563,16 +563,21 @@ trap catch_any_error ERR
   while IFS= read -r line; do
     printf '[%(%Y-%m-%d %H:%M:%S)T] %s\n' -1 "$line"
   done
-} < <(
-  grep -q . "$PKGS_INSTALLED" && return 1 || \
-  cat "$PKGS_INSTALLED" |sort -ur|fzf -0|xargs -r bash 2>&1) >>~/nene-nohup.out
+} < <( 
+      if [[ ! -s "$PKGS_INSTALLED" ]]; then
+        message="You haven't installed anything yet"
+      else
+        message=""
+      fi
+   cat "$PKGS_INSTALLED" |sort -ur|fzf --ghost="$message"|xargs -r bash 2>&1 \
+) >>~/nene-nohup.out
 else
       if [[ ! -s "$PKGS_INSTALLED" ]]; then
         message="You haven't installed anything yet"
       else
         message=""
       fi
-  cat "$PKGS_INSTALLED" | sort -ur | fzf --ghost="$message" | xargs -r bash | tee /dev/tty
+  cat "$PKGS_INSTALLED" |sort -ur|fzf --ghost="$message"|xargs -r bash|tee /dev/tty
 fi
 
 }
