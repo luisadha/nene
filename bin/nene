@@ -2,10 +2,11 @@
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE    #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.6.4-unstable"
+VERSION="1.6.5-unstable"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
-NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co 
-V_FLAGS='--version' # GLOBAL FLAGS                                     E_MATCH='--exact' # FZF FLAGS
+NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
+V_FLAGS='--version' # GLOBAL FLAGS
+E_MATCH='--exact' # FZF FLAGS
 S_MATCH='--smart'
 UNKNOWN="Error: Unknown options"
 STARGS=1;
@@ -33,8 +34,14 @@ DB_FILE="$HOME/.local/share/nene/update-lists"
 PROMPT="Choose a script to run online"
 INSTALL="ALT-i: confirm to install this package"
 REMOVE="ALT-r: confirm to remove this package"
-pkg_in_dpkg() {                                                   dpkg -s "$1" &>/dev/null
-}                                                               
+pkg_in_dpkg() {
+dpkg -s "$1" &>/dev/null
+}
+action_remove() {
+dpkg -r "$pkg" || exit $?
+sed -i "/^$pkg$/d" "$PKGS_INSTALLED"
+echo "Package '${selected_pkg:-$pkg}' successfully removed."
+}
 pkg_in_nene() {
   grep -Fxq "$1" "$PKGS_INSTALLED"
 }
@@ -262,7 +269,7 @@ while [[ $# -gt 0 ]]; do
     opts="${1#-s}"
     [[ -z "$opts" ]] && opts="o"
     [[ "$1" == "--select-url" ]] && opts="o"
-    
+
     url=$(fzf_walker)  # panggil sekali
 
     for opt in $(echo "$opts" | grep -o .); do
@@ -313,7 +320,7 @@ export DRY_RUN_PROMPT="[DRY-RUN MODE]"; shift;;
       update_remote_db; shift ;;
     -I|--info-all)
       info_all_dpkg; shift;;
-  -r|--remove)
+  -r*|--remove)
       [ -z "$2" ] && echo "Argument required for ${2:-"--remove"} <package>" && exit 2;
 pkg=$2;
 connect=$(if check_connection; then echo; else offline_status; exit $?; fi);
@@ -334,7 +341,12 @@ if ! pkg_in_nene "$pkg"; then
   echo "Package '$pkg' exists in dpkg but not registered in nene."
   exit 2
 fi
-
+if [[ "$1" == *q* ]]; then
+QUIET_MODE=true
+else
+QUIET_MODE=false
+fi
+  if [ ! "$QUIET_MODE" == "true" ]; then
 # 3️⃣ BARU BOLEH MUNCUL UI
 read -r key selected_pkg < <(
   printf "%s\n" "$pkg" |
@@ -348,18 +360,16 @@ read -r key selected_pkg < <(
   echo "Removal cancelled."
   exit 0
 }
-
-# 4️⃣ ACTION SETELAH UI
-dpkg -r "$pkg" || exit $?
-sed -i "/^$pkg$/d" "$PKGS_INSTALLED"
-
-echo "Package '${selected_pkg:-$pkg}' successfully removed."
+action_remove
+else
+action_remove
+fi
       ;;
     -i*|--install) [ -z "$2" ] && echo "Argument required for ${2:-"--install"} <package>" && exit 1
       if [[ "$1" == *q* ]]; then
       if check_connection; then echo; else offline_status; exit $?; fi
       # kalau mengandung q juga, aktifkan quiet
-      
+
 QUIET_MODE=true
 export FZF_DEFAULT_OPTS=(--bind="one:execute(tmpfile=\$(mktemp) && wget -O \"\$tmpfile\" {3} && dpkg -i \"\$tmpfile\" && rm -f \"\$tmpfile\" && exit)+abort" )
       else
@@ -433,7 +443,7 @@ ASK_TO_ACTION="Would you like to install?"
     echo -e "$DRY_RUN_PROMPT Repository: $API_URL\n"
   fi
 
-  
+
 if ask_to_prompt "$DRY_RUN_PROMPT $ASK_TO_ACTION"; then
   __dry_run_ifi 2>/dev/null
 else
