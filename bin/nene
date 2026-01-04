@@ -1,8 +1,10 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE    #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
+#
+SETXVGLOBAL=
 PACKAGE="nene"
-VERSION="1.6.5-unstable"
+VERSION="1.6.6-unstable"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
@@ -34,6 +36,38 @@ DB_FILE="$HOME/.local/share/nene/update-lists"
 PROMPT="Choose a script to run online"
 INSTALL="ALT-i: confirm to install this package"
 REMOVE="ALT-r: confirm to remove this package"
+ARTCODE_RAW=''
+if_debug_mode() {
+  case "${SETXVGLOBAL:-0}" in
+    1|true|yes|on)
+      set -xv
+      ;;
+    *)
+      set +xv
+      ;;
+  esac
+}
+tenet() {
+ exec 3>&1 4>&2 # backup stdout & stderr
+  exec >/dev/null 2>&1
+  ARTCODE_RAW=$1 # code yang dimanipulasi
+  exec 1>&3 2>&4 # restore stdout & stderr
+  exec 3>&- 4>&- # restore fd3 & fd4 ke file
+}
+artcode() {
+  local src=${1:-'∅  (no artcode)'}
+
+  printf '⟦ artcode :: raw memory ⟧\n'
+  printf '\033]0;%s\007' "$src" |
+    sed \
+      -e 's/!/✗/g' \
+      -e 's/</⟨/g' \
+      -e 's/>/⟩/g' \
+      -e 's/(/〔/g' \
+      -e 's/)/〕/g' \
+      -e 's/true/⊤/g' \
+      -e 's/false/⊥/g' | tee >/dev/tty
+}
 pkg_in_dpkg() {
 dpkg -s "$1" &>/dev/null
 }
@@ -94,6 +128,7 @@ a api-termux                  Enable running Nene scripts directly from shared w
 n dry-run                     No action; perform a simulation of events that would occur.
 H homepage                    Open the official homepage of Nene.
 d debug                       Enable debug mode. The program logs detailed diagnostic information and writes it to ~/nene-nohup.out.
+V verbose enable verbosity output.
 EOF
 exit 0
 }
@@ -265,6 +300,9 @@ while [[ $# -gt 0 ]]; do
       break;;
     -a|--api-termux)
       addon; shift;;
+    -V|--verbose)
+SETXVGLOBAL=1
+      shift;;
     -s*|--select-url)
     opts="${1#-s}"
     [[ -z "$opts" ]] && opts="o"
@@ -503,6 +541,9 @@ fi
 done
 #shift $((OPTIND - 1))
 
+if_debug_mode
+
+
 __main__() { :; }
 if [[ $DEBUG -eq 1 ]]; then
   pass() {
@@ -581,14 +622,17 @@ bash <(curl -sL "${__url__}") 2>&1 | tee >/dev/tty
 }
 __dry_run_ifon()
 {
-  echo "[DRY-RUN] Not Really Execute ${__endpoint__}" >&2;
-  echo <(true) 2>/dev/null;
-  exit 1 # Do nothing
+        termux-toast "[DRY-RUN] Not Really Execute ${FUNCNAME[0]}()"
+
+  tenet '!echo <(!true)'
+  artcode '!echo <(!true)'
 }
 __dry_run_ifof()
 {
-  local message="[DRY-RUN] Not Really Execute"
+        local message="[DRY-RUN] Not Really Execute ${FUNCNAME[0]}()"
 printf '%s\n' "$message" >&2;
+termux-toast "$message"
+
 cat "$PKGS_INSTALLED" |sort -ur|fzf -0|xargs -r echo
 }
 __name__() {
