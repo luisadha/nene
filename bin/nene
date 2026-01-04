@@ -634,18 +634,18 @@ __dry_run_ifof()
 __name__() {
 function __main__() {
     case "$MODE" in
-      1) __main_on; exit;;
-      0) __main_off; exit;;
+        1) __main_on; exit ;;
+        0) __main_off; exit ;;
     esac
 }
     case "$MODE-${DRY_RUN:-}" in
         0-1) __dry_run_ifof ;;
     0- |0-0) __main__ ;;
         1-1) __dry_run_ifon ;;
-    1- |1-0) __main__ ;; #( set +Eeuo pipefail; curl -sL "${__url__}" | bash )
+    1- |1-0) __main__ ;; 
     esac
-    unset -f __main__
+    unset -f __main__;
 }
 
 : 'if'$(__name__)'=='$`__main__`:
-  pass
+   pass
