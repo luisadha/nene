@@ -4,7 +4,7 @@
 #
 SETXVGLOBAL=
 PACKAGE="nene"
-VERSION="1.6.9-unstable"
+VERSION="1.6.10-unstable"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
@@ -16,6 +16,7 @@ NDARGS=2;
 RDARGS=3;
 THARGS=4;
 NULLARGS=0;
+ERROR_STYLE="Traceback (most recent call last):"
 FZF_DEFAULT_OPTS=
 # FZF_DEFAULT_OPTS="--height=40% --layout=reverse --info=inline --border --margin=1 --padding=1"
 GLOBAL_NOTIF_DRY_RUN="[DRY-RUN] Not Really Execute"
@@ -133,21 +134,26 @@ EOF
 exit 0
 }
 mapfile -t FLAGS < <(available_options | xargs -d'\')
+# ---------------------------
+# Python-like error system
+# ---------------------------
 catch_any_error() {
   local code=$?
-  local func=${FUNCNAME[1]:-main}
-  local lastcmd=${BASH_COMMAND}
-  printf "${DRY_RUN:-"[ERROR]"} ($func) Command '$lastcmd' failed with exit code $code\n" >/dev/tty >> ~/nene-nohup.out
+  local parent=${FUNCNAME[1]:-main}
+  local child=${BASH_COMMAND}
+  printf "${DRY_RUN:-"[$ERROR_STYLE]"}\n\t File \"${0##*/}\", in function "($parent)\n\t child process '$child'\nfailed with exit code $code\n" >/dev/tty >> ~/nene-nohup.out
 
   # Jika error dari curl, identifikasi kodenya
-  if [[ $lastcmd == curl* ]]; then
+  if [[ $child == curl* ]]; then
     case $code in
-      6)  msg="Couldn't resolve host" ;;
+      1)  msg"RuntimeError: General execution failure" ;;
+      6)  msg="NetworkError: Failed to fetch remote resource" ;;
       7)  msg="Failed to connect to host" ;;
       28) msg="Operation timeout" ;;
-      *)  msg="Other curl error ($code)" ;;
+     127) msg="CommandNotFoundError: Required command not found" ;;
+      *)  msg="ProcessError: Child exited with code ${code}" ;;
     esac
-    echo "[CURL] $msg"
+    echo "${msg}"
   fi
  return $code
 }
