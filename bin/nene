@@ -139,25 +139,32 @@ mapfile -t FLAGS < <(available_options | xargs -d'\')
 # ---------------------------
 catch_any_error() {
   local code=$?
-  local parent=${FUNCNAME[1]:-main}
-  local child=${BASH_COMMAND}
-  printf "${DRY_RUN:-"[$ERROR_STYLE]"}\n\t File \"${0##*/}\", in function "($parent)\n\t child process '$child'\nfailed with exit code $code\n" >/dev/tty >> ~/nene-nohup.out
+  local parent="${FUNCNAME[1]:-main}"
+  local child="$BASH_COMMAND"
+  local msg=""
+
+  {
+    printf '%s\n' "${DRY_RUN:-"[$ERROR_STYLE]"}"
+    printf '\tFile "%s", in function %s\n' "${0##*/}" "$parent"
+    printf '\tchild process: %s\n' "$child"
+    printf 'failed with exit code %s\n' "$code"
+  } >/dev/tty >>"$HOME/nene-nohup.out"
 
   # Jika error dari curl, identifikasi kodenya
-  if [[ $child == curl* ]]; then
-    case $code in
-      1)  msg"RuntimeError: General execution failure" ;;
-      6)  msg="NetworkError: Failed to fetch remote resource" ;;
-      7)  msg="Failed to connect to host" ;;
-      28) msg="Operation timeout" ;;
-     127) msg="CommandNotFoundError: Required command not found" ;;
-      *)  msg="ProcessError: Child exited with code ${code}" ;;
+  if [[ "$child" == curl* ]]; then
+    case "$code" in
+      1)   msg="RuntimeError: General execution failure" ;;
+      6)   msg="NetworkError: Failed to resolve host" ;;
+      7)   msg="NetworkError: Failed to connect to host" ;;
+      28)  msg="TimeoutError: Operation timeout" ;;
+      127) msg="CommandNotFoundError: Required command not found" ;;
+      *)   msg="ProcessError: Child exited with code $code" ;;
     esac
-    echo "${msg}"
+    printf '%s\n' "$msg" >&2
   fi
- return $code
-}
 
+  return "$code"
+}
 check_connection() {
   curl -Is --connect-timeout 3 https://github.com >/dev/null 2>&1;
 }
