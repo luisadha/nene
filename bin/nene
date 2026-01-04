@@ -555,11 +555,9 @@ else
   }
 fi
 __main_off () {
-
 set -Eeo pipefail
 
 if [[ $DEBUG -eq 1 ]]; then
-
 trap catch_any_error ERR
 {
   while IFS= read -r line; do
@@ -569,20 +567,18 @@ trap catch_any_error ERR
   grep -q . "$PKGS_INSTALLED" && return 1 || \
   cat "$PKGS_INSTALLED" |sort -ur|fzf -0|xargs -r bash 2>&1) >>~/nene-nohup.out
 else
-        if [[ ! -s "$PKGS_INSTALLED" ]]; then
+      if [[ ! -s "$PKGS_INSTALLED" ]]; then
         message="You haven't installed anything yet"
-else
+      else
         message=""
-fi
-
+      fi
   cat "$PKGS_INSTALLED" | sort -ur | fzf --ghost="$message" | xargs -r bash | tee /dev/tty
 fi
 
 }
 __main_on () {
-
-
 set -Eo pipefail
+
 trap catch_any_error ERR
 data=$(
   curl -fsS "${NEPI}" 2>/dev/null \
@@ -597,7 +593,6 @@ data=$(
 # fzf bisa exit 130 kalau dibatalkan, maka periksa hasilnya
 if [[ -z "$data" ]]; then
   err="[ERROR] Failed to fetch data from ${NEPI}"
-
 fi
 
 mapfile -t selection < <(
@@ -609,10 +604,14 @@ mapfile -t selection < <(
 )
 
 read -r __url__ __endpoint__ <<<"${selection[0]}"
-if [[ -z "$__url__" || -z "$__endpoint__" ]]; then  echo "[ERROR] Empty URL or endpoint" >&2; fi
-if [[ $DEBUG -eq 1 ]]; then echo "[WARNING] Detailed debug are save at ~/nene-nohup.out" >&2;
-bash <(curl -sL "${__url__}") 2>&1 | ts '[%Y-%m-%d %H:%M:%S]' >> ~/nene-nohup.out
+if [[ -z "$__url__" || -z "$__endpoint__" ]]; then  
+   echo "[ERROR] Empty URL or endpoint" >&2;
 fi
+
+if [[ $DEBUG -eq 1 ]]; then echo "[WARNING] Detailed debug are save at ~/nene-nohup.out" >&2;
+   bash <(curl -sL "${__url__}") 2>&1 | ts '[%Y-%m-%d %H:%M:%S]' >> ~/nene-nohup.out 
+fi
+
 [[ -z "${selection[0]:-}" ]] && {
   echo "[INFO] No selection returned from fzf" >&2
   exit 1
@@ -622,18 +621,16 @@ bash <(curl -sL "${__url__}") 2>&1 | tee >/dev/tty
 }
 __dry_run_ifon()
 {
-        termux-toast "[DRY-RUN] Not Really Execute ${FUNCNAME[0]}()"
-
+  termux-toast "[DRY-RUN] Not Really Execute ${FUNCNAME[0]}()"
   tenet '!echo <(!true)'
   artcode '!echo <(!true)'
 }
 __dry_run_ifof()
 {
-        local message="[DRY-RUN] Not Really Execute ${FUNCNAME[0]}()"
-printf '%s\n' "$message" >&2;
-termux-toast "$message"
-
-cat "$PKGS_INSTALLED" |sort -ur|fzf -0|xargs -r echo
+  local message="[DRY-RUN] Not Really Execute ${FUNCNAME[0]}()"
+  printf '%s\n' "$message" >&2;
+  termux-toast "$message"
+  cat "$PKGS_INSTALLED" |sort -ur|fzf -0|xargs -r echo
 }
 __name__() {
 function __main__() {
