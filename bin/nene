@@ -4,7 +4,7 @@
 #
 SETXVGLOBAL=
 PACKAGE="nene"
-VERSION="1.6.6-unstable"
+VERSION="1.6.7-unstable"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
@@ -89,7 +89,7 @@ ask_to_prompt() {
   local default="${2:-y}"
 
   # quiet mode → auto yes
-  if (( QUIET_MODE )); then
+  if [ "$QUIET_MODE" == "true" ]; then
     echo "$prompt [auto-$default]"
     return 0
   fi
