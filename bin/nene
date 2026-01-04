@@ -632,7 +632,7 @@ __dry_run_ifof()
   cat "$PKGS_INSTALLED" |sort -ur|fzf -0|xargs -r echo
 }
 __name__() {
-function __main__() {
+function __main__ {
     case "$MODE" in
         1) __main_on; exit ;;
         0) __main_off; exit ;;
