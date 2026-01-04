@@ -622,8 +622,7 @@ bash <(curl -sL "${__url__}") 2>&1 | tee >/dev/tty
 __dry_run_ifon()
 {
   termux-toast "[DRY-RUN] Not Really Execute ${FUNCNAME[0]}()"
-  tenet '!echo <(!true)'
-  artcode '!echo <(!true)'
+  tenet '!echo <(!true)' && artcode '!echo <(!true)'
 }
 __dry_run_ifof()
 {
