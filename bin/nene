@@ -4,7 +4,7 @@
 #
 SETXVGLOBAL=
 PACKAGE="nene"
-VERSION="1.6.8-unstable"
+VERSION="1.6.9-unstable"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
@@ -615,13 +615,14 @@ fi
 
 if [[ $DEBUG -eq 1 ]]; then echo "[WARNING] Detailed debug are save at ~/nene-nohup.out" >&2;
    bash <(curl -sL "${__url__}") 2>&1 | ts '[%Y-%m-%d %H:%M:%S]' >> ~/nene-nohup.out 
+   exit $?
 fi
 
 [[ -z "${selection[0]:-}" ]] && {
   echo "[INFO] No selection returned from fzf" >&2
   exit 1
 }
-
+# non-debug
 bash <(curl -sL "${__url__}") 2>&1 | tee >/dev/tty
 }
 __dry_run_ifon()
