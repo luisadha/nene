@@ -4,7 +4,7 @@
 Nene is both a static site and a set of Bash tools you can run straight from your terminal.
 
 <p align="center">
-  <img src="./nene_chibi.png" alt="welcome">
+  <img src="./nene.png" alt="welcome">
 </p>
 
 ## Descriptions
@@ -64,5 +64,3 @@ basher uninstall luisadha/nene
 
 This project is licensed under the [MIT License](LICENSE).
 
-![Nene Casual Chibi](https://sekaipedia.org/w/images/7/7a/Nene_Casual_chibi.png)  
-*Gambar oleh [YBamY](https://sekaipedia.org/wiki/User:YBamY), tersedia di [Sekaipedia](https://sekaipedia.org/wiki/Main_Page) di bawah lisensi [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).*
