@@ -1,4 +1,4 @@
-# nene |   Package Manager 
+# nene 
 ## Summary
 
 Nene is both a static site and a shell script management tool for that site.
