@@ -4,7 +4,7 @@ import sys
 import time
 import shutil
 
-__version__ = "1.5.98"
+__version__ = "1.6.x-unstable-1"
 
 def center_text(text):
     width = shutil.get_terminal_size((80, 20)).columns
