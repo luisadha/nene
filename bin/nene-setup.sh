@@ -6,6 +6,8 @@ echo "[#] Installing.. dependencies"
 for pkg in $(yq '.packages[]' requirements.yml); do
   pkg install "$pkg"
 done
-echo "[#] Installing.. completions"
+echo "[#] Unpacking.. man/nene.1"
+echo "######################..99%"
+sleep 1;
 make install
 cd - &>/dev/null
