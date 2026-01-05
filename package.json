@@ -1,6 +1,6 @@
 {
   "name": "nene",
-  "version": "1.5.98-lts",
+  "version": "1.6.x-unstable-1",
   "description": "Nene is both a static site and a set of Bash tools you can run straight from your terminal",
   "global": "true",
   "scripts": ["bin/nene"],
