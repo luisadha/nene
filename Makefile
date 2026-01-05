@@ -4,7 +4,7 @@ BINDIR  := $(PREFIX)/bin
 LIBEXEC := $(PREFIX)/libexec
 ETCDIR	:= $(PREFIX)/etc
 
-COMPLET	:= nene.completions.bash
+COMPLET	:= nene.completion.bash
 BIN     := nene
 LIBPY   := not-echo-not-true.py
 
