@@ -6,8 +6,5 @@ echo "[#] Installing.. dependencies"
 for pkg in $(yq '.packages[]' requirements.yml); do
   pkg install "$pkg"
 done
-echo "[#] Unpacking.. man/nene.1"
-echo "######################..99%"
-sleep 1;
+echo "Processing triggers for mandoc"
 make install
-cd - &>/dev/null
