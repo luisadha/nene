@@ -1,4 +1,5 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
+# Nene is both a static site and a shell script management tool for that site.
 AUTHOR="luisadha"
 pkg install -y yq make
 cd "$HOME"/.basher/cellar/packages/$AUTHOR/nene
