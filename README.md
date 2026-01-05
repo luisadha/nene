@@ -1,7 +1,8 @@
 # nene |   Package Manager 
 ## Summary
 
-Nene is both a static site and a set of Bash tools you can run straight from your terminal.
+Nene is both a static site and a shell script management tool for that site.
+
 <p align="left">
   <img src="./logo.svg" width="320" />
 </p>
