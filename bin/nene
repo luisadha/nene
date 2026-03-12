@@ -241,6 +241,9 @@ homepage() {
 echo "$NEPI" | xargs termux-open-url
     return 0
 }
+addon_current() {
+which nene | xargs cat > "$HOME"/bin/nene-$VERSION.sh
+}
 addon() {
 echo -e "Creating file.. ~/bin/nene-ak47.sh"
 cat <<'EOF' > "$HOME"/bin/nene-ak47.sh
@@ -312,7 +315,7 @@ while [[ $# -gt 0 ]]; do
       available_options | sed -n 's/.*\(-[^ ]\+ \+\(--[^ ]\+\)\).*/\1/p' | xargs -d'\n'
       break;;
     -a|--api-termux)
-      addon; shift;;
+      addon_current; shift;;
     -V|--verbose)
 SETXVGLOBAL=1
       shift;;
