@@ -552,7 +552,7 @@ function __main__() {
         0-1) __dry_run_ifof ;;
     0- |0-0) __main__ ;;
         1-1) __dry_run_ifon ;;
-    1- |1-0) __main__ ;; #( set +Eeuo pipefail; curl -sL "${__url__}" | bash )
+    1- |1-0) __main__ ;; 
     esac
     unset -f __main__
 }
