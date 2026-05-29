@@ -5,7 +5,8 @@ PACKAGE="nene"
 VERSION="1.5.99-lts"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
-V_FLAGS='--version' # GLOBAL FLAGS                                     E_MATCH='--exact' # FZF FLAGS
+V_FLAGS='--version' # GLOBAL FLAGS
+E_MATCH='--exact' # FZF FLAGS
 S_MATCH='--smart'
 UNKNOWN="Error: Unknown options"
 STARGS=1;
@@ -400,15 +401,31 @@ ASK_TO_ACTION="Would you like to install?"
 
   __dry_run_ifi 2>/dev/null
 
+# Ambil file .deb terbaru
 
-  # Ambil file .deb terbaru
-fetch_latest_deb=$(echo "$LATEST_JSON" | grep -o '"browser_download_url": *"[^"]*\.deb"' | cut -d '"' -f 4)
 
-  # Validasi URL
-HTTP_STATUS=$(curl -sSL -o /dev/null -w "%{http_code}" "$fetch_latest_deb" 2>/dev/null)
-  if [ "$HTTP_STATUS" != "200" ] && [ "$HTTP_STATUS" != "302" ]; then
-    echo
-  fi
+set -euo pipefail
+
+fetch_latest_deb="$(
+  jq -r '
+    .assets[]
+    | select(.browser_download_url | endswith(".deb"))
+    | .browser_download_url
+  ' <<< "$LATEST_JSON"
+)"
+
+if [ -z "$fetch_latest_deb" ]; then
+  echo "No .deb asset found" >&2
+  exit 1
+fi
+
+if ! curl --silent --location --fail \
+  --output /dev/null \
+  "$fetch_latest_deb"
+then
+  echo "Download URL is invalid" >&2
+  exit 2
+fi
 
 echo "$pkg" >> "$PKG_SHARE_NENE/pkg-installed"
 sort -u "$PKG_SHARE_NENE/pkg-installed" -o "$PKG_SHARE_NENE/pkg-installed"
