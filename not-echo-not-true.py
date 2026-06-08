@@ -70,7 +70,7 @@ while True:
     banner()
 
     if not apps:
-        print("No installed apps found.\nExiting..")
+        print("No data apps found.\nTry `nene -u` to solve this issue.", flush=True)
         break
 
     # Hitung panjang kolom nomor + nama
