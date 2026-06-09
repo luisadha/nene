@@ -1,6 +1,6 @@
 Package: nene
 Version: 1.6.0
-Architecture: all
+Architecture: aarch64
 Maintainer: Luis Adha <adharudin14@gmail.com>     
 Description: Nene is both a static site and a shell script management tool for that site
 Priority: optional
