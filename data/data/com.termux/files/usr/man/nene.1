@@ -1,0 +1,107 @@
+.TH NENE 1 "January 2026" "Nene Package Manager" "User Commands"
+
+.SH NAME
+nene \- interactive package manager and script runner
+
+.SH SYNOPSIS
+.B nene
+.RI [ options ]
+
+.SH DESCRIPTION
+\fBnene\fR is an interactive package manager and script runner.
+It supports online and offline package sources, installation,
+removal, inspection, and opening related URLs through an interactive menu.
+
+.SH OPTIONS
+.TP
+.B u, update
+Update local package repository data from the server.
+
+.TP
+.B s, select-url
+Open the source page or website of each package.
+This option can be combined with:
+.TP
+.B \-c
+Copy the selected URL into the clipboard.
+.TP
+.B \-o
+Open the selected URL in the default browser
+(same behavior as \fB\-s\fR).
+
+.TP
+.B h, help
+Display the help message and exit.
+
+.TP
+.B m, mode-online=\fI[0|1]\fR
+Set data source mode:
+.TP
+.B 1
+Use online packages.
+.TP
+.B 0
+Use offline local packages.
+.PP
+Both modes open the interactive menu interface.
+
+.TP
+.B v, version
+Show program version information.
+
+.TP
+.B i, install
+Install the selected package.
+This option automatically handles updates.
+Can be combined with:
+.TP
+.B \-q
+Quiet mode; suppress fzf output.
+.TP
+.B \-n
+Dry run; simulate installation without making changes.
+
+.TP
+.B I, info-all
+Display detailed information about all available packages.
+
+.TP
+.B r, remove
+Uninstall the selected packages from the system.
+
+.TP
+.B a, api-termux
+Enable running Nene scripts directly from shared websites or URLs.
+
+.TP
+.B n, dry-run
+Perform a simulation of actions without making any changes.
+
+.TP
+.B H, homepage
+Open the official homepage of Nene.
+
+.TP
+.B d, debug
+Enable debug mode.
+Detailed diagnostic logs are written to:
+.IR ~/nene-nohup.out
+
+.SH FILES
+.TP
+.I ~/nene-nohup.out
+Debug output log file.
+
+.SH EXIT STATUS
+.TP
+.B 0
+Success.
+.TP
+.B 1
+General error or invalid option.
+
+.SH AUTHOR
+Nene Project Contributors
+
+.SH SEE ALSO
+fzf(1), termux(1)
