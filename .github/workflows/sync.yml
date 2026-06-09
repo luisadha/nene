@@ -14,7 +14,10 @@ jobs:
 
       - name: Copy file
         run: |
+          cp completions/nene.completions.bash data/data/com.termux/files/usr/bash-completion/nene.completions.bash
+          cp man/nene.1 data/data/com.termux/files/usr/man/nene.1
           cp not-echo-not-true.py libexec/not-echo-not-true.py
+          cp bin/nene data/data/com.termux/files/usr/bin/nene
 
       - name: Debug - Check Git Status
         run: git status
