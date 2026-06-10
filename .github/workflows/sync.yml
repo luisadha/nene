@@ -1,4 +1,4 @@
-name: Sync not-echo-not-true.py
+name: Sync Package Files
 
 on:
   push:
@@ -8,28 +8,54 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Copy file
+      - name: Prepare directories
         run: |
-          cp completions/nene.completions.bash data/data/com.termux/files/usr/bash-completion/nene.completions.bash
-          cp man/nene.1 data/data/com.termux/files/usr/man/nene.1
-          cp not-echo-not-true.py libexec/not-echo-not-true.py
-          cp bin/nene data/data/com.termux/files/usr/bin/nene
+          mkdir -p data/data/com.termux/files/usr/bin
+          mkdir -p data/data/com.termux/files/usr/libexec
+          mkdir -p data/data/com.termux/files/usr/share/man/man1
+          mkdir -p data/data/com.termux/files/usr/share/doc/nene
+          mkdir -p data/data/com.termux/files/usr/share/bash-completion/completions
 
-      - name: Debug - Check Git Status
-        run: git status
+      - name: Sync package files
+        run: |
+          cp bin/nene \
+            data/data/com.termux/files/usr/bin/nene
+
+          cp not-echo-not-true.py \
+            data/data/com.termux/files/usr/libexec/not-echo-not-true.py
+
+          cp completions/nene.completions.bash \
+            data/data/com.termux/files/usr/share/bash-completion/completions/nene
+
+          gzip -9 -c man/nene.1 \
+            > data/data/com.termux/files/usr/share/man/man1/nene.1.gz
+
+          cp LICENSE \
+            data/data/com.termux/files/usr/share/doc/nene/LICENSE
+
+          cp README.md \
+            data/data/com.termux/files/usr/share/doc/nene/README.md
+
+          chmod 755 data/data/com.termux/files/usr/bin/nene
+
+      - name: Debug Git Status
+        run: |
+          git status
 
       - name: Commit changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add libexec/not-echo-not-true.py
-          git add data/data/com.termux/files/usr/bash-completion/nene.completions.bash
-          git add data/data/com.termux/files/usr/man/nene.1
-          git add data/data/com.termux/files/usr/bin/nene
-          git commit -m "Sync not-echo-not-true.py to libexec/not-echo-not-true.py" || echo "No changes to commit"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:${{ github.ref }}
-          
+
+          git add data/
+
+          git commit -m "Sync package files" || echo "No changes to commit"
+
+      - name: Push changes
+        run: |
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:${GITHUB_REF#refs/heads/}
