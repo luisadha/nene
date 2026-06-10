@@ -25,6 +25,8 @@ jobs:
         run: |
           cp bin/nene \
             data/data/com.termux/files/usr/bin/nene
+          cp bin/nene-setup.sh \
+            data/data/com.termux/files/usr/bin/nene-setup.sh
 
           cp not-echo-not-true.py \
             data/data/com.termux/files/usr/libexec/not-echo-not-true.py
@@ -42,6 +44,7 @@ jobs:
             data/data/com.termux/files/usr/share/doc/nene/README.md
 
           chmod 755 data/data/com.termux/files/usr/bin/nene
+          chmod 755 data/data/com.termux/files/usr/bin/nene-setup.sh
 
       - name: Debug Git Status
         run: |
