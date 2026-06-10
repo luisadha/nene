@@ -1,4 +1,3 @@
-api/*
-man/*
-libexec/*
-assets/*
+*
+!DEBIAN/**
+!data/**
