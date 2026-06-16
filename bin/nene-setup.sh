@@ -1,11 +1,3 @@
 #!/usr/bin/bash
 AUTHOR="luisadha"
-pkg install -y yq make
-cd "$HOME"/.basher/cellar/packages/$AUTHOR/nene
-echo "Installing.. dependencies"
-for pkg in $(yq '.packages[]' requirements.yml); do
-  pkg install "$pkg"
-done
-echo "Installing.. completions"
-make install
-cd - &>/dev/null
+apt-get install sed && echo 'pkg i git-curl-wget-grep-moreutils-gawk-jq-fzf-python-coreutils-findutils-termux--api-bash--completion-+--y' | sed -e 's/--/@/g' -e 's/+/-/g' -e 's/-/ /g' -e 's/@/-/g' | sh
