@@ -236,7 +236,7 @@ return 1
 while [[ $# -gt 0 ]]; do
  case "$1" in
     flags)
-      available_options | sed -n 's/.*\(-[^ ]\+ \+\(--[^ ]\+\)\).*/\1/p' 
+      available_options | sed -n 's/.*\(-[^ ]\+ \+\(--[^ ]\+\)\).*/\1/p' | xargs -n 1
       break;;
     -a|--api-termux)
       addon; shift;;
