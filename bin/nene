@@ -70,6 +70,9 @@ EOF
 exit 0
 }
 mapfile -t FLAGS < <(available_options | xargs -d'\')
+mapfile -t FLAGS2 < <(available_options | grep -E '\-i |\-r ')
+mapfile -t FLAGS3 < <(available_options | grep -E '\-m= ')
+
 catch_any_error() {
   local code=$?
   local func=${FUNCNAME[1]:-main}
@@ -275,7 +278,7 @@ while [[ $# -gt 0 ]]; do
     shift
     ;;
     -?|--pager)
-      show_help | fzf --bind 'enter:transform(echo -ne "\t Input argument for {1}" > /dev/tty && read -r args < /dev/tty && echo "become(nene {1} $args)")'
+      echo $FLAGS2 | fzf --bind 'enter:transform(echo -ne "\t Input argument for {1}" > /dev/tty && read -r args < /dev/tty && echo "become(nene {1} $args)")'
       shift;;
     -h|--help)
       show_help; shift;;
