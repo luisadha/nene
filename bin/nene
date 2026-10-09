@@ -70,8 +70,8 @@ EOF
 exit 0
 }
 mapfile -t FLAGS < <(available_options | xargs -d'\')
-mapfile -t FLAGS2 < <(available_options | grep -E '-i |-r ')
-mapfile -t FLAGS3 < <(available_options | grep -E '-m= ')
+mapfile -t FLAGS2 < <(available_options | grep -e '-i' -e '-r')
+mapfile -t FLAGS3 < <(available_options | grep -e '-m= ')
 
 catch_any_error() {
   local code=$?
