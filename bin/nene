@@ -278,7 +278,7 @@ while [[ $# -gt 0 ]]; do
     shift
     ;;
     -?|--pager)
-      echo "${FLAGS2}" | fzf --bind 'enter:transform(echo -ne "\t Input argument for {1}" > /dev/tty && read -r args < /dev/tty && echo "become(nene {1} $args)")'
+      echo "${FLAGS2}" | sed -n 's/.*\(-[^ ]\+ \+\(--[^ ]\+\)\).*/\1/p' | xargs -d'\n' | fzf --bind 'enter:transform(echo -ne "\t Input argument for {1}" > /dev/tty && read -r args < /dev/tty && echo "become(nene {1} $args)")'
       shift;;
     -h|--help)
       show_help; shift;;
