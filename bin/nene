@@ -304,10 +304,8 @@ while [[ $# -gt 0 ]]; do
     shift
     ;;
     -Im|--interactive-modes)
-      show_help | sed -n '/Options:/,$p' | grep -E -- "^[[
-:space:]]*(-m\b|Options:)" | fzf --bind 'enter:transform(echo
- -ne "\t Input argument for {1}=" > /dev/tty && read -r args < /dev/tty && echo "become(nene {1}= $args)")'
-      shift;;
+      show_help | sed -n '/Options:/,$p' | grep -E -- "^[[:space:]]*(-Im\b|-m\b|Options:)" | fzf --bind 'enter:transform(echo -ne "\t Input argument for {1}=" > /dev/tty && read -r args < /dev/tty && echo "become(nene {1}= $args)")'
+      break;;
     -h|--help)
       show_help; shift;;
     -v|--version)
