@@ -258,7 +258,7 @@ return 1
 while [[ $# -gt 0 ]]; do
  case "$1" in
     -Io|--interactive-options)
-      show_help | sed -n '/Options:/,$p' | grep -E -- "^[[
+      "$0" -h | sed -n '/Options:/,$p' | grep -E -- "^[[
 :space:]]*(-i\b|--install\b|--remove\b|-r\b|Options:)" | fzf --bind 'enter:transform(echo
  -ne "\t Input argument for {1} " > /dev/tty && read -r args < /dev/tty && echo "become(nene {1} $args)")'
       break;;
