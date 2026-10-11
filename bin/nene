@@ -304,7 +304,8 @@ while [[ $# -gt 0 ]]; do
     shift
     ;;
     -Im|--interactive-modes)
-      show_help | sed -n '/Options:/,$p' | grep -E -- "^[[:space:]]*(-Im\b|-m\b|Options:)" | fzf --bind 'enter:transform(echo -ne "\t Input argument for {1}=" > /dev/tty && read -r args < /dev/tty && echo "become(nene {1}= $args)")'
+      show_help | sed -n '/Options:/,$p' | grep -E -- '^ *(-m\b|Options:)' | fzf --bind 'enter:unbind(enter)+execute(TMP_CMD=$(mktemp) && echo -n "Masukkan argumen untuk {1}=" > /dev/tty && read -r args < /dev/tty && echo "nene {1} $args" > "$TMP_CMD" && cat "$TMP_CMD" > /dev/tty)+become(eval $(cat "$TMP_CMD"))'
+      break;;
       break;;
     -h|--help)
       show_help; shift;;
