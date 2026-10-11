@@ -258,11 +258,10 @@ return 1
 
 while [[ $# -gt 0 ]]; do
  case "$1" in
-     -Im|--interactive-modes)  
+    -Im|--interactive-modes)     
 
-      
-    # Jalankan fzf langsung ke terminal agar UI-nya muncul
-    selected_opt=$(show_help | sed -n '/Options:/,$p' | grep -E -- '^ *(-m=\b|--mode-online=\b|Options:)' | fzf --reverse --header-lines=1 </dev/tty >/dev/tty)
+    # Masukkan data opsi secara langsung ke fzf menggunakan printf
+    selected_opt=$(printf "%s\n" "-m=" "--mode-online=" | fzf --reverse --header="Pilih Opsi:")
 
     if [ -n "$selected_opt" ]; then
         # Bersihkan spasi di awal opsi yang dipilih
@@ -289,8 +288,6 @@ while [[ $# -gt 0 ]]; do
             fi
         fi
     fi
-    
-
     break;;
     -Io|--interactive-options)
       
