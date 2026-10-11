@@ -304,9 +304,25 @@ while [[ $# -gt 0 ]]; do
     shift
     ;;
     -Im|--interactive-modes)
-      show_help | sed -n '/Options:/,$p' | grep -E -- '^ *(-m\b|Options:)' | fzf --bind 'enter:unbind(enter)+execute(TMP_CMD=$(mktemp) && echo -n "Masukkan argumen untuk {1}=" > /dev/tty && read -r args < /dev/tty && echo "nene {1} $args" > "$TMP_CMD" && cat "$TMP_CMD" > /dev/tty)+become(eval $(cat "$TMP_CMD"))'
       
-      break;;
+      # Simpan hasil pilihan fzf dan input user ke variabel lokal
+      selected_opt=$(show_help | sed -n '/Options:/,$p' | grep -E -- '^ *(-Im\b|-m\b|Options:)' | fzf --reverse --header-lines=1)
+      
+      if [ -n "$selected_opt" ]; then
+        # Bersihkan spasi di awal opsi yang dipilih
+        clean_opt=$(echo "$selected_opt" | awk '{print $1}')
+        
+        echo -ne "\t Input argument for ${clean_opt}: " > /dev/tty
+        read -r user_args < /dev/tty
+        
+        # Eksekusi langsung perintah nene dengan opsi dan argumennya
+        if [ -n "$user_args" ]; then
+          nene "$clean_opt" "$user_args"
+        else
+          nene "$clean_opt"
+        fi
+      fi
+     break;;
     -h|--help)
       show_help; shift;;
     -v|--version)
