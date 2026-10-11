@@ -70,8 +70,8 @@ EOF
 exit 0
 }
 mapfile -t FLAGS < <(available_options | xargs -d'\')
-mapfile -t FLAGS2 < <(available_options | grep -e '-i' -e '-r')
-mapfile -t FLAGS3 < <(available_options | grep -e '-m= ')
+mapfile -t FLAGS2 < <(available_options | sed -n 's/.*\(-[^ ]\+ \+\(--[^ ]\+\)\).*/\1/p' | grep -e '-i' -e '-r')
+mapfile -t FLAGS3 < <(available_options | sed -n 's/.*\(-[^ ]\+ \+\(--[^ ]\+\)\).*/\1/p' | grep -e '-m= ')
 
 catch_any_error() {
   local code=$?
@@ -236,7 +236,7 @@ return 1
 while [[ $# -gt 0 ]]; do
  case "$1" in
     flags)
-      available_options | sed -n 's/.*\(-[^ ]\+ \+\(--[^ ]\+\)\).*/\1/p' 
+      printf "%s\n" "$FLAGS2"
       break;;
     -a|--api-termux)
       addon; shift;;
