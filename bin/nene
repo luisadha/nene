@@ -70,7 +70,7 @@ EOF
 exit 0
 }
 mapfile -t FLAGS < <(available_options | xargs -d'\')
-mapfile -t FLAGS2 < <(available_options | sed -n 's/.*\(-[^ ]\+ \+\(--[^ ]\+\)\).*/\1/p' | grep -e '-i' -e '-r')
+mapfile -t FLAGS2 < <(available_options | sed -n 's/.*\(-[^ ]\+ \+\(--[^ ]\+\)\).*/\1/p' | grep -E '^(-i|-r))
 mapfile -t FLAGS3 < <(available_options | sed -n 's/.*\(-[^ ]\+ \+\(--[^ ]\+\)\).*/\1/p' | grep -e '-m= ')
 
 catch_any_error() {
