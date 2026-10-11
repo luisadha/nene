@@ -259,9 +259,10 @@ return 1
 while [[ $# -gt 0 ]]; do
  case "$1" in
     -Io|--interactive-options)
-      show_help | sed -n '/Options:/,$p' | grep -E -- "^[[
-:space:]]*(-i\b|--install\b|--remove\b|-r\b|Options:)" | fzf --bind 'enter:transform(echo
- -ne "\t Input argument for {1} " > /dev/tty && read -r args < /dev/tty && echo "become(nene {1} $args)")'
+      
+      show_help | sed -n '/Options:/,$p' | grep -E -- "^[[:space:]]*(-i\b|--install\b|--remove\b|-r\b|Options:)" | fzf --reverse --header-lines=1 --bind 'enter:unbind(enter)+execute(TMP_CMD=$(mktemp) && echo -n "Masukkan argumen untuk {1}: " > /dev/tty && read -r args < /dev/tty && echo "nene {1} $args" > "$TMP_CMD" && cat "$TMP_CMD" > /dev/tty)+become(eval $(cat "$TMP_CMD"))'
+     
+
       break;;
     -a|--api-termux)
       addon; shift;;
