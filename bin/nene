@@ -236,7 +236,7 @@ return 1
 while [[ $# -gt 0 ]]; do
  case "$1" in
     flags)
-      printf "%s\n" "$FLAGS2"
+      printf "%s\n" "$OPTIONS_TARGET_ACTIONS"
       break;;
     -a|--api-termux)
       addon; shift;;
