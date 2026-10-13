@@ -441,7 +441,8 @@ if [ -n "$selected_opt" ]; then
     fi
 
     echo -ne "\t Input argument for ${clean_opt}: " > /dev/tty
-    read -e -r user_args < /dev/tty
+    read -e -r -p user_args 
+    # < /dev/tty
     
     # Kembali ke direktori asal dan bersihkan folder induk sementara
     cd "$current_pwd" || exit
