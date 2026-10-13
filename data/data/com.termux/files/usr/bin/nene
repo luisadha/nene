@@ -405,7 +405,7 @@ EOF
     fi
     break;;
     -Io|--interactive-options)
-     set -xv 
+     #set -xv 
       selected_opt=$(show_help | sed -n '/Options:/,$p' | grep -E -- '^ *(-i\b|--install\b|-r\b|--remove\b|Options:)' | fzf --reverse --header-lines=1)
 
 if [ -n "$selected_opt" ]; then
@@ -448,7 +448,7 @@ if [ -n "$selected_opt" ]; then
     # Kembali ke direktori asal dan bersihkan folder induk sementara
     cd "$current_pwd" || exit
     rm -rf "$tmp_parent"
-    
+    REPLY=$(echo "$REPLY" | xargs)
     if [ -n "$REPLY" ]; then
         nene "$clean_opt" "$REPLY"
     else
