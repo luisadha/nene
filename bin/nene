@@ -440,15 +440,15 @@ if [ -n "$selected_opt" ]; then
         cd "$tmp_dir" || exit
     fi
 
-    read -e -r -p " Input argument for ${clean_opt}: " user_args
+    read -e -r " Input argument for ${clean_opt}: \n" -p
     # < /dev/tty
     
     # Kembali ke direktori asal dan bersihkan folder induk sementara
     cd "$current_pwd" || exit
     rm -rf "$tmp_parent"
     
-    if [ -n "$user_args" ]; then
-        nene "$clean_opt" "$user_args"
+    if [ -n "$REPLY" ]; then
+        nene "$clean_opt" "$REPLY"
     else
         nene "$clean_opt"
     fi
