@@ -448,7 +448,7 @@ if [ -n "$selected_opt" ]; then
     # Kembali ke direktori asal dan bersihkan folder induk sementara
     cd "$current_pwd" || exit
     rm -rf "$tmp_parent"
-    
+    REPLY=$(echo "$REPLY" | xargs)
     if [ -n "$REPLY" ]; then
         nene "$clean_opt" "$REPLY"
     else
