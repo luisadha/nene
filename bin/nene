@@ -1,4 +1,4 @@
-#!/data/data/com.termux/files/usr/bin/bash
+#!/data/data/com.termux/files/usr/bin/env bash
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE    #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
@@ -33,6 +33,16 @@ DB_FILE="$HOME/.local/share/nene/update-lists"
 PROMPT="Choose a script to run online"
 INSTALL="ALT-i: confirm to install this package"
 REMOVE="ALT-r: confirm to remove this package"
+
+# Pastikan skrip berjalan dalam mode interaktif agar line editor aktif
+# (Flyline menggantikan readline untuk input interaktif)
+if [[ $- == *i* ]]; then
+    # Muat plugin Flyline ke dalam proses Bash saat ini
+    # Sesuaikan path jika modul diletakkan di direktori khusus
+    enable -f flyline flyline 2>/dev/null
+fi
+
+# Sisa kode skrip Anda di bawah ini...
 
 html2text() {
   sed 's/\\\//\//g' \
