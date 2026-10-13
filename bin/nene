@@ -2,7 +2,7 @@
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE    #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.7.0"
+VERSION="1.7.1"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
@@ -406,23 +406,53 @@ EOF
     break;;
     -Io|--interactive-options)
       
-      # Simpan hasil pilihan fzf dan input user ke variabel lokal
       selected_opt=$(show_help | sed -n '/Options:/,$p' | grep -E -- '^ *(-i\b|--install\b|-r\b|--remove\b|Options:)' | fzf --reverse --header-lines=1)
-      
-      if [ -n "$selected_opt" ]; then
-        # Bersihkan spasi di awal opsi yang dipilih
-        clean_opt=$(echo "$selected_opt" | awk '{print $1}')
+
+if [ -n "$selected_opt" ]; then
+    clean_opt=$(echo "$selected_opt" | awk '{print $1}')
+    
+    tmp_parent="$HOME/.local/share/nene/completions_$$"
+    current_pwd="$PWD"
+    
+    # Buat direktori berdasarkan opsi yang dipilih
+    if [ "$clean_opt" = "-i" ] || [ "$clean_opt" = "--install" ]; then
+        tmp_dir="$tmp_parent/update-lists-d"
+        mkdir -p "$tmp_dir"
+        cd "$tmp_dir" || exit
         
-        echo -ne "\t Input argument for ${clean_opt}: " > /dev/tty
-        read -r user_args < /dev/tty
-        
-        # Eksekusi langsung perintah nene dengan opsi dan argumennya
-        if [ -n "$user_args" ]; then
-          nene "$clean_opt" "$user_args"
-        else
-          nene "$clean_opt"
+        if [ -f "$HOME/.local/share/nene/update-lists" ]; then
+            xargs -a "$HOME/.local/share/nene/update-lists" touch
         fi
-      fi
+        
+    elif [ "$clean_opt" = "-r" ] || [ "$clean_opt" = "--remove" ]; then
+        tmp_dir="$tmp_parent/pkg-installed-d"
+        mkdir -p "$tmp_dir"
+        cd "$tmp_dir" || exit
+        
+        # Sesuaikan path file daftar paket terinstal jika berbeda (misal: pkg-installed)
+        if [ -f "$HOME/.local/share/nene/pkg-installed" ]; then
+            xargs -a "$HOME/.local/share/nene/pkg-installed" touch
+        fi
+    else
+        # Fallback jika opsi lain
+        tmp_dir="$tmp_parent/other-d"
+        mkdir -p "$tmp_dir"
+        cd "$tmp_dir" || exit
+    fi
+
+    echo -ne "\t Input argument for ${clean_opt}: " > /dev/tty
+    read -e -r user_args < /dev/tty
+    
+    # Kembali ke direktori asal dan bersihkan folder induk sementara
+    cd "$current_pwd" || exit
+    rm -rf "$tmp_parent"
+    
+    if [ -n "$user_args" ]; then
+        nene "$clean_opt" "$user_args"
+    else
+        nene "$clean_opt"
+    fi
+fi
 
       break;;
     -a|--api-termux)
