@@ -413,7 +413,7 @@ if [ -n "$selected_opt" ]; then
     
     tmp_parent="$HOME/.local/share/nene/completions_$$"
     current_pwd="$PWD"
-    
+    trap 'cd "$current_pwd" 2>/dev/null; rm -rf "$tmp_parent"' EXIT INT TERM
     # Buat direktori berdasarkan opsi yang dipilih
     if [ "$clean_opt" = "-i" ] || [ "$clean_opt" = "--install" ]; then
         tmp_dir="$tmp_parent/update-lists-d"
