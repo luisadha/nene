@@ -258,6 +258,121 @@ return 1
 
 while [[ $# -gt 0 ]]; do
  case "$1" in
+    --completion)
+        # Handler untuk --cometions
+    case "$2" in
+        bash)
+            cat << 'EOF'
+_nene() {
+  COMPREPLY=()
+  local word="${COMP_WORDS[COMP_CWORD]}"
+  local prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+  if [[ "$COMP_CWORD" -eq 1 ]]; then
+    COMPREPLY=( $(compgen -W "$(nene flags)" -- "$word") )
+
+  elif [[ "$prev" == "-r" ]] || [[ "$prev" == "--remove" ]]; then
+    local list_file="$HOME/.local/share/nene/pkg-installed"
+    if [[ -f "$list_file" ]]; then
+      mapfile -t completions < "$list_file"
+      COMPREPLY=( $(compgen -W "${completions[*]}" -- "$word") )
+    fi
+  elif [[ "$prev" == "-i" ]] || [[ "$prev" == "-iq" ]] || [[ "$prev" == "--install" ]]; then
+    local list_file="$HOME/.local/share/nene/update-lists"
+
+    if [[ -f "$list_file" ]]; then
+      mapfile -t completions < "$list_file"
+      COMPREPLY=( $(compgen -W "${completions[*]}" -- "$word") )
+    fi
+  fi
+}
+
+complete -F _nene nene
+EOF
+            exit 0
+            ;;
+        zsh)
+            cat << 'EOF'
+#compdef nene
+
+_nene() {
+  local line state
+
+  _arguments -C \
+    '1: :->flags' \
+    '*::arg:->args'
+
+  case "$state" in
+    flags)
+      local -a flags
+      flags=(${(f)"$(nene flags)"})
+      _describe 'flags' flags
+      ;;
+    args)
+      local prev="${words[CURRENT-1]}"
+      if [[ "$prev" == "-r" || "$prev" == "--remove" ]]; then
+        local list_file="$HOME/.local/share/nene/pkg-installed"
+        if [[ -f "$list_file" ]]; then
+          local -a pkgs
+          pkgs=(${(f)"(< $list_file)"})
+          _describe 'installed packages' pkgs
+        fi
+      elif [[ "$prev" == "-i" || "$prev" == "-iq" || "$prev" == "--install" ]]; then
+        local list_file="$HOME/.local/share/nene/update-lists"
+        if [[ -f "$list_file" ]]; then
+          local -a pkgs
+          pkgs=(${(f)"(< $list_file)"})
+          _describe 'update lists' pkgs
+        fi
+      fi
+      ;;
+  es}
+}
+
+_nene "$@"
+EOF
+            exit 0
+            ;;
+        fish)
+            cat << 'EOF'
+function __nene_using_position
+    set -l cmd (commandline -opc)
+    if [ (count $cmd) -eq $argv[1] ]
+        return 0
+    end
+    return 1
+end
+
+function __nene_previous_is
+    set -l cmd (commandline -opc)
+    if [ (count $cmd) -gt 1 ]
+        if contains -- $cmd[-1] $argv
+            return 0
+        end
+    end
+    return 1
+end
+
+# Hapus completion bawaan jika ada, lalu definisikan ulang
+complete -c nene -e
+
+# Posisi pertama (Flags utama)
+complete -c nene -n '__nene_using_position 2' -a '(nene flags)'
+
+# Completion untuk -r / --remove
+complete -c nene -n '__nene_previous_is -r --remove' -a '(cat $HOME/.local/share/nene/pkg-installed 2>/dev/null)'
+
+# Completion untuk -i / -iq / --install
+complete -c nene -n '__nene_previous_is -i -iq --install' -a '(cat $HOME/.local/share/nene/update-lists 2>/dev/null)'
+EOF
+            exit 0
+            ;;
+        *)
+            echo "Error: Shell tidak dikenal. Gunakan: nene --completion [bash|zsh|fish]" >&2
+            exit 1
+            ;;
+    esac
+     ;;
     -Im|--interactive-modes)     
 
     # Masukkan data opsi secara langsung ke fzf menggunakan printf
