@@ -440,7 +440,8 @@ if [ -n "$selected_opt" ]; then
         cd "$tmp_dir" || exit
     fi
 
-    read -e -r " Input argument for ${clean_opt}: \n" -p
+    read -e -r -p " Input argument for ${clean_opt}: " 
+    echo -n
     # < /dev/tty
     
     # Kembali ke direktori asal dan bersihkan folder induk sementara
