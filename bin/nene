@@ -421,7 +421,8 @@ EOF
 if [ -n "$selected_opt" ]; then
     clean_opt=$(echo "$selected_opt" | awk '{print $1}')
     
-    tmp_parent="$HOME/.local/share/nene/completions_$$"
+    tmp_parent=$(mktemp -d "$HOME/.local/share/nene/completion_sessions_$$.XXXXXX")
+
     current_pwd="$PWD"
     trap 'cd "$current_pwd" 2>/dev/null; rm -rf "$tmp_parent"' EXIT INT TERM
     # Buat direktori berdasarkan opsi yang dipilih
