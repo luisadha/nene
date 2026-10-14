@@ -34,15 +34,6 @@ PROMPT="Choose a script to run online"
 INSTALL="ALT-i: confirm to install this package"
 REMOVE="ALT-r: confirm to remove this package"
 
-# Pastikan skrip berjalan dalam mode interaktif agar line editor aktif
-# (Flyline menggantikan readline untuk input interaktif)
-if [[ $- == *i* ]]; then
-    # Muat plugin Flyline ke dalam proses Bash saat ini
-    # Sesuaikan path jika modul diletakkan di direktori khusus
-    enable -f flyline flyline 2>/dev/null
-fi
-
-# Sisa kode skrip Anda di bawah ini...
 
 html2text() {
   sed 's/\\\//\//g' \
@@ -449,16 +440,22 @@ if [ -n "$selected_opt" ]; then
         tmp_dir="$tmp_parent/other-d"
         mkdir -p "$tmp_dir"
         cd "$tmp_dir" || exit
-    fi 
- 
+    fi  
 set -o emacs  
 bind 'set colored-stats on'                                                       bind 'set colored-completion-prefix on'  
-bind 'set show-all-if-ambiguous on'      bind 'set completion-ignore-case on'                  bind 'set menu-complete-display-prefix on'
+bind 'set show-all-if-ambiguous on'
+bind 'set completion-ignore-case on' 
+bind 'set menu-complete-display-prefix on'
 bind 'TAB:menu-complete'
-        read -ra pkgs < <(ls | paste -sd' ')                                                     _tab_replacement_readline() {                                              local pilihan                                         pilihan=$(printf '%s\n' "${pkgs[@]}" | fzf \              --height=40% --reverse --border=rounded \             --prompt='❯ ' --query="$READLINE_LINE" \              --select-1 --exit-0 \
-        --color='border:#6c7086,prompt:#89b4fa,pointer
-:#f38ba8,hl:#f9e2af')                                                                                           if [[ -n $pilihan ]]; then                                READLINE_LINE=$pilihan                                READLINE_POINT=${#READLINE_LINE}
-    fi
+        read -ra pkgs < <(ls | paste -sd' ')                                          
+_tab_replacement_readline() {   
+local pilihan  
+pilihan=$(printf '%s\n' "${pkgs[@]}" | fzf \  --height=40% --reverse --border=rounded \  --prompt='❯ ' --query="$READLINE_LINE" \   --select-1 --exit-0 \    --color='border:#6c7086,prompt:#89b4fa,pointer
+:#f38ba8,hl:#f9e2af')   
+if [[ -n $pilihan ]]; then  
+READLINE_LINE=$pilihan
+READLINE_POINT=${#READLINE_LINE}
+fi
 }
 
 bind -x '"\t": _tab_replacement_readline'                              
