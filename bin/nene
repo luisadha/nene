@@ -457,8 +457,18 @@ bind 'TAB:menu-complete'
         read -ra pkgs < <(ls | paste -sd' ')                                          
 _tab_replacement_readline() {   
 local pilihan  
-pilihan=$(printf '%s\n' "${pkgs[@]}" | fzf \  --height=40% --reverse --border=rounded \  --prompt='❯ ' --query="$READLINE_LINE" \   --select-1 --exit-0 \    --color='border:#6c7086,prompt:#89b4fa,pointer
-:#f38ba8,hl:#f9e2af')   
+local -a opsi=(
+        --height=40%
+        --reverse
+        --border=rounded
+        --prompt='❯ '
+        --query="$READLINE_LINE"
+        --select-1
+        --exit-0
+        --color='border:#6c7086,prompt:#89b4fa,pointer:#f38ba8,hl:#f9e2af'
+    )
+pilihan=$(printf '%s\n' "${pkgs[@]}" | fzf "${opsi[@]}")
+
 if [[ -n $pilihan ]]; then  
 READLINE_LINE=$pilihan
 READLINE_POINT=${#READLINE_LINE}
