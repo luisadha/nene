@@ -130,7 +130,7 @@ update_remote_db() {
   mkdir -p "$(dirname "$DB_FILE")"
   connect(){ if check_connection; then echo; else offline_status;       exit $?; fi; }; connect; unset -f connect;
 
-fzf --disable --layout=reverse --header="Updating DB.." < <(curl -s "$NEPI" \
+fzf --no-input --layout=reverse --header="Updating DB.." < <(curl -s "$NEPI" \
     | html2text \
     | xargs -r -n1 basename > "$DB_FILE"
 )
