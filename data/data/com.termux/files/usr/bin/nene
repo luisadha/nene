@@ -393,7 +393,7 @@ EOF
     break;;
     -Io|--interactive-options)
      #set -xv 
-      selected_opt=$(show_help | sed -n '/Options:/,$p' | grep -E -- '^ *(-i\b|--install\b|-r\b|--remove)' | fzf --reverse --prompt="${PROMPT['optIOIM']}" )
+      selected_opt=$(show_help | sed -n '/Options:/,$p' | grep -E -- '^ *(-i\b|--install\b|-r\b|--remove)' | fzf --reverse --header="${PROMPT['optIOIM']}" )
 
 if [ -n "$selected_opt" ]; then
     clean_opt=$(echo "$selected_opt" | awk '{print $1}')
@@ -771,7 +771,7 @@ fi
 
 mapfile -t selection < <(
   printf "%s" "$data" \
-  | fzf --ghost="$err" --with-nth=2 --prompt="${PROMPT['optM1']}: " --delimiter=$'\t' || {
+  | fzf --ghost="$err" --with-nth=2 --header="${PROMPT['optM1']}: " --delimiter=$'\t' || {
       echo "[ERROR] User selection failed or canceled" >&2
       exit 1
     }
