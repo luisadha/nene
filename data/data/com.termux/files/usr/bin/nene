@@ -36,8 +36,8 @@ declare -A PROMPT=(
     [optM0]='Select already installed script'
     [optM1]='Stream and execute online script'
     [optIO]='Input argument for'
-    [optIOIM='Keyword Arguments'
-    [optSWITCH='Related flags'
+    [optIOIM]='Keyword Arguments'
+    [optSWITCH]='Related flags'
     [optIM]='Input value for'
 )
 
