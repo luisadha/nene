@@ -77,7 +77,11 @@ d debug                       Enable debug mode. The program logs detailed diagn
 EOF
 exit 0
 }
-mapfile -t FLAGS < <(available_options | xargs -d'\')
+mapfile -t ALL_FLAGS < <(available_options | xargs -d'\')
+mapfile -t FLAGS_ONLY < <(
+    available_options | 
+    grep -E '^[[:space:]]*(-[[:alnum:]]|--[[:alnum:]_-]+)[[:space:]]*$'
+)
 mapfile -t OPTIONS_TARGET_ACTIONS < <(
     available_options |
     sed -nE 's/^[[:space:]]*(-i|-r)[[:space:]]+(--[^[:space:]]+).*/\1 \2/p'
@@ -211,7 +215,7 @@ echo -e "Usage: ${0##*/} [uhvIaHsco] [-ri(qn) ARGUMENT].."
 echo -e "\t --mode-online=[n] --dry-run=[n] "
   echo
   echo "Options:"
-  for f in "${FLAGS[@]}"; do
+  for f in "${ALL_FLAGS[@]}"; do
     IFS="|" read -r flag desc <<< "$f"
     printf "  %-18s %s\n" "$flag" "$desc"
   done
@@ -245,6 +249,11 @@ return 1
 
 while [[ $# -gt 0 ]]; do
  case "$1" in
+    flags)
+    echo "${ALL_FLAGS}"
+    echo "============"
+    echo "${FLAGS_ONLY}"
+    ;;
     --completion)
         # Handler untuk --cometions
     case "$2" in
