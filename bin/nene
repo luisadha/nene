@@ -77,13 +77,8 @@ d debug                       Enable debug mode. The program logs detailed diagn
 EOF
 exit 0
 }
-#mapfile -t ALL_FLAGS < <(available_options | xargs -d'\')
-mapfile -t ALL_FLAGS < <(
-    available_options | 
-    awk '{print $1, $2}' | 
-    tr ' ' '\n' | 
-    grep -E '^-'
-)
+mapfile -t ALL_FLAGS < <(available_options | xargs -d'\')
+
 #mapfile -t FLAGS_ONLY < <(
 #    available_options | 
 #    grep -E '^[[:space:]]*(-[[:alnum:]]|--[[:alnum:]_-]+)[[:space:]]*$'
