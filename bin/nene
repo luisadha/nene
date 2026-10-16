@@ -77,16 +77,34 @@ d debug                       Enable debug mode. The program logs detailed diagn
 EOF
 exit 0
 }
-mapfile -t ALL_FLAGS < <(available_options | xargs -d'\')
+#mapfile -t ALL_FLAGS < <(available_options | xargs -d'\')
+mapfile -t ALL_FLAGS < <(
+    available_options | 
+    awk '{print $1, $2}' | 
+    tr ' ' '\n' | 
+    grep -E '^-'
+)
+#mapfile -t FLAGS_ONLY < <(
+#    available_options | 
+#    grep -E '^[[:space:]]*(-[[:alnum:]]|--[[:alnum:]_-]+)[[:space:]]*$'
+#)
 mapfile -t FLAGS_ONLY < <(
     available_options | 
-    grep -E '^[[:space:]]*(-[[:alnum:]]|--[[:alnum:]_-]+)[[:space:]]*$'
+    grep -v -E '(=|-i[[:space:]]|-r[[:space:]])' | 
+    awk '{print $1, $2}' | 
+    tr ' ' '\n' | 
+    grep -E '^-'
 )
-mapfile -t OPTIONS_TARGET_ACTIONS < <(
-    available_options |
-    sed -nE 's/^[[:space:]]*(-i|-r)[[:space:]]+(--[^[:space:]]+).*/\1 \2/p'
+#mapfile -t OPTIONS_TARGET_ACTIONS < <(
+#    available_options |
+#    sed -nE 's/^[[:space:]]*(-i|-r)[[:space:]]+(--[^[:space:]]+).*/\1 \2/p'
+#)
+
+#mapfile -t OPTIONS_MODE_FILTER < <(available_options | sed -n 's/.*\(-[^ ]\+ \+\(--[^ ]\+\)\).*/\1/p' | grep -e '-m= ')
+mapfile -t OPTIONS_MODE_FILTER < <(
+    available_options | 
+    sed -nE 's/^[[:space:]]*(-[[:alnum:]])[[:space:]]+(--[[:alnum:]_-]+=).*/\1 \2/p'
 )
-mapfile -t OPTIONS_MODE_FILTER < <(available_options | sed -n 's/.*\(-[^ ]\+ \+\(--[^ ]\+\)\).*/\1/p' | grep -e '-m= ')
 catch_any_error() {
   local code=$?
   local func=${FUNCNAME[1]:-main}
