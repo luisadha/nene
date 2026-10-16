@@ -447,7 +447,7 @@ local -a opsi=(
         --height=40%
         --reverse
         --border=rounded
-        --prompt="${PROMPT['optIO']}"
+        --header="${PROMPT['optIO']}"
         --query="$READLINE_LINE"
         --select-1
         --exit-0
@@ -736,7 +736,7 @@ trap catch_any_error ERR
   done
 } < <(
   grep -q . "$PKGS_INSTALLED" && return 1 || \
-  cat "$PKGS_INSTALLED" |sort -ur|fzf -0 --prompt="${PROMPT['optM0']}: " |xargs -r bash 2>&1) >>~/nene-nohup.out
+  cat "$PKGS_INSTALLED" |sort -ur|fzf -0|xargs -r bash 2>&1) >>~/nene-nohup.out
 else
         if [[ ! -s "$PKGS_INSTALLED" ]]; then
         message="You haven't installed anything yet"
@@ -744,7 +744,7 @@ else
         message=""
 fi
 
-  cat "$PKGS_INSTALLED" | sort -ur | fzf --ghost="$message" | xargs -r bash | tee /dev/tty
+  cat "$PKGS_INSTALLED" | sort -ur | fzf --ghost="$message" --header="${PROMPT['optM0']}: "  | xargs -r bash | tee /dev/tty
 fi
 
 }
