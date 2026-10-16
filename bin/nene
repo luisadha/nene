@@ -734,7 +734,7 @@ trap catch_any_error ERR
   done
 } < <(
   grep -q . "$PKGS_INSTALLED" && return 1 || \
-  cat "$PKGS_INSTALLED" |sort -ur|fzf -0|xargs -r bash 2>&1) >>~/nene-nohup.out
+  cat "$PKGS_INSTALLED" |sort -ur|fzf -0 --prompt="${PROMPT['optM0']}: " |xargs -r bash 2>&1) >>~/nene-nohup.out
 else
         if [[ ! -s "$PKGS_INSTALLED" ]]; then
         message="You haven't installed anything yet"
