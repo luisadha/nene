@@ -2,7 +2,7 @@
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE    #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.7.2"
+VERSION="1.7.3"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
@@ -191,7 +191,7 @@ fzf_walker() {
         local url
         url=$(curl -s "$NEPI" \
             | html2text \
-            | fzf --ghost="$connect" --prompt="Indexing URL: ")
+            | fzf --ghost="$connect" --header="Indexing URL: ")
         echo "$url" > "$URL_CACHE"
         echo "$url"
     fi
