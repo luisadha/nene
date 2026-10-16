@@ -253,7 +253,7 @@ while [[ $# -gt 0 ]]; do
     echo "${ALL_FLAGS}"
     echo "============"
     echo "${FLAGS_ONLY}"
-    ;;
+    break;;
     --completion)
         # Handler untuk --cometions
     case "$2" in
