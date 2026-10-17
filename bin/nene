@@ -86,7 +86,6 @@ available_options() {
 }
  
 # Dipakai untuk help: tampilkan lalu keluar.
-show_help() { available_options; exit 0; }
  
 _join() { paste -sd' ' -; }
  
@@ -146,6 +145,7 @@ inline_opt() {
 
 read -ra ALL_FLAGZ <<< "$(short_opt) $(long_opt)"
  
+
 
 
 mapfile -t ALL_FLAGS < <(available_options | xargs -d'\')
@@ -290,6 +290,19 @@ cp -f ~/bin/nene-ak47.sh ~/bin/termux-url-opener
 sleep 0.5
 echo "..done"
 return 0
+}
+
+show_help() { 
+ echo -e "$SUMMARY\n"
+echo -e "Usage: ${0##*/} [uhvIaHsco] [-ri(qn) ARGUMENT].."
+echo -e "\t --mode-online=[n] --dry-run=[n] "
+  echo
+  echo "Options:"
+  for f in "${ALL_FLAGS[@]}"; do
+    IFS="|" read -r flag desc <<< "$f"
+    printf "  %-18s %s\n" "$flag" "$desc"
+  done
+  exit 0
 }
 _show_help() {
 echo -e "$SUMMARY\n"
@@ -628,7 +641,7 @@ fi
     shift
     ;;
     -h|--help)
-      _show_help; shift;;
+      show_help; shift;;
     -v|--version)
       version; shift;;
    -H|--homepage)
