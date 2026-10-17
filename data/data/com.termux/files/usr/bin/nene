@@ -291,26 +291,13 @@ sleep 0.5
 echo "..done"
 return 0
 }
-
-show_help() { 
- echo -e "$SUMMARY\n"
-echo -e "Usage: ${0##*/} [uhvIaHsco] [-ri(qn) ARGUMENT].."
-echo -e "\t --mode-online=[n] --dry-run=[n] "
-  echo
+show_help() {
+  local -n _list=${1:-ALL_FLAGS}      # tanpa argumen -> default ALL_FLAGS
+  echo -e "$SUMMARY\n"
+  echo -e "Usage: ${0##*/} [uhvIaHsco] [-ri(qn) ARGUMENT]..\n\t --mode-online=[n] --dry-run=[n]\n"
   echo "Options:"
-  for f in "${ALL_FLAGS[@]}"; do
-    IFS="|" read -r flag desc <<< "$f"
-    printf "  %-18s %s\n" "$flag" "$desc"
-  done
-  exit 0
-}
-_show_help() {
-echo -e "$SUMMARY\n"
-echo -e "Usage: ${0##*/} [uhvIaHsco] [-ri(qn) ARGUMENT].."
-echo -e "\t --mode-online=[n] --dry-run=[n] "
-  echo
-  echo "Options:"
-  for f in "${ALL_FLAGZ[@]}"; do
+  local f flag desc
+  for f in "${_list[@]}"; do
     IFS="|" read -r flag desc <<< "$f"
     printf "  %-18s %s\n" "$flag" "$desc"
   done
@@ -516,7 +503,7 @@ EOF
     break;;
     -Io|--interactive-options)
      #set -xv 
-      selected_opt=$(_show_help | sed -n '/Options:/,$p' | grep -E -- '^ *(-i\b|--install\b|-r\b|--remove)' | fzf --reverse --header="${PROMPT['optIOIM']}" )
+      selected_opt=$(show_help ALL_FLAGZ | sed -n '/Options:/,$p' | grep -E -- '^ *(-i\b|--install\b|-r\b|--remove)' | fzf --reverse --header="${PROMPT['optIOIM']}" )
 
 if [ -n "$selected_opt" ]; then
     clean_opt=$(echo "$selected_opt" | awk '{print $1}')
@@ -641,7 +628,7 @@ fi
     shift
     ;;
     -h|--help)
-      show_help; shift;;
+      show_help ALL_FLAGS; shift;;
     -v|--version)
       version; shift;;
    -H|--homepage)
