@@ -47,21 +47,13 @@ html2text() {
   | grep -oiE 'https?://([^"'\'' ]+\.)?(github\.com|github\.io|raw\.githubusercontent\.com|gist\.github\.com)/[^"'\'' ]+' \
   | sort -u
 }
-
-available_options() {
-cat <<'EOF' | awk '
-{
-    f1=$1; $1=""; sub(/^ /,"",$0)
-    f2=$1; $1=""; sub(/^ /,"",$0)
-    desc = $0
-    if (length(f1)==1) {
-        printf "-%-2s --%-17s %s\n", f1, f2, desc
-    } else {
-        gsub(/[[:space:]]+/, "-", f1)
-        printf "    --%-12s %s\n", f1, desc
-    }
-}
-'
+#!/usr/bin/env bash
+# Sumber data TUNGGAL untuk semua opsi.
+# Format tiap baris : <pendek> <panjang>[=] <deskripsi>
+#   - pendek "-"  : opsi hanya punya bentuk panjang
+#   - panjang "=" : opsi menerima nilai (--mode-online=1 atau -m 1)
+_option_data() {
+cat <<'EOF'
 u update                      Update local package repository data from the server.
 s select-url                  Open the source page or website of each package, This option can also be combined with -c (copy: Copy selected a url into clipboard) or -o (open: mean open a selected url, Same as -s).
 h help                        Display this help message and exit.
@@ -75,62 +67,87 @@ n dry-run                     No action; perform a simulation of events that wou
 H homepage                    Open the official homepage of Nene.
 d debug                       Enable debug mode. The program logs detailed diagnostic information and writes it to ~/nene-nohup.out.
 EOF
-exit 0
 }
-mapfile -t ALL_FLAGS < <(available_options | xargs -d'\')
+
+# Tabel bantuan berformat (TIDAK memanggil exit, aman dipakai sebagai data).
+available_options() {
+  _option_data | awk '
+  {
+    f1 = $1; f2 = $2
+    $1 = ""; $2 = ""; sub(/^ +/, "")
+    if (f1 == "-") printf "    --%-17s %s\n", f2, $0
+    else           printf "-%-2s --%-17s %s\n", f1, f2, $0
+  }'
+}
+
+# Dipakai untuk help: tampilkan lalu keluar.
+show_help() { available_options; exit 0; }
+
+_join() { paste -sd' ' -; }
+
+# ==========================================
 # KELOMPOK 1: BERDASARKAN BENTUK FISIK OPSI
 # ==========================================
 
-# Hanya mengambil opsi pendek (Contoh hasil: -i -r -q -n -h)
+# Opsi pendek      -> -u -s -h -m ...
 short_opt() {
-  available_options | sed -n 's/.*\(\ -[a-zA-Z]\b\).*/\1/p' | xargs -d'\n'
+  _option_data | awk '$1 != "-" { print "-" $1 }' | _join
 }
 
-# Hanya mengambil opsi panjang (Contoh hasil: --install --remove --quiet)
+# Opsi panjang     -> --update --select-url ...
 long_opt() {
-  available_options | sed -n 's/.*\(\--[a-zA-Z0-9-]\+\).*/\1/p' | xargs -d'\n'
+  _option_data | awk '{ o = $2; sub(/=$/, "", o); print "--" o }' | _join
 }
 
-# Hanya mengambil opsi gabungan spesifik milik Anda (Contoh hasil: -iqn -rqn -sco)
+# Opsi gabungan    -> -iq -in -iqn -sc -so -sco
+# Diturunkan dari flag pendamping yang disebut di deskripsi (mis. "-q", "-n").
 clustered_opt() {
-  available_options | sed -n 's/.*\(\ -[a-zA-Z]\{3,\}\b\).*/\1/p' | xargs -d'\n'
+  _option_data | awk '
+  $1 != "-" {
+    base = $1; desc = $0; n = 0; delete seen
+    while (match(desc, /(^|[ (])-[a-zA-Z]($|[ ,):.])/)) {
+      flag = substr(desc, RSTART, RLENGTH); gsub(/[^a-zA-Z]/, "", flag)
+      desc = substr(desc, RSTART + RLENGTH - 1)
+      if (flag != base && !(flag in seen)) { seen[flag] = 1; f[++n] = flag }
+    }
+    for (m = 1; m < 2 ^ n; m++) {
+      s = base
+      for (j = 1; j <= n; j++) if (int(m / 2 ^ (j - 1)) % 2) s = s f[j]
+      print "-" s
+    }
+  }' | _join
 }
 
-
+# ==========================================
 # KELOMPOK 2: BERDASARKAN CARA PENULISAN NILAI
 # ==========================================
 
-# Hanya mengambil opsi yang bernilai terpisah / pakai spasi (Contoh hasil: -f FILE atau --file FILE)
+# Nilai dipisah spasi -> -m --mode-online   (dipakai: -m 1 / --mode-online 1)
 separate_opt() {
-  available_options | sed -n 's/.*\(\(-[a-zA-Z]\|--[a-zA-Z0-9-]\+\)\ [A-Z]\+\).*/\1/p' | xargs -d'\n'
+  _option_data | awk '$2 ~ /=$/ {
+    o = $2; sub(/=$/, "", o)
+    if ($1 != "-") print "-" $1
+    print "--" o
+  }' | _join
 }
 
-# Hanya mengambil opsi gaya GNU / pakai tanda sama dengan (Contoh hasil: --output=FILE)
+# Nilai gaya GNU     -> --mode-online=
 inline_opt() {
-  available_options | sed -n 's/.*\(\--[a-zA-Z0-9-]\+=[A-Z]\+\).*/\1/p' | xargs -d'\n'
+  _option_data | awk '$2 ~ /=$/ { print "--" $2 }' | _join
 }
 
-#mapfile -t FLAGS_ONLY < <(
-#    available_options | 
-#    grep -E '^[[:space:]]*(-[[:alnum:]]|--[[:alnum:]_-]+)[[:space:]]*$'
-#)
-mapfile -t FLAGS_ONLY < <(
-    available_options | 
-    grep -v -E '(=|-i[[:space:]]|-r[[:space:]])' | 
-    awk '{print $1, $2}' | 
-    tr ' ' '\n' | 
-    grep -E '^-'
-)
-#mapfile -t OPTIONS_TARGET_ACTIONS < <(
-#    available_options |
-#    sed -nE 's/^[[:space:]]*(-i|-r)[[:space:]]+(--[^[:space:]]+).*/\1 \2/p'
-#)
+# Semua opsi (pendek + panjang) sebagai array, satu per elemen.
+read -ra ALL_FLAGS <<< "$(short_opt) $(long_opt)"
 
-#mapfile -t OPTIONS_MODE_FILTER < <(available_options | sed -n 's/.*\(-[^ ]\+ \+\(--[^ ]\+\)\).*/\1/p' | grep -e '-m= ')
-mapfile -t OPTIONS_MODE_FILTER < <(
-    available_options | 
-    sed -nE 's/^[[:space:]]*(-[[:alnum:]])[[:space:]]+(--[[:alnum:]_-]+=).*/\1 \2/p'
-)
+
+
+
+#mapfile -t ALL_FLAGS < <(available_options | xargs -d'\')
+
+
+
+
+
 catch_any_error() {
   local code=$?
   local func=${FUNCNAME[1]:-main}
@@ -268,7 +285,7 @@ sleep 0.5
 echo "..done"
 return 0
 }
-show_help() {
+print_help() {
 echo -e "$SUMMARY\n"
 echo -e "Usage: ${0##*/} [uhvIaHsco] [-ri(qn) ARGUMENT].."
 echo -e "\t --mode-online=[n] --dry-run=[n] "
