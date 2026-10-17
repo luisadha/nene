@@ -278,9 +278,7 @@ return 1
 while [[ $# -gt 0 ]]; do
  case "$1" in
     flags)
-    echo "${ALL_FLAGS}"
-    echo "============"
-    echo "${FLAGS_ONLY}"
+    available_options | sed -n 's/.*\(-[^ ]\+ \+\(--[^ ]\+\)\).*/\1/p' | xargs -d'\n'
     break;;
     --completion)
         # Handler untuk --cometions
