@@ -143,7 +143,8 @@ inline_opt() {
 }
  
 # Semua opsi (pendek + panjang) sebagai array, satu per elemen.
-#read -ra ALL_FLAGS <<< "$(short_opt) $(long_opt)"
+
+read -ra ALL_FLAGZ <<< "$(short_opt) $(long_opt)"
  
 
 
@@ -296,7 +297,7 @@ echo -e "Usage: ${0##*/} [uhvIaHsco] [-ri(qn) ARGUMENT].."
 echo -e "\t --mode-online=[n] --dry-run=[n] "
   echo
   echo "Options:"
-  for f in "${ALL_FLAGS[@]}"; do
+  for f in "${ALL_FLAGZ[@]}"; do
     IFS="|" read -r flag desc <<< "$f"
     printf "  %-18s %s\n" "$flag" "$desc"
   done
