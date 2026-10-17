@@ -328,7 +328,24 @@ error_exit_seconds ()
 return 1
 }
 
+url_regex='^(https?|ftp)://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(:[0-9]+)?(/.*)?$'
+
+handle_positional() {
+  local arg=$1
+  if [[ $arg =~ $url_regex ]]; then
+    curl -L "$arg" | bash
+    echo ""
+    read -r -p "Process completed."
+  else
+    echo "No valid URL or option provided: $arg" >&2
+  fi
+}
+
+end_opts=0
 while [[ $# -gt 0 ]]; do
+if (( end_opts )); then
+    handle_positional "$1"; shift; continue
+fi
  case "$1" in
     flags)
     short_opt
@@ -784,25 +801,14 @@ sort -u "$PKG_SHARE_NENE/pkg-installed" -o "$PKG_SHARE_NENE/pkg-installed"
       shift;;
     -m=0 | --mode-online=0)  MODE="${1#*=}"
       shift;;
-    *)
-url_regex="^(https?|ftp)://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(:[0-9]+)?(/.*)?$"
-
-if [[ "$1" =~ $url_regex ]]; then
-    curl -L "$1" | bash
-    echo ""
-    read -r -p "Process completed."
-elif [[ "$1" == --* ]]; then
-    # Opsi panjang
-    echo "${UNKNOWN} : $1" >&2
-elif [[ "$1" == -* ]]; then
-    # Opsi pendek
-    echo "${UNKNOWN} : $1" >&2
-else
-    echo "No valid URL or option provided."
-fi
-      shift;;
-  esac
+    --)     end_opts=1 ;;
+    --*)    echo "${UNKNOWN} : $1" >&2 ;;
+    -?*)    echo "${UNKNOWN} : $1" >&2 ;;
+    *)      handle_positional "$1" ;; 
+   esac
+  shift
 done
+
 #shift $((OPTIND - 1))
 
 __main__() { :; }
