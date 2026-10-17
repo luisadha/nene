@@ -47,11 +47,16 @@ html2text() {
   | grep -oiE 'https?://([^"'\'' ]+\.)?(github\.com|github\.io|raw\.githubusercontent\.com|gist\.github\.com)/[^"'\'' ]+' \
   | sort -u
 }
-#!/usr/bin/env bash
+
+
+
 # Sumber data TUNGGAL untuk semua opsi.
 # Format tiap baris : <pendek> <panjang>[=] <deskripsi>
 #   - pendek "-"  : opsi hanya punya bentuk panjang
-#   - panjang "=" : opsi menerima nilai (--mode-online=1 atau -m 1)
+#   - panjang "=" : opsi menerima nilai, boleh spasi ATAU sama dengan
+#                   (-m 1, --mode-online 1, --mode-online=1)
+#   - panjang "+" : opsi menerima nilai, hanya dipisah spasi
+#                   (-i paket, --install paket)
 _option_data() {
 cat <<'EOF'
 u update                      Update local package repository data from the server.
@@ -59,46 +64,46 @@ s select-url                  Open the source page or website of each package, T
 h help                        Display this help message and exit.
 m mode-online=                Set data source: 1 for online packages, 0 for offline local packages, Both modes open the interactive menu interface.
 v version                     Show program version information.
-i install                     Install the selected package (auto-handles updates), This option can also be combined with -q (quiet: Suppress fzf output) or -n (dry-run).
+i install+                    Install the selected package (auto-handles updates), This option can also be combined with -q (quiet: Suppress fzf output) or -n (dry-run).
 I info-all                    Display detailed information about all available packages.
-r remove                      Uninstall the selected packages from the system.
+r remove+                     Uninstall the selected packages from the system.
 a api-termux                  Enable running Nene scripts directly from shared websites or URLs.
 n dry-run                     No action; perform a simulation of events that would occur.
 H homepage                    Open the official homepage of Nene.
 d debug                       Enable debug mode. The program logs detailed diagnostic information and writes it to ~/nene-nohup.out.
 EOF
 }
-
+ 
 # Tabel bantuan berformat (TIDAK memanggil exit, aman dipakai sebagai data).
 available_options() {
   _option_data | awk '
   {
-    f1 = $1; f2 = $2
+    f1 = $1; f2 = $2; sub(/\+$/, "", f2)
     $1 = ""; $2 = ""; sub(/^ +/, "")
     if (f1 == "-") printf "    --%-17s %s\n", f2, $0
     else           printf "-%-2s --%-17s %s\n", f1, f2, $0
   }'
 }
-
+ 
 # Dipakai untuk help: tampilkan lalu keluar.
 show_help() { available_options; exit 0; }
-
+ 
 _join() { paste -sd' ' -; }
-
+ 
 # ==========================================
 # KELOMPOK 1: BERDASARKAN BENTUK FISIK OPSI
 # ==========================================
-
+ 
 # Opsi pendek      -> -u -s -h -m ...
 short_opt() {
   _option_data | awk '$1 != "-" { print "-" $1 }' | _join
 }
-
+ 
 # Opsi panjang     -> --update --select-url ...
 long_opt() {
-  _option_data | awk '{ o = $2; sub(/=$/, "", o); print "--" o }' | _join
+  _option_data | awk '{ o = $2; sub(/[=+]$/, "", o); print "--" o }' | _join
 }
-
+ 
 # Opsi gabungan    -> -iq -in -iqn -sc -so -sco
 # Diturunkan dari flag pendamping yang disebut di deskripsi (mis. "-q", "-n").
 clustered_opt() {
@@ -117,29 +122,29 @@ clustered_opt() {
     }
   }' | _join
 }
-
+ 
 # ==========================================
 # KELOMPOK 2: BERDASARKAN CARA PENULISAN NILAI
 # ==========================================
-
-# Nilai dipisah spasi -> -m --mode-online   (dipakai: -m 1 / --mode-online 1)
+ 
+# Nilai dipisah spasi -> -m --mode-online -i --install -r --remove
+# (dipakai: -m 1, --mode-online 1, -i paket, --install paket)
 separate_opt() {
-  _option_data | awk '$2 ~ /=$/ {
-    o = $2; sub(/=$/, "", o)
+  _option_data | awk '$2 ~ /[=+]$/ {
+    o = $2; sub(/[=+]$/, "", o)
     if ($1 != "-") print "-" $1
     print "--" o
   }' | _join
 }
-
+ 
 # Nilai gaya GNU     -> --mode-online=
 inline_opt() {
   _option_data | awk '$2 ~ /=$/ { print "--" $2 }' | _join
 }
-
+ 
 # Semua opsi (pendek + panjang) sebagai array, satu per elemen.
 read -ra ALL_FLAGS <<< "$(short_opt) $(long_opt)"
-
-
+ 
 
 
 #mapfile -t ALL_FLAGS < <(available_options | xargs -d'\')
@@ -285,7 +290,7 @@ sleep 0.5
 echo "..done"
 return 0
 }
-print_help() {
+_show_help() {
 echo -e "$SUMMARY\n"
 echo -e "Usage: ${0##*/} [uhvIaHsco] [-ri(qn) ARGUMENT].."
 echo -e "\t --mode-online=[n] --dry-run=[n] "
@@ -480,7 +485,7 @@ EOF
     break;;
     -Io|--interactive-options)
      #set -xv 
-      selected_opt=$(show_help | sed -n '/Options:/,$p' | grep -E -- '^ *(-i\b|--install\b|-r\b|--remove)' | fzf --reverse --header="${PROMPT['optIOIM']}" )
+      selected_opt=$(_show_help | sed -n '/Options:/,$p' | grep -E -- '^ *(-i\b|--install\b|-r\b|--remove)' | fzf --reverse --header="${PROMPT['optIOIM']}" )
 
 if [ -n "$selected_opt" ]; then
     clean_opt=$(echo "$selected_opt" | awk '{print $1}')
@@ -605,7 +610,7 @@ fi
     shift
     ;;
     -h|--help)
-      show_help; shift;;
+      _show_help; shift;;
     -v|--version)
       version; shift;;
    -H|--homepage)
