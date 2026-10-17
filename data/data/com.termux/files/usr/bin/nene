@@ -311,7 +311,7 @@ while [[ $# -gt 0 ]]; do
     flags)
     short_opt
     long_opt
-    cluster_opt
+    clustered_opt
     separate_opt
     inline_opt
     break;;
