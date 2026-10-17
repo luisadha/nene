@@ -78,6 +78,37 @@ EOF
 exit 0
 }
 mapfile -t ALL_FLAGS < <(available_options | xargs -d'\')
+# KELOMPOK 1: BERDASARKAN BENTUK FISIK OPSI
+# ==========================================
+
+# Hanya mengambil opsi pendek (Contoh hasil: -i -r -q -n -h)
+short_opt() {
+  available_options | sed -n 's/.*\(\ -[a-zA-Z]\b\).*/\1/p' | xargs -d'\n'
+}
+
+# Hanya mengambil opsi panjang (Contoh hasil: --install --remove --quiet)
+long_opt() {
+  available_options | sed -n 's/.*\(\--[a-zA-Z0-9-]\+\).*/\1/p' | xargs -d'\n'
+}
+
+# Hanya mengambil opsi gabungan spesifik milik Anda (Contoh hasil: -iqn -rqn -sco)
+clustered_opt() {
+  available_options | sed -n 's/.*\(\ -[a-zA-Z]\{3,\}\b\).*/\1/p' | xargs -d'\n'
+}
+
+
+# KELOMPOK 2: BERDASARKAN CARA PENULISAN NILAI
+# ==========================================
+
+# Hanya mengambil opsi yang bernilai terpisah / pakai spasi (Contoh hasil: -f FILE atau --file FILE)
+separate_opt() {
+  available_options | sed -n 's/.*\(\(-[a-zA-Z]\|--[a-zA-Z0-9-]\+\)\ [A-Z]\+\).*/\1/p' | xargs -d'\n'
+}
+
+# Hanya mengambil opsi gaya GNU / pakai tanda sama dengan (Contoh hasil: --output=FILE)
+inline_opt() {
+  available_options | sed -n 's/.*\(\--[a-zA-Z0-9-]\+=[A-Z]\+\).*/\1/p' | xargs -d'\n'
+}
 
 #mapfile -t FLAGS_ONLY < <(
 #    available_options | 
@@ -278,7 +309,11 @@ return 1
 while [[ $# -gt 0 ]]; do
  case "$1" in
     flags)
-    available_options | sed -n 's/.*\(-[^ ]\+ \+\(--[^ ]\+\)\).*/\1/p' | xargs -d'\n'
+    short_opt
+    long_opt
+    cluster_opt
+    separate_opt
+    inline_opt
     break;;
     --completion)
         # Handler untuk --cometions
