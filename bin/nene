@@ -143,11 +143,11 @@ inline_opt() {
 }
  
 # Semua opsi (pendek + panjang) sebagai array, satu per elemen.
-read -ra ALL_FLAGS <<< "$(short_opt) $(long_opt)"
+#read -ra ALL_FLAGS <<< "$(short_opt) $(long_opt)"
  
 
 
-#mapfile -t ALL_FLAGS < <(available_options | xargs -d'\')
+mapfile -t ALL_FLAGS < <(available_options | xargs -d'\')
 
 
 
