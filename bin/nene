@@ -850,7 +850,7 @@ sort -u "$PKG_SHARE_NENE/pkg-installed" -o "$PKG_SHARE_NENE/pkg-installed"
       set_mode "$2"
       shift 2;;
     -m=*|--mode-online=*)                   # inline: -m=1 / --mode-online=1
-      set_mode "${1#*=}"
+      MODE="${1#*=}"
       shift;;
     --)     end_opts=1 shift continue;;
     --*)    echo "${UNKNOWN} : $1" >&2 shift;;
