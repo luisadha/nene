@@ -341,6 +341,7 @@ handle_positional() {
     echo "No valid URL or option provided: $arg" >&2
   fi
 }
+cluster_has() { [[ $1 == -[!-]* && $1 == *"$2"* ]]; }
 
 if [[ $# -eq 0 ]]; then
 default_apps; # deprecreted
@@ -664,51 +665,78 @@ export DRY_RUN_PROMPT="[DRY-RUN MODE]"; shift;;
       update_remote_db; shift ;;
     -I|--info-all)
       info_all_dpkg; shift;;
-    -r|--remove)
-#      set -xv
-      [ -z "$2" ] && echo "Argument required for ${2:-"--remove"} <package>" && exit 2;
+    -r*|--remove)
+      # -r / --remove, boleh digabung: -rq (quiet), -rn (dry-run), -rqn
+      [[ $1 == --remove || $1 =~ ^-r[qn]*$ ]] || { echo "${UNKNOWN} : $1" >&2; exit 2; }
+      cluster_has "$1" q && QUIET_MODE=true   || QUIET_MODE=false
+      cluster_has "$1" n && DRY_RUN_MODE=true || DRY_RUN_MODE=false
+      [ -z "$2" ] && echo "Argument required for $1 <package>" >&2 && exit 2
       export pkg=$2
-if dpkg -s "$pkg" >/dev/null 2>&1; then
-   # echo "Paket bisa dihapus"
-if check_connection; then echo; else offline_status; exit $?; fi
-    # rue
-if grep -Fxq "$pkg" "$PKGS_INSTALLED"; then
-    sed -i "/^$pkg$/d" "$PKGS_INSTALLED"
-    else
-    echo "Package '$pkg' not found."
-    exit 2
-fi
-else
-    sed -i "/^$pkg$/d" "$PKG_SHARE_NENE/pkg-installed"
-    # succesfully removed
-    # echo "Package '$pkg' successfully removed."
-    echo -e "Cannot remove this packages or Package '$pkg' not found."
-fi
-    read -r __url__ __endpoint__ < <(curl -s "${NEPI}" | html2text| awk '{endpoint=gensub(".*/", "", "g", $0)
-    full="https://luisadha.github.io/" endpoint
-    print full "\t" endpoint }' | fzf --no-input --header-first -0 --with-nth=2 --header="$REMOVE: " --delimiter=$'\t' --bind="alt-r:execute(dpkg -r \"\$pkg\")+abort" -q ${pkg:-$__url__} );
-    echo "Package '$pkg' successfully removed."
-         exit $?;
-         ;;
-    -i*|--install) [ -z "$2" ] && echo "Argument required for ${2:-"--install"} <package>" && exit 1
-      if [[ "$1" == *q* ]]; then
-      if check_connection; then echo; else offline_status; exit $?; fi
-      # kalau mengandung q juga, aktifkan quiet
-      
-QUIET_MODE=true
-export FZF_DEFAULT_OPTS=(--bind="one:execute(tmpfile=\$(mktemp) && wget -O \"\$tmpfile\" {3} && dpkg -i \"\$tmpfile\" && rm -f \"\$tmpfile\" && exit)+abort" )
+      DRY_RUN_PROMPT=""
+      $DRY_RUN_MODE && DRY_RUN_PROMPT="[DRY-RUN MODE]"
+
+      if dpkg -s "$pkg" >/dev/null 2>&1; then
+        if check_connection; then echo; else offline_status; exit $?; fi
+        if grep -Fxq "$pkg" "$PKGS_INSTALLED"; then
+          if $DRY_RUN_MODE; then
+            echo "$DRY_RUN_PROMPT would remove '$pkg' from $PKGS_INSTALLED"
+          else
+            sed -i "/^$pkg$/d" "$PKGS_INSTALLED"
+          fi
+        else
+          echo "Package '$pkg' not found."
+          exit 2
+        fi
       else
-QUIET_MODE=false
-export FZF_DEFAULT_OPTS=(--bind="alt-i:execute(tmpfile=\$(mktemp) && wget -O \"\$tmpfile\" {3} && dpkg -i \"\$tmpfile\" && rm -f \"\$tmpfile\" && exit)+abort" )
-      fi;
-      if [[ "$1" == *n* ]]; then
-DRY_RUN_MODE=true
-__dry_run_ifi() {
-  echo "$GLOBAL_NOTIF_DRY_RUN"
-}
-      else
-DRY_RUN_MODE=false
+        if $DRY_RUN_MODE; then
+          echo "$DRY_RUN_PROMPT would remove '$pkg' from $PKG_SHARE_NENE/pkg-installed"
+        else
+          sed -i "/^$pkg$/d" "$PKG_SHARE_NENE/pkg-installed"
+        fi
+        echo -e "Cannot remove this packages or Package '$pkg' not found."
       fi
+
+      # Dry-run: cukup laporkan, jangan jalankan dpkg -r dan jangan buka fzf.
+      if $DRY_RUN_MODE; then
+        echo "$DRY_RUN_PROMPT would run: dpkg -r $pkg"
+        exit 0
+      fi
+
+      # Quiet: langsung hapus kalau hasil fzf tinggal satu (sama seperti -iq).
+      # Normal: hapus lewat alt-r.
+      if $QUIET_MODE; then
+        REMOVE_BIND="one:execute(dpkg -r \"\$pkg\")+abort"
+      else
+        REMOVE_BIND="alt-r:execute(dpkg -r \"\$pkg\")+abort"
+      fi
+
+      read -r __url__ __endpoint__ < <(curl -s "${NEPI}" | html2text| awk '{endpoint=gensub(".*/", "", "g", $0)
+      full="https://luisadha.github.io/" endpoint
+      print full "\t" endpoint }' | fzf --no-input --header-first -0 --with-nth=2 --header="$REMOVE: " --delimiter=$'\t' --bind="$REMOVE_BIND" -q ${pkg:-$__url__} );
+      echo "Package '$pkg' successfully removed."
+      exit $?;
+      ;;
+    *|--install)
+      # -i / --install, boleh digabung: -iq (quiet), -in (dry-run), -iqn
+      [[ $1 == --install || $1 =~ ^-i[qn]*$ ]] || { echo "${UNKNOWN} : $1" >&2; exit 2; }
+      [ -z "$2" ] && echo "Argument required for $1 <package>" >&2 && exit 1
+      if cluster_has "$1" q; then
+        if check_connection; then echo; else offline_status; exit $?; fi
+        QUIET_MODE=true
+        export FZF_DEFAULT_OPTS=(--bind="one:execute(tmpfile=\$(mktemp) && wget -O \"\$tmpfile\" {3} && dpkg -i \"\$tmpfile\" && rm -f \"\$tmpfile\" && exit)+abort" )
+      else
+        QUIET_MODE=false
+        export FZF_DEFAULT_OPTS=(--bind="alt-i:execute(tmpfile=\$(mktemp) && wget -O \"\$tmpfile\" {3} && dpkg -i \"\$tmpfile\" && rm -f \"\$tmpfile\" && exit)+abort" )
+      fi
+      if cluster_has "$1" n; then
+        DRY_RUN_MODE=true
+        __dry_run_ifi() {
+          echo "$GLOBAL_NOTIF_DRY_RUN"
+        }
+      else
+        DRY_RUN_MODE=false
+      fi
+      
 
 
       if [ "$QUIET_MODE" == "true" ]; then
