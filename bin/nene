@@ -309,7 +309,7 @@ return 0
 }
 set_mode() {
   case "$1" in
-    0|1) MODE=$1 ;;
+    0|1) export MODE=$1 ;;
     *) echo "Invalid mode: '${1}' (use 0 or 1)" >&2; exit 2 ;;
   esac
 }
