@@ -40,7 +40,7 @@ declare -A PROMPT=(
     [optSWITCH]='Related flags'
     [optIM]='Input value for'
 )
-
+UNKNOWN="woiilah"
 
 html2text() {
   sed 's/\\\//\//g' \
