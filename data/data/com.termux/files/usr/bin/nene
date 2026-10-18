@@ -392,38 +392,44 @@ EOF
             cat << 'EOF'
 #compdef nene
 
+# Completion zsh untuk nene.
+#   nene <TAB>            -> daftar opsi (dengan deskripsi)
+#   nene -r <TAB>         -> paket yang terpasang
+#   nene -i <TAB>         -> paket yang bisa dipasang
+#   nene -m <TAB>         -> 0 / 1
+# Paket yang sudah ditulis di baris perintah tidak ditawarkan lagi.
+
 _nene() {
-  local line state
+  local data_dir="$HOME/.local/share/nene"
+  local opt="${words[2]}"
+  local list_file
+  local -a items used
 
-  _arguments -C \
-    '1: :->flags' \
-    '*::arg:->args'
+  # Argumen pertama: opsi.
+  if (( CURRENT == 2 )); then
+    items=(${(f)"$(nene flags 2>/dev/null)"})
+    _describe -t options 'option' items
+    return
+  fi
 
-  case "$state" in
-    flags)
-      local -a flags
-      flags=(${(f)"$(nene flags)"})
-      _describe 'flags' flags
-      ;;
-    args)
-      local prev="${words[CURRENT-1]}"
-      if [[ "$prev" == "-r" || "$prev" == "--remove" ]]; then
-        local list_file="$HOME/.local/share/nene/pkg-installed"
-        if [[ -f "$list_file" ]]; then
-          local -a pkgs
-          pkgs=(${(f)"(< $list_file)"})
-          _describe 'installed packages' pkgs
-        fi
-      elif [[ "$prev" == "-i" || "$prev" == "-iq" || "$prev" == "--install" ]]; then
-        local list_file="$HOME/.local/share/nene/update-lists"
-        if [[ -f "$list_file" ]]; then
-          local -a pkgs
-          pkgs=(${(f)"(< $list_file)"})
-          _describe 'update lists' pkgs
-        fi
-      fi
-      ;;
-  es}
+  # Argumen berikutnya: bergantung pada opsi pertama.
+  case "$opt" in
+    -r*|--remove)
+      list_file="$data_dir/pkg-installed" ;;
+    -i*|--install)
+      list_file="$data_dir/update-lists" ;;
+    -m|--mode-online)
+      (( CURRENT == 3 )) && compadd -- 0 1
+      return ;;
+    *)
+      return ;;
+  esac
+
+  [[ -r $list_file ]] || return
+
+  items=(${(f)"$(< $list_file)"})
+  used=(${words[3,CURRENT-1]})            # paket yang sudah diketik
+  compadd -F used -a items
 }
 
 _nene "$@"
