@@ -387,13 +387,13 @@ _nene() {
 complete -F _nene nene
 EOF
             exit 0
-            ;;
+            ;; 
         zsh)
-            cat << 'EOF'
+cat << 'EOF'
 #compdef nene
 
 # Completion zsh untuk nene.
-#   nene <TAB>            -> daftar opsi (dengan deskripsi)
+#   nene <TAB>            -> daftar opsi
 #   nene -r <TAB>         -> paket yang terpasang
 #   nene -i <TAB>         -> paket yang bisa dipasang
 #   nene -m <TAB>         -> 0 / 1
@@ -402,13 +402,14 @@ EOF
 _nene() {
   local data_dir="$HOME/.local/share/nene"
   local opt="${words[2]}"
-  local list_file
+  local list_file out
   local -a items used
 
-  # Argumen pertama: opsi.
+  # Argumen pertama: opsi. Keluaran `nene flags` boleh spasi atau baris baru.
   if (( CURRENT == 2 )); then
-    items=(${(f)"$(nene flags 2>/dev/null)"})
-    _describe -t options 'option' items
+    out=$(nene flags 2>/dev/null)
+    items=( ${=out} )
+    compadd -a items
     return
   fi
 
@@ -427,15 +428,21 @@ _nene() {
 
   [[ -r $list_file ]] || return
 
-  items=(${(f)"$(< $list_file)"})
-  used=(${words[3,CURRENT-1]})            # paket yang sudah diketik
+  items=( ${(f)"$(< $list_file)"} )
+  used=( ${words[3,CURRENT-1]} )          # paket yang sudah diketik
   compadd -F used -a items
 }
 
-_nene "$@"
+# Dua cara pakai: di-autoload dari fpath (file bernama _nene),
+# atau di-eval langsung: eval "$(nene completion zsh)"
+if [[ ${funcstack[1]} == _nene ]]; then
+  _nene "$@"
+else
+  compdef _nene nene
+fi
 EOF
-            exit 0
-            ;;
+      break
+        ;;
         fish)
             cat << 'EOF'
 function __nene_using_position
