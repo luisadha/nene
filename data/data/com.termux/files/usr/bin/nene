@@ -847,15 +847,14 @@ sort -u "$PKG_SHARE_NENE/pkg-installed" -o "$PKG_SHARE_NENE/pkg-installed"
       ;;
     -m|--mode-online)                       # separate: -m 1 / --mode-online 1
       [[ $# -ge 2 ]] || { echo "Argument required for $1 <0|1>" >&2; exit 2; }
-      set_mode "$2"; shift ;;
+      set_mode "$2"; shift 2 continue;;
     -m=*|--mode-online=*)                   # inline: -m=1 / --mode-online=1
-      set_mode "${1#*=}" ;;
-    --)     end_opts=1 ;;
-    --*)    echo "${UNKNOWN} : $1" >&2 ;;
-    -?*)    echo "${UNKNOWN} : $1" >&2 ;;
-    *)      handle_positional "$1" ;; 
+      set_mode "${1#*=}" shift continue;;
+    --)     end_opts=1 shift continue;;
+    --*)    echo "${UNKNOWN} : $1" >&2 shift;;
+    -?*)    echo "${UNKNOWN} : $1" >&2 shift;;
+    *)      handle_positional "$1" shift;; 
    esac
-  shift
 done
 
 #shift $((OPTIND - 1))
