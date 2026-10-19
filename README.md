@@ -2,7 +2,7 @@
 # How to install Populer Tools using nene
 ## a. How to Install Flyline using NENE
 ```sh
-nene https://github.com/HalFrgrd/flyline/releases/latest/download/install.sh```
+nene https://github.com/HalFrgrd/flyline/releases/latest/download/install.sh
 ```
 ## b. How to install Bpkg using NENE
 ```sh
