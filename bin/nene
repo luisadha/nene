@@ -352,7 +352,7 @@ set_mode() {
     *) echo "Invalid mode: '${1}' (use 0 or 1)" >&2; exit 2 ;;
   esac
 }
-
+set -xv
 end_opts=0
 while [[ $# -gt 0 ]]; do
 if (( end_opts )); then
