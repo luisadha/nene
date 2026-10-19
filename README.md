@@ -1,4 +1,14 @@
 # nene |   Package Manager 
+# How to install Populer Tools using nene
+## a. How to Install Flyline using NENE
+```sh
+nene https://github.com/HalFrgrd/flyline/releases/latest/download/install.sh```
+```
+## b. How to install Bpkg using NENE
+```sh
+nene https://get.bpkg.sh/
+```
+
 ## Summary
 
 Nene is both a static site and a set of Bash tools you can run straight from your terminal.
