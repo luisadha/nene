@@ -497,7 +497,7 @@ EOF
     -Im|--interactive-modes)     
 
     # Masukkan data opsi secara langsung ke fzf menggunakan printf
-    selected_opt=$(printf "%s\n" "-m=" "--mode-online=" | fzf --reverse --header="${PROMPT['optIOIM']}")
+    selected_opt=$(printf "%s\n" "-m=" "$INLINE_ARR" | fzf --reverse --header="${PROMPT['optIOI']}")
 
     if [ -n "$selected_opt" ]; then
         # Bersihkan spasi di awal opsi yang dipilih
@@ -527,7 +527,7 @@ EOF
     break;;
     -Io|--interactive-options)
      #set -xv 
-      selected_opt=$(printf "%s\n" $SEPARATE_ARR | fzf --reverse --header="${PROMPT['optIOIM']}" )
+      selected_opt=$(printf "%s\n" $SEPARATE_ARR | fzf --reverse --header="${PROMPT['optIOS']}" )
 
 if [ -n "$selected_opt" ]; then
     clean_opt=$(echo "$selected_opt" | awk '{print $1}')
