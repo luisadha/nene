@@ -2,7 +2,7 @@
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE    #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
 PACKAGE="nene"
-VERSION="1.7.3"
+VERSION="1.7.4"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
@@ -36,11 +36,12 @@ declare -A PROMPT=(
     [optM0]='Select already installed script'
     [optM1]='Stream and execute online script'
     [optIO]='Input argument for'
-    [optIOIM]='Keyword Arguments'
+    [optIOS]='Separate Arguments'
+    [optIOI]='Inline Arguments'
     [optSWITCH]='Related flags'
     [optIM]='Input value for'
 )
-UNKNOWN="woiilah"
+UNKNOWN="unknown"
 
 html2text() {
   sed 's/\\\//\//g' \
@@ -143,15 +144,8 @@ inline_opt() {
  
 # Semua opsi (pendek + panjang) sebagai array, satu per elemen.
 
-read -ra ALL_FLAGZ <<< "$(short_opt) $(long_opt)"
- 
-
-
-
+mapfile -t  SEPARATE_ARR < <(separate_opt | xargs -d'\')
 mapfile -t ALL_FLAGS < <(available_options | xargs -d'\')
-
-
-
 
 
 catch_any_error() {
@@ -527,7 +521,7 @@ EOF
     break;;
     -Io|--interactive-options)
      #set -xv 
-      selected_opt=$(show_help ALL_FLAGZ | sed -n '/Options:/,$p' | grep -E -- '^ *(-i\b|--install\b|-r\b|--remove)' | fzf --reverse --header="${PROMPT['optIOIM']}" )
+      selected_opt=$(printf "%s\n" $SEPARATE_ARR | fzf --reverse --header="${PROMPT['optIOIM']}" )
 
 if [ -n "$selected_opt" ]; then
     clean_opt=$(echo "$selected_opt" | awk '{print $1}')
