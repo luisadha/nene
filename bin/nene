@@ -352,7 +352,7 @@ set_mode() {
     *) echo "Invalid mode: '${1}' (use 0 or 1)" >&2; exit 2 ;;
   esac
 }
-set -xv
+
 end_opts=0
 while [[ $# -gt 0 ]]; do
 if (( end_opts )); then
@@ -720,7 +720,7 @@ export DRY_RUN_PROMPT="[DRY-RUN MODE]"; shift;;
       echo "Package '$pkg' successfully removed."
       exit $?;
       ;;
-    *|--install)
+    -i*|--install)
       # -i / --install, boleh digabung: -iq (quiet), -in (dry-run), -iqn
       [[ $1 == --install || $1 =~ ^-i[qn]*$ ]] || { echo "${UNKNOWN} : $1" >&2; exit 2; }
       [ -z "$2" ] && echo "Argument required for $1 <package>" >&2 && exit 1
@@ -857,10 +857,10 @@ sort -u "$PKG_SHARE_NENE/pkg-installed" -o "$PKG_SHARE_NENE/pkg-installed"
       shift;;
     -m=0 | --mode-online=0)  MODE="${1#*=}"
       shift;;
-    --)     end_opts=1 shift continue;;
-    --*)    echo "${UNKNOWN} : $1" >&2 shift;;
-    -?*)    echo "${UNKNOWN} : $1" >&2 shift;;
-    *)      handle_positional "$1" shift;; 
+    --)     end_opts=1; shift; continue;;
+    --*)    echo "${UNKNOWN} : $1" >&2; shift;;
+    -?*)    echo "${UNKNOWN} : $1" >&2; shift;;
+    *)      handle_positional "$1"; shift;; 
    esac
 done
 
