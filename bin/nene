@@ -136,15 +136,21 @@ separate_opt() {
     print "--" o
   }' | _join
 }
- 
-# Nilai gaya GNU     -> --mode-online=
-inline_opt() {
-  _option_data | awk '$2 ~ /=$/ { print "--" $2 }' | _join
-}
- 
-# Semua opsi (pendek + panjang) sebagai array, satu per elemen.
 
-mapfile -t  SEPARATE_ARR < <(separate_opt | xargs -d'\')
+inline_opt() {
+  _option_data | awk '$2 ~ /=$/ {
+    # Jika kolom kedua hanya 1 karakter sebelum '=', beri 1 strip, selain itu 2 strip
+    if ($2 ~ /^[^=]=$/) {
+      print "-" $2
+    } else {
+      print "--" $2
+    }
+  }'
+}
+
+# 2. Penggunaan mapfile di LUAR fungsi
+mapfile -t INLINE_ARR < <(inline_opt | xargs -d'\')
+mapfile -t SEPARATE_ARR < <(separate_opt | xargs -d'\')
 mapfile -t ALL_FLAGS < <(available_options | xargs -d'\')
 
 
