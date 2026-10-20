@@ -614,40 +614,38 @@ fi
       break;;
     -a|--api-termux)
       addon; shift;;
-    -s*|--select-url)
-    opts="${1#-s}"
-    [[ -z "$opts" ]] && opts="o"
-    [[ "$1" == "--select-url" ]] && opts="o"
     
+-s*|--select-url)
+    opts="${1#-s}"
+    [[ "$1" == "--select-url" ]] && opts="o"
+
     url=$(fzf_walker)  # panggil sekali
 
-    for opt in $(echo "$opts" | grep -o .); do
-        case "$opt" in
-            c)
-                if [[ "$1" =~ ^-sc$ ]]; then
-                echo "$url" | termux-clipboard-set
-                [[ ! "$url" == "" ]] && termux-toast "Copied!"
-                 break
-                 # akhiri bagian sc meski gak ngefek, best practice aja
-                fi
-                ;;
-            o)
-                if [[ "$1" =~ ^-sco$ ]]; then
-                termux-open-url "$url" &> /dev/null;
-                [[ ! "$url" == "" ]] && termux-toast "Copied!"
-                 break
-                 # akhiri bagian sco supaya ga bocor ke s
-                fi
-                # back to parent s juga sama dengan o
-                termux-open-url "$url" &> /dev/null;
-                ;;
-            *)
-                echo -n # output kosong menandakan escape aman dan opsi -s dan --select-url bebas dari error
-                ;;
-        esac
-    done
+    [[ -z "$url" ]] && {
+        : > "$URL_CACHE"
+        shift
+        continue
+    }
 
-    # reset cache setelah semua operasi selesai
+    case "$opts" in
+        c)
+            echo -n "$url" | termux-clipboard-set
+            termux-toast "Copied!"
+            ;;
+        co)
+            echo -n "$url" | termux-clipboard-set
+            termux-open-url "$url" &> /dev/null &
+            termux-toast "Copied & opened!"
+            ;;
+        o|"")
+            termux-open-url "$url" &> /dev/null &
+            ;;
+        *)
+            echo -n
+            ;;
+    esac
+
+    # reset cache setelah operasi selesai
     : > "$URL_CACHE"
     shift
     ;;
