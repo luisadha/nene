@@ -687,8 +687,8 @@ export DRY_RUN_PROMPT="[DRY-RUN MODE]"; shift;;
             sed -i "/^$pkg$/d" "$PKGS_INSTALLED"
           fi
         else
-          echo "Package '$pkg' not found."
-          exit 2
+          echo "Package '$pkg' successfully removed."
+          exit $?
         fi
       else
         if $DRY_RUN_MODE; then
