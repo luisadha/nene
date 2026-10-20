@@ -704,19 +704,62 @@ export DRY_RUN_PROMPT="[DRY-RUN MODE]"; shift;;
         exit 0
       fi
 
-      # Quiet: langsung hapus kalau hasil fzf tinggal satu (sama seperti -iq).
-      # Normal: hapus lewat alt-r.
-      if $QUIET_MODE; then
-        REMOVE_BIND="one:execute(dpkg -r \"\$pkg\")+abort"
-      else
-        REMOVE_BIND="alt-r:execute(dpkg -r \"\$pkg\")+abort"
+      # Validasi paket sebelum membuka fzf.
+      if ! dpkg -s "$pkg" >/dev/null 2>&1; then
+        echo "Package '$pkg' is not installed; cannot remove." >&2
+        exit 2
       fi
 
-      read -r __url__ __endpoint__ < <(curl -s "${NEPI}" | html2text| awk '{endpoint=gensub(".*/", "", "g", $0)
-      full="https://luisadha.github.io/" endpoint
-      print full "\t" endpoint }' | fzf --no-input --header-first -0 --with-nth=2 --header="$REMOVE: " --delimiter=$'\t' --bind="$REMOVE_BIND" -q ${pkg:-$__url__} );
-      echo "Package '$pkg' successfully removed."
-      exit $?;
+      if ! grep -Fxq -- "$pkg" "$PKGS_INSTALLED"; then
+        echo "Package '$pkg' not found in $PKGS_INSTALLED." >&2
+        exit 2
+      fi
+
+      # Quiet: otomatis menerima jika hanya ada satu hasil.
+      # Normal: gunakan alt-r untuk menerima pilihan.
+      if $QUIET_MODE; then
+        FZF_BIND="one:accept"
+      else
+        FZF_BIND="alt-r:accept"
+      fi
+
+      selected=$(
+        curl -fsS "$NEPI" |
+          html2text |
+          awk '{
+            endpoint = gensub(".*/", "", "g", $0)
+            full = "https://luisadha.github.io/" endpoint
+            print full "\t" endpoint
+          }' |
+          fzf --header-first \
+              -0 \
+              --with-nth=2 \
+              --header="$REMOVE: " \
+              --delimiter=$'\t' \
+              --bind="$FZF_BIND" \
+              -q "$pkg"
+      )
+      fzf_status=$?
+
+      # Batal, tidak ada hasil, atau fzf gagal.
+      if [[ $fzf_status -ne 0 || -z "$selected" ]]; then
+        echo "Remove cancelled or no matching result." >&2
+        exit 2
+      fi
+
+      # Penghapusan sinkron: tunggu dpkg selesai.
+      if dpkg -r "$pkg"; then
+        # Update database hanya setelah penghapusan berhasil.
+        sed -i "/^$(printf '%s' "$pkg" | sed 's/[.[\*^$\/]/\\&/g')$/d" \
+          "$PKGS_INSTALLED"
+        echo "Package '$pkg' successfully removed."
+      else
+        status=$?
+        echo "Failed to remove package '$pkg' (exit $status)." >&2
+        exit "$status"
+      fi
+
+      exit 0
       ;;
     -i*|--install)
       # -i / --install, boleh digabung: -iq (quiet), -in (dry-run), -iqn
