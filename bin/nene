@@ -356,7 +356,42 @@ default_apps; # deprecreted
 #nene --mode-online=0
 exit 0
 fi
+for_bash_completion() {
+    local name="${0##*/}"
 
+    cat <<'EOF'
+_nene_completion() {
+  COMPREPLY=()
+  local cmd="${COMP_WORDS[0]}"
+  local word="${COMP_WORDS[COMP_CWORD]}"
+  local prev="${COMP_WORDS[COMP_CWORD-1]}"
+  local data_dir="${NENE_DATA_DIR:-$HOME/.local/share/nene}"
+  local list_file
+
+  if [[ "$COMP_CWORD" -eq 1 ]]; then
+    COMPREPLY=( $(compgen -W "$("$cmd" flags 2>/dev/null)" -- "$word") )
+    return
+  fi
+
+  case "$prev" in
+    -r|--remove)      list_file="$data_dir/pkg-installed" ;;
+    -i|-iq|--install) list_file="$data_dir/update-lists" ;;
+    *) return ;;
+  esac
+
+  if [[ -f "$list_file" ]]; then
+    local -a completions
+    mapfile -t completions < "$list_file"
+    COMPREPLY=( $(compgen -W "${completions[*]}" -- "$word") )
+  fi
+}
+EOF
+
+    printf 'complete -F _nene_completion %s\n' "$name"
+    if [[ "$name" == *.sh ]]; then
+        printf 'complete -F _nene_completion %s\n' "${name%.sh}"
+    fi
+}
 
 set_mode() {
   case "$1" in
@@ -382,34 +417,7 @@ fi
         # Handler untuk --cometions
     case "$2" in
         bash)
-            cat << 'EOF'
-_nene() {
-  COMPREPLY=()
-  local word="${COMP_WORDS[COMP_CWORD]}"
-  local prev="${COMP_WORDS[COMP_CWORD-1]}"
-
-  if [[ "$COMP_CWORD" -eq 1 ]]; then
-    COMPREPLY=( $(compgen -W "$(nene flags)" -- "$word") )
-
-  elif [[ "$prev" == "-r" ]] || [[ "$prev" == "--remove" ]]; then
-    local list_file="$HOME/.local/share/nene/pkg-installed"
-    if [[ -f "$list_file" ]]; then
-      mapfile -t completions < "$list_file"
-      COMPREPLY=( $(compgen -W "${completions[*]}" -- "$word") )
-    fi
-  elif [[ "$prev" == "-i" ]] || [[ "$prev" == "-iq" ]] || [[ "$prev" == "--install" ]]; then
-    local list_file="$HOME/.local/share/nene/update-lists"
-
-    if [[ -f "$list_file" ]]; then
-      mapfile -t completions < "$list_file"
-      COMPREPLY=( $(compgen -W "${completions[*]}" -- "$word") )
-    fi
-  fi
-}
-
-complete -F _nene nene
-EOF
-            exit 0
+            for_bash_completion; exit 0
             ;; 
         zsh)
 cat << 'EOF'
