@@ -217,25 +217,36 @@ checking_update() {
 curl -s https://api.github.com/repos/luisadha/$pkg/releases/latest | grep "browser_download_url.*\.deb"|cut -d '"' -f 4
 }
 default_apps() {
- if [[ -n "$BASHER_ROOT" && -d "$BASHER_PKG" ]]; then
-    exec python3 "${BASHER_PKG}/not-echo-not-true.py"
-    return 0
-  else
-    exec python3 "${PREFIX}/libexec/not-echo-not-true.py"
- fi
-}
-online_apps() {
-    read -r __url__ < <(curl -s "$NEPI" |
-    html2text |
-    grep -oP '(?<=\])\(\K[^)]+' |
-    grep '^https\?://' |
-    grep -E 'github\.com|github\.io|luisadha\.my\.id' |
-    sort -ur |
-    awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
-    fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t');
-    [ -z "$__url__" ] &&  echo -e "\nCaught ^" || . <(curl -sL $__url__);
+    local py_basher="${BASHER_PKG}/not-echo-not-true.py"
+    local py_libexec="${PREFIX}/libexec/not-echo-not-true.py"
 
+    if [[ -n "$BASHER_ROOT" && -f "$py_basher" ]]; then
+        exec python3 "$py_basher"
+
+    elif [[ -n "$PREFIX" && -f "$py_libexec" ]]; then
+        exec python3 "$py_libexec"
+
+    else
+        printf '%s: no interactive interface is available on this system.\n' \
+            "${0##*/}" >&2
+        printf 'Use one of the options below instead.\n\n' >&2
+        show_help ALL_FLAGS
+        return 0
+    fi
 }
+#online_apps() {
+#    read -r __url__ < <(curl -s "$NEPI" |
+#    html2text |
+#    grep -oP '(?<=\])\(\K[^)]+' |
+#    grep '^https\?://' |
+#    grep -E 'github\.com|github\.io|luisadha\.my\.id' |
+#    sort -ur |
+#    awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
+#    fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t');
+#    [ -z "$__url__" ] &&  echo -e "\nCaught ^" || . <(curl -sL $__url__);
+#
+# }
+
 fzf_walker() {
 
   connect=$(if check_connection; then echo; else offline_status; exit $?; fi);
