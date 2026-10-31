@@ -481,7 +481,6 @@ fi
     for_bash_completion; exit 0;; 
         zsh)
     for_zsh_completion; exit 0;;
-        ;;
         fish)
     for_fish_completion; exit 0;;
         *)
