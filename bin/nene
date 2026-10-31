@@ -529,18 +529,18 @@ EOF
             read -r user_args < /dev/tty
 
             if [ -n "$user_args" ]; then
-                nene "${clean_opt}${user_args}"
+                "${0##*/}" "${clean_opt}${user_args}"
             else
-                nene "${clean_opt}"
+                "${0##*/}" "${clean_opt}"
             fi
         else
             echo -ne "\t Input argument for ${clean_opt}: " > /dev/tty
             read -r user_args < /dev/tty
 
             if [ -n "$user_args" ]; then
-                nene "$clean_opt" "$user_args"
+                "${0##*/}" "$clean_opt" "$user_args"
             else
-                nene "$clean_opt"
+                "${0##*/}" "$clean_opt"
             fi
         fi
     fi
@@ -625,9 +625,9 @@ bind -x '"\t": _tab_replacement_readline'
     rm -rf "$tmp_parent"
     REPLY=$(echo "$REPLY" | xargs)
     if [ -n "$REPLY" ]; then
-        nene "$clean_opt" "$REPLY"
+        "${0##*/}" "$clean_opt" "$REPLY"
     else
-        nene "$clean_opt"
+        "${0##*/}" "$clean_opt"
     fi
 fi
 
