@@ -393,10 +393,12 @@ EOF
         printf 'complete -F _nene_completion %s\n' "${name%.sh}"
     fi
 }
+###
 for_zsh_completion() {
     local name="${0##*/}"
-    local -a targets=("$name")
-    [[ "$name" == *.sh ]] && targets+=("${name%.sh}")
+    local -a targets=(nene nene-dl.sh)
+    # tambahkan nama pemanggilan aktual (mis. symlink lain) bila belum ada
+    [[ " ${targets[*]} " == *" $name "* ]] || targets+=("$name")
 
     cat <<'EOF'
 _nene_completion() {
@@ -433,21 +435,24 @@ _nene_completion() {
 }
 EOF
 
-    printf '_nene_register() {\n  compdef _nene_completion %s\n}\n' "${targets[*]}"
+    printf '_nene_targets=( %s )\n' "${targets[*]}"
 
     cat <<'EOF'
 if (( $+functions[compdef] )); then
-  _nene_register
+  compdef _nene_completion $_nene_targets
 else
-  # compinit belum jalan: daftarkan sekali setelah prompt pertama
+  # compinit belum jalan: daftarkan setelah compdef tersedia
   _nene_register_later() {
+    (( $+functions[compdef] )) || return 0
+    compdef _nene_completion $_nene_targets
     precmd_functions=( ${precmd_functions:#_nene_register_later} )
-    (( $+functions[compdef] )) && _nene_register
+    unfunction _nene_register_later
   }
   precmd_functions+=( _nene_register_later )
 fi
 EOF
 }
+###
 for_fish_completion() {
 :
 }
