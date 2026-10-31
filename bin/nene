@@ -393,7 +393,67 @@ EOF
         printf 'complete -F _nene_completion %s\n' "${name%.sh}"
     fi
 }
+for_zsh_completion() {
+    local name="${0##*/}"
+    local -a targets=("$name")
+    [[ "$name" == *.sh ]] && targets+=("${name%.sh}")
 
+    cat <<'EOF'
+_nene_completion() {
+  local cmd="${words[1]}"
+  local opt="${words[2]}"
+  local data_dir="${NENE_DATA_DIR:-$HOME/.local/share/nene}"
+  local list_file out
+  local -a items used
+
+  # Argumen pertama: opsi (keluaran `<cmd> flags`, spasi atau baris baru)
+  if (( CURRENT == 2 )); then
+    out=$("$cmd" flags 2>/dev/null)
+    items=( ${=out} )
+    compadd -a items
+    return
+  fi
+
+  # Argumen berikutnya bergantung pada opsi pertama
+  case "$opt" in
+    -r*|--remove)  list_file="$data_dir/pkg-installed" ;;
+    -i*|--install) list_file="$data_dir/update-lists" ;;
+    -m|--mode-online)
+      (( CURRENT == 3 )) && compadd -- 0 1
+      return ;;
+    *) return ;;
+  esac
+
+  [[ -r $list_file ]] || return
+
+  items=( ${(f)"$(< $list_file)"} )
+  used=( ${words[3,CURRENT-1]} )     # paket yang sudah diketik
+  items=( ${items:|used} )           # buang yang sudah dipakai
+  compadd -a items
+}
+EOF
+
+    printf '_nene_register() {\n  compdef _nene_completion %s\n}\n' "${targets[*]}"
+
+    cat <<'EOF'
+if (( $+functions[compdef] )); then
+  _nene_register
+else
+  # compinit belum jalan: daftarkan sekali setelah prompt pertama
+  _nene_register_later() {
+    precmd_functions=( ${precmd_functions:#_nene_register_later} )
+    (( $+functions[compdef] )) && _nene_register
+  }
+  precmd_functions+=( _nene_register_later )
+fi
+EOF
+}
+for_fish_completion() {
+:
+}
+unknown_shell_completion() {
+echo "Error: Shell tidak dikenal. Gunakan: nene --completion [bash|zsh|fish]" >&2
+}
 set_mode() {
   case "$1" in
     0|1) export MODE=$1 ;;
@@ -418,101 +478,14 @@ fi
         # Handler untuk --cometions
     case "$2" in
         bash)
-            for_bash_completion; exit 0
-            ;; 
+    for_bash_completion; exit 0;; 
         zsh)
-cat << 'EOF'
-#compdef nene
-
-# Completion zsh untuk nene.
-#   nene <TAB>            -> daftar opsi
-#   nene -r <TAB>         -> paket yang terpasang
-#   nene -i <TAB>         -> paket yang bisa dipasang
-#   nene -m <TAB>         -> 0 / 1
-# Paket yang sudah ditulis di baris perintah tidak ditawarkan lagi.
-
-_nene() {
-  local data_dir="$HOME/.local/share/nene"
-  local opt="${words[2]}"
-  local list_file out
-  local -a items used
-
-  # Argumen pertama: opsi. Keluaran `nene flags` boleh spasi atau baris baru.
-  if (( CURRENT == 2 )); then
-    out=$(nene flags 2>/dev/null)
-    items=( ${=out} )
-    compadd -a items
-    return
-  fi
-
-  # Argumen berikutnya: bergantung pada opsi pertama.
-  case "$opt" in
-    -r*|--remove)
-      list_file="$data_dir/pkg-installed" ;;
-    -i*|--install)
-      list_file="$data_dir/update-lists" ;;
-    -m|--mode-online)
-      (( CURRENT == 3 )) && compadd -- 0 1
-      return ;;
-    *)
-      return ;;
-  esac
-
-  [[ -r $list_file ]] || return
-
-  items=( ${(f)"$(< $list_file)"} )
-  used=( ${words[3,CURRENT-1]} )          # paket yang sudah diketik
-  compadd -F used -a items
-}
-
-# Dua cara pakai: di-autoload dari fpath (file bernama _nene),
-# atau di-eval langsung: eval "$(nene completion zsh)"
-if [[ ${funcstack[1]} == _nene ]]; then
-  _nene "$@"
-else
-  compdef _nene nene
-fi
-EOF
-      break
+    for_zsh_completion; exit 0;;
         ;;
         fish)
-            cat << 'EOF'
-function __nene_using_position
-    set -l cmd (commandline -opc)
-    if [ (count $cmd) -eq $argv[1] ]
-        return 0
-    end
-    return 1
-end
-
-function __nene_previous_is
-    set -l cmd (commandline -opc)
-    if [ (count $cmd) -gt 1 ]
-        if contains -- $cmd[-1] $argv
-            return 0
-        end
-    end
-    return 1
-end
-
-# Hapus completion bawaan jika ada, lalu definisikan ulang
-complete -c nene -e
-
-# Posisi pertama (Flags utama)
-complete -c nene -n '__nene_using_position 2' -a '(nene flags)'
-
-# Completion untuk -r / --remove
-complete -c nene -n '__nene_previous_is -r --remove' -a '(cat $HOME/.local/share/nene/pkg-installed 2>/dev/null)'
-
-# Completion untuk -i / -iq / --install
-complete -c nene -n '__nene_previous_is -i -iq --install' -a '(cat $HOME/.local/share/nene/update-lists 2>/dev/null)'
-EOF
-            exit 0
-            ;;
+    for_fish_completion; exit 0;;
         *)
-            echo "Error: Shell tidak dikenal. Gunakan: nene --completion [bash|zsh|fish]" >&2
-            exit 1
-            ;;
+    unknown_shell_completion; exit 1;;
     esac
      ;;
     -Im|--interactive-modes)     
