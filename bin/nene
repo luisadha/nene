@@ -1,6 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/env bash
 # WRAPPER: IMPORTANT DON'T CHANGE ANYTHING HERE    #[ -z "$BASH_VERSION" ] && exec bash "$0" "$@"
 # shellcheck disable=SC1090
+self="${0##*/}"
 PACKAGE="nene"
 VERSION="1.7.4"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
