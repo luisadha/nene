@@ -74,6 +74,10 @@ a api-termux                  Enable running Nene scripts directly from shared w
 n dry-run                     No action; perform a simulation of events that would occur.
 H homepage                    Open the official homepage of Nene.
 d debug                       Enable debug mode. The program logs detailed diagnostic information and writes it to ~/nene-nohup.out.
+A create-alias-nonbash.       Create shell aliases for installed packages (zsh/fish only)
+Io interactive-option         Summary of flags that take a separate value (flag, space, value), e.g. -i PKG
+Im interactive-mode           Summary of flags that take an inline value (flag=VALUE), e.g. --flag=VALUE
+completion                    Print the TAB completion script for SHELL (bash, zsh, or fish only)
 EOF
 }
  
