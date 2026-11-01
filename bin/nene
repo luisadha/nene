@@ -459,6 +459,62 @@ for_fish_completion() {
 unknown_shell_completion() {
 echo "Error: Shell tidak dikenal. Gunakan: nene --completion [bash|zsh|fish]" >&2
 }
+
+create_alias_non_bash() {
+    local pkg_file="$HOME/.local/share/nene/pkg-installed"
+    local login_shell rc_file pkg
+    local begin="# >>> nene aliases >>>"
+    local end="# <<< nene aliases <<<"
+    local -a pkgs=()
+
+    # Read the installed package list (skip empty lines)
+    if [[ -f "$pkg_file" ]]; then
+        while IFS= read -r pkg; do
+            [[ -n "$pkg" ]] && pkgs+=("$pkg")
+        done < "$pkg_file"
+    fi
+
+    if [[ ${#pkgs[@]} -eq 0 ]]; then
+        echo "Error: You have not installed any packages yet." >&2
+        return 1
+    fi
+
+    # Detect login shell
+    login_shell=$(basename "${SHELL:-}")
+
+    case "$login_shell" in
+        zsh)
+            rc_file="$HOME/.zshrc"
+            ;;
+        fish)
+            rc_file="$HOME/.config/fish/config.fish"
+            mkdir -p "$(dirname "$rc_file")"
+            ;;
+        *)
+            echo "Error: Your login shell ($login_shell) is not supported. Only zsh and fish need this." >&2
+            return 1
+            ;;
+    esac
+
+    touch "$rc_file"
+
+    # Remove the old nene block so running this twice doesn't duplicate aliases
+    sed -i "\|^${begin}\$|,\|^${end}\$|d" "$rc_file"
+
+    {
+        echo "$begin"
+        for pkg in "${pkgs[@]}"; do
+            case "$login_shell" in
+                zsh)  printf 'alias %s="bash -c =%s"\n' "$pkg" "$pkg" ;;
+                fish) printf "alias %s 'bash -c (command -s %s)'\n" "$pkg" "$pkg" ;;
+            esac
+        done
+        echo "$end"
+    } >> "$rc_file"
+
+    echo "Created ${#pkgs[@]} alias(es) in $rc_file"
+    echo "Restart your shell or run: source $rc_file"
+}
 set_mode() {
   case "$1" in
     0|1) export MODE=$1 ;;
@@ -612,7 +668,9 @@ fi
       break;;
     -a|--api-termux)
       addon; shift;;
-    
+    -A|--create-alias-nonbash)
+      create_alias_non_bash;
+      shift;;
 -s*|--select-url)
     opts="${1#-s}"
     [[ "$1" == "--select-url" ]] && opts="o"
