@@ -744,10 +744,9 @@ export DRY_RUN_PROMPT="[DRY-RUN MODE]"; shift;;
             echo "$DRY_RUN_PROMPT would remove '$pkg' from $PKGS_INSTALLED"
           else
             sed -i "/^$pkg$/d" "$PKGS_INSTALLED"
-            
+            dpkg -r "${pkg}"
           fi
-        else
-          dpkg -r "${pkg}"
+        else 
           echo "Package '$pkg' successfully removed."
           exit $?
         fi
