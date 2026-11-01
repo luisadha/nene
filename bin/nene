@@ -62,22 +62,22 @@ html2text() {
 #                   (-i paket, --install paket)
 _option_data() {
 cat <<'EOF'
-u update                      Update local package repository data from the server.
-s select-url                  Open the source page or website of each package, This option can also be combined with -c (copy: Copy selected a url into clipboard) or -o (open: mean open a selected url, Same as -s).
-h help                        Display this help message and exit.
-m mode-online=                Set data source: 1 for online packages, 0 for offline local packages, Both modes open the interactive menu interface.
-v version                     Show program version information.
-i install+                    Install the selected package (auto-handles updates), This option can also be combined with -q (quiet: Suppress fzf output) or -n (dry-run).
-I info-all                    Display detailed information about all available packages.
-r remove+                     Uninstall the selected packages from the system.
-a api-termux                  Enable running Nene scripts directly from shared websites or URLs.
-n dry-run                     No action; perform a simulation of events that would occur.
-H homepage                    Open the official homepage of Nene.
-d debug                       Enable debug mode. The program logs detailed diagnostic information and writes it to ~/nene-nohup.out.
-A create-alias-nonbash        Create shell aliases for installed packages (zsh/fish only)
-Io interactive-option         Summary of flags that take a separate value (flag, space, value), e.g. *i PKG
-Im interactive-mode           Summary of flags that take an inline value (flag=VALUE), e.g. *flag=VALUE
-c completion+                 Print the TAB completion script for SHELL (bash, zsh, or fish only)
+u update                        Update local package repository data from the server.
+s select-url                    Open the source page or website of each package, This option can also be combined with -c (copy: Copy selected a url into clipboard) or -o (open: mean open a selected url, Same as -s).
+h help                          Display this help message and exit.
+m mode-online=                  Set data source: 1 for online packages, 0 for offline local packages, Both modes open the interactive menu interface.
+v version                       Show program version information.
+i install+                      Install the selected package (auto-handles updates), This option can also be combined with -q (quiet: Suppress fzf output) or -n (dry-run).
+I info-all                      Display detailed information about all available packages.
+r remove+                       Uninstall the selected packages from the system.
+a api-termux                    Enable running Nene scripts directly from shared websites or URLs.
+n dry-run                       No action; perform a simulation of events that would occur.
+H homepage                      Open the official homepage of Nene.
+d debug                         Enable debug mode. The program logs detailed diagnostic information and writes it to ~/nene-nohup.out.
+A create-alias-nonbash          Create shell aliases for installed packages (zsh/fish only)
+Io interactive-options          Summary of flags that take a separate value (flag, space, value), e.g. *i PKG
+Im interactive-modes            Summary of flags that take an inline value (flag=VALUE), e.g. *flag=VALUE
+c completion+                   Print the TAB completion script for SHELL (bash, zsh, or fish only)
 EOF
 }
  
