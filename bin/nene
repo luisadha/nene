@@ -3,7 +3,7 @@
 # shellcheck disable=SC1090
 self="${0##*/}"
 PACKAGE="nene"
-VERSION="1.7.5"
+VERSION="1.7.6"
 SUMMARY="Nene is both a static site and a set of Bash tools you can run straight from your terminal"
 NEPI="https://not-echo-not-true.carrd.co" # formerly not-echo-not-true.carrd.co
 V_FLAGS='--version' # GLOBAL FLAGS
@@ -239,18 +239,6 @@ default_apps() {
         return 0
     fi
 }
-#online_apps() {
-#    read -r __url__ < <(curl -s "$NEPI" |
-#    html2text |
-#    grep -oP '(?<=\])\(\K[^)]+' |
-#    grep '^https\?://' |
-#    grep -E 'github\.com|github\.io|luisadha\.my\.id' |
-#    sort -ur |
-#    awk '{print $0 "\t" gensub(".*/", "", "g", $0)}' |
-#    fzf --with-nth=2 --prompt="Choose (script): " --delimiter='\t');
-#    [ -z "$__url__" ] &&  echo -e "\nCaught ^" || . <(curl -sL $__url__);
-#
-# }
 
 fzf_walker() {
 
@@ -325,12 +313,6 @@ echo "nene v${VERSION}"
 return 0
 }
 
-
-#if [[ "$1" == "-m" || "$1" == "--m" ]]; then
-#  echo -e "Invalid option, Did you means \`-m=1' ?";
-#    exit 1
-#fi
-
 offline_status() {
    echo -e "No internet connections";
   return 6
@@ -379,7 +361,7 @@ _nene_completion() {
   fi
 
   case "$prev" in
-    -r|--remove)      list_file="$data_dir/pkg-installed" ;;
+    -r|-rq|--remove)  list_file="$data_dir/pkg-installed" ;;
     -i|-iq|--install) list_file="$data_dir/update-lists" ;;
     *) return ;;
   esac
@@ -461,7 +443,7 @@ for_fish_completion() {
 :
 }
 unknown_shell_completion() {
-echo "Error: Shell tidak dikenal. Gunakan: nene --completion [bash|zsh|fish]" >&2
+echo "Error: Unknown shell. type: nene --completion [bash|zsh|fish]" >&2
 }
 
 create_alias_non_bash() {
